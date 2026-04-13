@@ -1,0 +1,7 @@
+이메일: support@robogram.org           비밀번호     aA362485@@
+
+SUPABASE_URL: https://itescqykahtoelsohwxm.supabase.co
+
+SUPABASE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0ZXNjcXlrYWh0b2Vsc29od3htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MTIzNjEsImV4cCI6MjA5MDE4ODM2MX0.YYzIUEbdC589Awntb7lvP0F7XAmcjkz-xUd5I3E9uR0
+
+DB_PASSWORD: aa362485@@!!

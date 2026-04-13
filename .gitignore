@@ -1,0 +1,47 @@
+*.csv
+*.csv.backup*
+attendance.csv
+students.csv
+schedule.csv
+parents.csv
+inquiries.csv
+class_groups.csv
+student_groups.csv
+teacher_groups.csv
+users.csv
+
+# 로그 파일
+*.log
+attendance_system.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+
+# 백업 및 임시 파일
+backups/
+attendance_records/
+reports/
+scratch/
+temp_*.json
+
+# 환경 설정
+.env
+.env.local
+credentials.json
+
+# OS 파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 이미지
+seal.png
+# PWA 아이콘은 유지, 그 외 static 내부의 png/jpg는 제외 (필요 시 주석 해제)
+# static/*.png
+# static/*.jpg

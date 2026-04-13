@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로보그램 출석 시스템 통합 포털</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --secondary: #a855f7;
+            --accent: #10b981;
+            --bg: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 40px 20px;
+            text-align: center;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- Grid Layout --- */
+        .container {
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            align-content: start;
+        }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-light);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .card-icon {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            width: 70px;
+            height: 70px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 25px;
+            flex: 1;
+        }
+
+        .card-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: var(--primary-light);
+            transition: gap 0.2s;
+        }
+
+        .card:hover .card-btn {
+            gap: 12px;
+            color: #fff;
+        }
+
+        /* --- Colors for specific cards --- */
+        .admin-card .card-icon { background: rgba(239, 68, 68, 0.15); }
+        .admin-card .card-btn { color: #f87171; }
+        
+        .teacher-card .card-icon { background: rgba(16, 185, 129, 0.15); }
+        .teacher-card .card-btn { color: #34d399; }
+
+        .student-card .card-icon { background: rgba(59, 130, 246, 0.15); }
+        .student-card .card-btn { color: #60a5fa; }
+
+        /* --- Footer --- */
+        footer {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container > div {
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        .container > div:nth-child(1) { animation-delay: 0.1s; }
+        .container > div:nth-child(2) { animation-delay: 0.2s; }
+        .container > div:nth-child(3) { animation-delay: 0.3s; }
+        .container > div:nth-child(4) { animation-delay: 0.4s; }
+
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .logo { font-size: 2.5rem; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">🤖</div>
+        <h1>Robogram Attendance</h1>
+        <p class="subtitle">QR 전자 출석 시스템 통합 관리 포털</p>
+    </header>
+
+    <main class="container">
+        <!-- 관리자 대시보드 -->
+        <a href="#" id="link-admin" class="card admin-card">
+            <div class="card-icon">👨‍💼</div>
+            <h2>관리자 대시보드</h2>
+            <p>전체 수업 그룹 관리, 학생 명단 및 출석 리포트 확인, 시스템 설정을 관리합니다.</p>
+            <div class="card-btn">관리자 도구 열기 <span>→</span></div>
+        </a>
+
+        <!-- 선생님 대시보드 -->
+        <a href="#" id="link-teacher" class="card teacher-card">
+            <div class="card-icon">👩‍🏫</div>
+            <h2>선생님 대시보드</h2>
+            <p>담당 그룹의 실시간 출석 현황 확인 및 수동 출석 체크, 수업 일정을 관리합니다.</p>
+            <div class="card-btn">수업 관리 열기 <span>→</span></div>
+        </a>
+
+        <!-- 학생 및 학부모 앱 -->
+        <a href="index.html" class="card student-card">
+            <div class="card-icon">🎒</div>
+            <h2>학생/학부모 앱</h2>
+            <p>학생 본인의 출석 현황 및 수료 정보를 확인하고 QR 코드를 발급받습니다.</p>
+            <div class="card-btn">모바일 앱 열기 <span>→</span></div>
+        </a>
+
+        <!-- 로컬 스캐너 상태 (선택 사항) -->
+        <div class="card">
+            <div class="card-icon">📸</div>
+            <h2>로컬 스캐너 안내</h2>
+            <p>QR 스캔은 학원 내 전용 PC에서 실행되어야 합니다. 로컬 서버(포트 5000)가 작동 중인지 확인하세요.</p>
+            <div class="card-btn" style="color: var(--text-muted);">로컬 전용 기능</div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2026 Robogram Coding Education. All rights reserved.
+    </footer>
+
+    <script>
+        /**
+         * 배포 후 실제 Streamlit Cloud URL이 생성되면 아래 주소를 업데이트하세요.
+         */
+        const CLOUD_URLS = {
+            admin: "https://your-admin-app.streamlit.app",
+            teacher: "https://your-teacher-app.streamlit.app",
+            student: "https://your-student-app.streamlit.app" // index.html에서 주로 사용
+        };
+
+        // 링크 업데이트
+        document.getElementById('link-admin').href = CLOUD_URLS.admin;
+        document.getElementById('link-teacher').href = CLOUD_URLS.teacher;
+        
+        // 로컬 개발 환경인지 체크하여 알림 (선택 사항)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log("로컬 테스트 모드입니다. 배포 시 위 CLOUD_URLS를 반드시 수정하세요.");
+        }
+    </script>
+</body>
+</html>

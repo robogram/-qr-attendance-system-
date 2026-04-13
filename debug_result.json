@@ -1,0 +1,32 @@
+{
+  "schedule_id": "24388f06-96b4-4f4c-9c9c-262cb3b9c4ba",
+  "attendance": [
+    {
+      "att_id": "4c2d0b49-4df7-4eca-8aa3-7cc39d3f590f",
+      "student_id": "b602fdfd-a3d1-4aa7-901d-43bfbb4a09ff",
+      "student_name": "박소희",
+      "status": "출석",
+      "type": "온라인",
+      "check_in": "2026-04-04T20:30:28.953883+00:00",
+      "remark": "Zoom 자동 출석 (박소희)"
+    },
+    {
+      "att_id": "cea8f84d-7517-41fb-ac4f-793290db79ea",
+      "student_id": "b8b717ae-17b8-4290-afe6-dbdc96d690f4",
+      "student_name": "이로운",
+      "status": "출석",
+      "type": "온라인",
+      "check_in": "2026-04-04T20:30:29.342265+00:00",
+      "remark": "Zoom 자동 출석 (이로운)"
+    }
+  ],
+  "all_a4_schedules": [
+    {
+      "sid": "24388f06-96b4-4f4c-9c9c-262cb3b9c4ba",
+      "class_name": " A-4",
+      "start_time": "2026-04-04T11:30:00+00:00",
+      "group_id": null,
+      "attendance_count": 2
+    }
+  ]
+}

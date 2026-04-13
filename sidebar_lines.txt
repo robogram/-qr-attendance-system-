@@ -1,0 +1,2 @@
+﻿130: initial_sidebar_state="collapsed"
+995: with st.sidebar:

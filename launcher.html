@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로보그램 출석 시스템 런처</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .container {
+    text-align: center;
+    padding: 40px;
+    max-width: 700px;
+    width: 100%;
+  }
+  .logo { font-size: 64px; margin-bottom: 10px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  h1 { font-size: 32px; font-weight: 800; margin-bottom: 6px; background: linear-gradient(90deg, #4ade80, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 40px; }
+  .btn-main {
+    display: block;
+    width: 100%;
+    padding: 22px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: #0f2d1a;
+    font-size: 20px;
+    font-weight: 800;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(74,222,128,0.3);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+  }
+  .btn-main:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(74,222,128,0.5); }
+  .btn-main:active { transform: translateY(0); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 30px; }
+  .btn-link {
+    display: block;
+    padding: 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+  }
+  .btn-link:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
+  .btn-link .icon { font-size: 24px; display: block; margin-bottom: 6px; }
+  .btn-link .port { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+  .status-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    text-align: left;
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.8;
+  }
+  .status-box strong { color: #e2e8f0; }
+  #statusMsg { margin-top: 16px; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; display: none; }
+  .msg-success { background: rgba(74,222,128,0.15); border: 1px solid #4ade80; color: #4ade80; }
+  .msg-error   { background: rgba(248,113,113,0.15); border: 1px solid #f87171; color: #f87171; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">🤖</div>
+  <h1>로보그램 출석 시스템</h1>
+  <p class="subtitle">QR 전자 출석 시스템 통합 런처</p>
+
+  <button class="btn-main" onclick="startSystem()">
+    🚀 &nbsp; 전체 시스템 시작 (start_system.bat)
+  </button>
+
+  <div class="grid">
+    <a href="http://localhost:8501" target="_blank" class="btn-link">
+      <span class="icon">🛡️</span>
+      관리자 대시보드
+      <div class="port">localhost:8501</div>
+    </a>
+    <a href="http://localhost:8502" target="_blank" class="btn-link">
+      <span class="icon">👩‍🏫</span>
+      선생님 대시보드
+      <div class="port">localhost:8502</div>
+    </a>
+    <a href="http://localhost:8503" target="_blank" class="btn-link">
+      <span class="icon">👨‍👩‍👧</span>
+      학부모 앱
+      <div class="port">localhost:8503</div>
+    </a>
+    <a href="http://localhost:8504" target="_blank" class="btn-link">
+      <span class="icon">🎒</span>
+      학생 앱
+      <div class="port">localhost:8504</div>
+    </a>
+  </div>
+
+  <div class="status-box">
+    <strong>📂 설치 경로:</strong> E:\다운로드\qr_attendance<br>
+    <strong>📹 Flask QR 카메라:</strong> localhost:5000<br>
+    <strong>💡 Tip:</strong> 시스템 시작 후 5초 정도 기다리면 서버가 준비됩니다.
+  </div>
+
+  <div id="statusMsg"></div>
+</div>
+
+<script>
+function startSystem() {
+  const msg = document.getElementById('statusMsg');
+  msg.style.display = 'block';
+  msg.className = 'msg-success';
+  msg.textContent = '⏳ 시스템을 시작하는 중... (새 창이 열리고 5~10초 후 앱이 준비됩니다)';
+
+  // Use fetch to call a local launcher (won't work directly from browser for security reasons)
+  // Instead, instruct the user with a helper VBScript approach
+  const vbs = `Set WShell = CreateObject("WScript.Shell")\nWShell.Run "E:\\다운로드\\qr_attendance\\start_system.bat", 1, False`;
+
+  // Create a temporary download/run approach using mshta
+  try {
+    window.location.href = 'start_system.bat';
+    setTimeout(() => {
+      msg.textContent = '✅ 시스템 시작 명령을 실행했습니다! 잠시 후 각 앱 링크를 클릭하세요.';
+    }, 1000);
+  } catch(e) {
+    msg.className = 'msg-error';
+    msg.textContent = '⚠️ 아래 방법으로 실행하세요: start_system.bat 파일을 직접 더블클릭하세요.';
+  }
+}
+</script>
+</body>
+</html>
