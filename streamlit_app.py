@@ -112,21 +112,22 @@ def show_login_page():
         
         /* 입력창 */
         div[data-baseweb="input"] {
-            background: rgba(255, 255, 255, 0.06) !important;
+            background-color: rgba(0, 0, 0, 0.2) !important;
             border-radius: 14px !important;
-            border: 1.5px solid rgba(255,255,255,0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
             transition: all 0.3s ease !important;
         }
         div[data-baseweb="input"]:focus-within {
             border-color: rgba(167, 139, 250, 0.6) !important;
-            background: rgba(255, 255, 255, 0.09) !important;
+            background-color: rgba(0, 0, 0, 0.3) !important;
             box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15) !important;
         }
         input {
             color: white !important;
+            -webkit-text-fill-color: white !important;
             font-size: 15px !important;
         }
-        input::placeholder { color: rgba(255,255,255,0.3) !important; }
+        input::placeholder { color: rgba(255,255,255,0.4) !important; }
         
         /* 로그인 버튼 */
         .stFormSubmitButton > button, .stButton > button {

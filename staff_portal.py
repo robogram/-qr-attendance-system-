@@ -19,11 +19,14 @@ def login_screen():
         .main .block-container { padding-top: 2rem; }
         label { color: rgba(255, 255, 255, 0.8) !important; font-weight: 600 !important; font-size: 13px !important; }
         div[data-baseweb="input"] {
-            background: rgba(255, 255, 255, 0.06) !important;
+            background-color: rgba(0, 0, 0, 0.2) !important;
             border-radius: 14px !important;
-            border: 1.5px solid rgba(255,255,255,0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
         }
-        input { color: white !important; }
+        input { 
+            color: white !important; 
+            -webkit-text-fill-color: white !important; 
+        }
         .stFormSubmitButton > button, .stButton > button {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
             color: white !important; border: none !important; border-radius: 14px !important;
