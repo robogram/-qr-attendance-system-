@@ -18,16 +18,17 @@ def login_screen():
         .stApp { background: linear-gradient(160deg, #4f46e5 0%, #7c3aed 100%); }
         .main .block-container { padding-top: 2rem; }
         label { color: white !important; font-weight: 600 !important; font-size: 13px !important; }
-        div[data-baseweb="input"] {
-            background-color: rgba(0, 0, 0, 0.2) !important;
+        /* 입력창 배경 및 글자색 강제 조절 */
+        div[data-testid="stTextInput"] div[data-baseweb="input"] {
+            background-color: rgba(0, 0, 0, 0.5) !important;
             border-radius: 14px !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
         }
-        input { 
-            color: white !important; 
-            -webkit-text-fill-color: white !important; 
+        input {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
-        input::placeholder { color: rgba(255,255,255,0.5) !important; }
+        input::placeholder { color: rgba(255, 255, 255, 0.5) !important; }
         .stFormSubmitButton > button, .stButton > button {
             background: white !important;
             color: #4f46e5 !important; border: none !important; border-radius: 14px !important;

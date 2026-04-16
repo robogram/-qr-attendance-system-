@@ -110,24 +110,21 @@ def show_login_page():
             text-transform: uppercase;
         }
         
-        /* 입력창 */
-        div[data-baseweb="input"] {
-            background-color: rgba(0, 0, 0, 0.2) !important;
+        /* 입력창 배경 및 글자색 강제 조절 */
+        div[data-testid="stTextInput"] div[data-baseweb="input"] {
+            background-color: rgba(0, 0, 0, 0.5) !important;
             border-radius: 14px !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            transition: all 0.3s ease !important;
         }
-        div[data-baseweb="input"]:focus-within {
-            border-color: rgba(167, 139, 250, 0.6) !important;
-            background-color: rgba(0, 0, 0, 0.3) !important;
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15) !important;
+        div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
+            border-color: #a855f7 !important;
+            background-color: rgba(0, 0, 0, 0.7) !important;
         }
         input {
-            color: white !important;
-            -webkit-text-fill-color: white !important;
-            font-size: 15px !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
         }
-        input::placeholder { color: rgba(255,255,255,0.4) !important; }
+        input::placeholder { color: rgba(255, 255, 255, 0.5) !important; }
         
         /* 로그인 버튼 */
         .stFormSubmitButton > button, .stButton > button {
