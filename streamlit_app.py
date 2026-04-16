@@ -110,21 +110,21 @@ def show_login_page():
             text-transform: uppercase;
         }
         
-        /* 입력창 배경 및 글자색 강제 조절 */
+        /* 입력창 가독성 최우선 설정 (흰색 배경 + 검은색 글자) */
         div[data-testid="stTextInput"] div[data-baseweb="input"] {
-            background-color: rgba(0, 0, 0, 0.5) !important;
+            background-color: #ffffff !important;
             border-radius: 14px !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border: 2px solid #e1e1e1 !important;
         }
         div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
             border-color: #a855f7 !important;
-            background-color: rgba(0, 0, 0, 0.7) !important;
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
         }
         input {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
         }
-        input::placeholder { color: rgba(255, 255, 255, 0.5) !important; }
+        input::placeholder { color: #888888 !important; }
         
         /* 로그인 버튼 */
         .stFormSubmitButton > button, .stButton > button {
