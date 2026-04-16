@@ -52,10 +52,20 @@ PERMISSIONS = {
     }
 }
 
+# 기본 관리자/테스트 계정 (users.csv 없을 때 fallback용)
+DEFAULT_ACCOUNTS = [
+    {'user_id': 1, 'username': 'admin', 'password': 'admin123', 'role': 'admin', 'name': '관리자', 'phone': '010-0000-0000', 'student_id': '', 'email': 'admin@robogram.co.kr'},
+    {'user_id': 2, 'username': 'teacher1', 'password': 'teacher123', 'role': 'teacher', 'name': '선생님', 'phone': '010-1111-1111', 'student_id': '', 'email': 'teacher1@robogram.co.kr'},
+    {'user_id': 3, 'username': 'parent1', 'password': 'parent123', 'role': 'parent', 'name': '학부모', 'phone': '010-2222-2222', 'student_id': '', 'email': 'parent1@robogram.co.kr'},
+    {'user_id': 4, 'username': 'student1', 'password': 'student123', 'role': 'student', 'name': '학생', 'phone': '010-3333-3333', 'student_id': 'student1', 'email': ''},
+]
+
 def load_users():
-    """사용자 목록 로드 (자동 인코딩 감지)"""
+    """사용자 목록 로드 (자동 인코딩 감지 + 기본 계정 fallback)"""
+    default_df = pd.DataFrame(DEFAULT_ACCOUNTS)
+    
     if not os.path.exists(USERS_CSV):
-        return pd.DataFrame(columns=['user_id', 'username', 'password', 'role', 'name', 'phone', 'student_id', 'email'])
+        return default_df
     
     # 여러 인코딩 시도
     encodings = ['utf-8-sig', 'utf-8', 'cp949', 'euc-kr', 'latin1']
@@ -63,14 +73,17 @@ def load_users():
     for encoding in encodings:
         try:
             df = pd.read_csv(USERS_CSV, encoding=encoding)
-            # 성공하면 UTF-8로 다시 저장
-            df.to_csv(USERS_CSV, index=False, encoding='utf-8-sig')
+            # 성공하면 UTF-8로 다시 저장 시도 (읽기 전용 환경이면 무시)
+            try:
+                df.to_csv(USERS_CSV, index=False, encoding='utf-8-sig')
+            except Exception:
+                pass
             return df
         except (UnicodeDecodeError, Exception):
             continue
     
-    # 모든 인코딩 실패 시 빈 데이터프레임 반환
-    return pd.DataFrame(columns=['user_id', 'username', 'password', 'role', 'name', 'phone', 'student_id', 'email'])
+    # 모든 인코딩 실패 시 기본 계정 반환
+    return default_df
 
 
 def authenticate_user(username, password):
@@ -84,6 +97,7 @@ def authenticate_user(username, password):
     Returns:
         dict: 사용자 정보 또는 None
     """
+    # 먼저 CSV에서 찾기
     df_users = load_users()
     
     # 사용자 찾기
@@ -92,11 +106,15 @@ def authenticate_user(username, password):
         (df_users['password'] == password)
     ]
     
-    if user.empty:
-        return None
+    if not user.empty:
+        return user.iloc[0].to_dict()
     
-    user_data = user.iloc[0].to_dict()
-    return user_data
+    # CSV에 없으면 기본 계정에서 찾기 (HF 배포 환경 대비)
+    for account in DEFAULT_ACCOUNTS:
+        if account['username'] == username and account['password'] == password:
+            return account
+    
+    return None
 
 
 def check_permission(user_role, permission):
