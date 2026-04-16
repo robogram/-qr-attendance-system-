@@ -13,9 +13,12 @@ if 'authenticated' not in st.session_state:
 if 'user' not in st.session_state:
     st.session_state.user = None
 
+
 # 메인 로직
-# 1. 환경 변수(APP_TYPE)에 따른 강제 포털 전환 확인 (set_page_config 이전에 실행)
-app_type = os.getenv('APP_TYPE', '').lower()
+# 1. URL 파라미터 또는 환경 변수에 따른 포털 전환 확인
+query_params = st.query_params
+p_param = query_params.get("p", "").lower()
+app_type = p_param or os.getenv('APP_TYPE', '').lower()
 
 if app_type == 'staff':
     import staff_portal
