@@ -1794,7 +1794,10 @@ elif tab == "🎓 수업 그룹":
                             
                             # 2. 로컬 CSV 업데이트 (템플릿 보존)
                             df_groups_all = load_class_groups()
-                            df_groups_all.loc[df_groups_all['group_id'] == group['group_id'], 'zoom_meeting_id'] = new_zoom_id
+                            if 'zoom_meeting_id' not in df_groups_all.columns:
+                                df_groups_all['zoom_meeting_id'] = ''
+                            df_groups_all['zoom_meeting_id'] = df_groups_all['zoom_meeting_id'].astype(object)
+                            df_groups_all.loc[df_groups_all['group_id'] == group['group_id'], 'zoom_meeting_id'] = str(new_zoom_id)
                             save_class_groups(df_groups_all)
                             
                             st.success("✅ Zoom ID가 동기화되었습니다!")
