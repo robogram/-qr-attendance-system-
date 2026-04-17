@@ -91,9 +91,14 @@ def main():
         st.session_state.user = None
         st.rerun()
 
+    import sys
     if choice == "🏠 관리자 홈":
+        if "admin_app" in sys.modules:
+            del sys.modules["admin_app"]
         import admin_app
     elif choice == "👩‍🏫 선생님 화면":
+        if "teacher_app" in sys.modules:
+            del sys.modules["teacher_app"]
         import teacher_app
 
 if __name__ == "__main__":
