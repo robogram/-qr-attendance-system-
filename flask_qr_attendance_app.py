@@ -204,6 +204,10 @@ def get_student_schedule(student_name):
                 except: continue
         
         return None
+    except Exception as e:
+        logger.error(f"Error in get_student_schedule: {e}")
+        return None
+
 def get_current_session():
     """오늘 전체 일정 중 현재 시간 기준으로 진행 중인 수업 정보를 찾습니다."""
     try:

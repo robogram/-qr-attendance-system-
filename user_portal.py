@@ -49,9 +49,9 @@ def login_screen():
         """, unsafe_allow_html=True)
         
         with st.form("login_form"):
-            username = st.text_input("아이디", placeholder="아이디를 입력하세요")
-            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요")
-            submit = st.form_submit_button("🚀  로그인", use_container_width=True)
+            username = st.text_input("아이디", placeholder="아이디를 입력하세요", key="user_login_user")
+            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요", key="user_login_pass")
+            submit = st.form_submit_button("🚀  로그인", use_container_width=True, key="user_login_btn")
             
             if submit:
                 user = authenticate_user(username, password)
@@ -73,7 +73,7 @@ def main():
     user = st.session_state.user
     role = user.get('role')
     
-    if st.sidebar.button("🚪 로그아웃", use_container_width=True):
+    if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="user_logout_btn"):
         st.session_state.authenticated = False
         st.session_state.user = None
         st.rerun()

@@ -375,7 +375,7 @@ col1, col2 = st.columns([3, 1])
 with col1:
     st.title("📱 로보그램 QR출석")
 with col2:
-    if st.button("🔄", help="새로고침"):
+    if st.button("🔄", help="새로고침", key="mobile_auto_378"):
         check_flask_connection()
         st.rerun()
 
@@ -385,7 +385,7 @@ tab = st.radio(
     ["🏠 홈", "👥 학생", "📅 일정", "👨‍👩‍👧 보호자", "🔹 출석", "📊 리포트"],
     horizontal=True,
     label_visibility="collapsed"
-)
+, key="mobile_auto_383")
 
 st.markdown("---")
 
@@ -541,14 +541,14 @@ elif tab == "👥 학생":
     
     # 학생 추가
     with st.expander("➕ 새 학생 추가", expanded=False):
-        add_method = st.radio("추가 방법", ["직접 입력", "CSV 업로드"], horizontal=True)
+        add_method = st.radio("추가 방법", ["직접 입력", "CSV 업로드"], horizontal=True, key="mobile_auto_544")
         
         if add_method == "직접 입력":
-            new_name = st.text_input("학생명", placeholder="홍길동")
-            new_phone = st.text_input("전화번호 (선택)", placeholder="010-1234-5678")
-            new_school = st.text_input("학교명 (선택)", placeholder="서울초등학교")
+            new_name = st.text_input("학생명", placeholder="홍길동", key="mobile_auto_547")
+            new_phone = st.text_input("전화번호 (선택)", placeholder="010-1234-5678", key="mobile_auto_548")
+            new_school = st.text_input("학교명 (선택)", placeholder="서울초등학교", key="mobile_auto_549")
             
-            if st.button("➕ 학생 추가", use_container_width=True):
+            if st.button("➕ 학생 추가", use_container_width=True, key="mobile_auto_551"):
                 if new_name:
                     if new_name not in st.session_state.attendees:
                         st.session_state.attendees.append(new_name)
@@ -563,7 +563,7 @@ elif tab == "👥 학생":
                     st.error("학생명을 입력해주세요.")
         
         else:
-            uploaded_file = st.file_uploader("CSV 파일 업로드", type=['csv'])
+            uploaded_file = st.file_uploader("CSV 파일 업로드", type=['csv'], key="mobile_auto_566")
             if uploaded_file:
                 try:
                     df_upload = pd.read_csv(uploaded_file)
@@ -638,7 +638,7 @@ elif tab == "👥 학생":
         st.markdown("###")
         
         # 전체 QR ZIP 다운로드
-        if st.button("📦 전체 QR ZIP 다운로드", use_container_width=True):
+        if st.button("📦 전체 QR ZIP 다운로드", use_container_width=True, key="mobile_auto_641"):
             with st.spinner("ZIP 파일 생성 중..."):
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
@@ -654,7 +654,7 @@ elif tab == "👥 학생":
                     file_name=f"QR_Codes_{date_today}.zip",
                     mime='application/zip',
                     use_container_width=True
-                )
+                , key="mobile_auto_651")
     else:
         st.info("등록된 학생이 없습니다. 새 학생을 추가해주세요.")
 
@@ -670,17 +670,17 @@ elif tab == "📅 일정":
     
     # 새 일정 추가
     with st.expander("➕ 새 일정 추가", expanded=False):
-        new_date = st.date_input("📅 날짜", date_today)
+        new_date = st.date_input("📅 날짜", date_today, key="mobile_auto_673")
         
         col1, col2 = st.columns(2)
         with col1:
-            new_start = st.time_input("🕐 시작", time(9, 0))
+            new_start = st.time_input("🕐 시작", time(9, 0), key="mobile_auto_677")
         with col2:
-            new_end = st.time_input("🕐 종료", time(10, 0))
+            new_end = st.time_input("🕐 종료", time(10, 0), key="mobile_auto_679")
         
-        new_sess = st.text_input("📚 회차명", "1회차")
+        new_sess = st.text_input("📚 회차명", "1회차", key="mobile_auto_681")
         
-        if st.button("💾 일정 저장", use_container_width=True):
+        if st.button("💾 일정 저장", use_container_width=True, key="mobile_auto_683"):
             new_row = pd.DataFrame([{
                 'date': new_date,
                 'start': new_start.strftime('%H:%M'),
@@ -745,11 +745,11 @@ elif tab == "👨‍👩‍👧 보호자":
     
     # 새 보호자 추가
     with st.expander("➕ 새 보호자 추가", expanded=False):
-        p_student = st.selectbox("👤 학생 선택", st.session_state.attendees) if st.session_state.attendees else st.text_input("👤 학생명")
-        p_name = st.text_input("👨‍👩‍👧 보호자명")
-        p_phone = st.text_input("📞 전화번호")
+        p_student = st.selectbox("👤 학생 선택", st.session_state.attendees, key="mobile_auto_748") if st.session_state.attendees else st.text_input("👤 학생명", key="mobile_auto_748")
+        p_name = st.text_input("👨‍👩‍👧 보호자명", key="mobile_auto_749")
+        p_phone = st.text_input("📞 전화번호", key="mobile_auto_750")
         
-        if st.button("➕ 보호자 추가", use_container_width=True):
+        if st.button("➕ 보호자 추가", use_container_width=True, key="mobile_auto_752"):
             if p_student and p_name and p_phone:
                 new_parent = pd.DataFrame([{
                     'student': p_student,
@@ -881,18 +881,18 @@ elif tab == "📊 리포트":
         with col1:
             available_dates = sorted(df_attendance['date'].unique(), reverse=True)
             date_options = ["전체"] + [str(d) for d in available_dates]
-            selected_date = st.selectbox("📅 날짜", date_options)
+            selected_date = st.selectbox("📅 날짜", date_options, key="mobile_auto_884")
         
         with col2:
             if 'session' in df_attendance.columns:
                 sessions = ["전체"] + sorted(df_attendance['session'].unique().tolist())
-                selected_session = st.selectbox("📚 수업", sessions)
+                selected_session = st.selectbox("📚 수업", sessions, key="mobile_auto_889")
             else:
                 selected_session = "전체"
         
         with col3:
             status_options = ["전체", "출석", "지각", "결석"]
-            selected_status = st.selectbox("📊 상태", status_options)
+            selected_status = st.selectbox("📊 상태", status_options, key="mobile_auto_895")
         
         # 필터 적용
         df_filtered = df_attendance.copy()
@@ -983,7 +983,7 @@ elif tab == "📊 리포트":
                 file_name=f"attendance_{date_today}.csv",
                 mime="text/csv",
                 use_container_width=True
-            )
+            , key="mobile_auto_980")
         else:
             st.warning("⚠️ 선택한 조건에 해당하는 기록이 없습니다.")
 

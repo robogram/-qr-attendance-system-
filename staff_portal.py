@@ -50,9 +50,9 @@ def login_screen():
         """, unsafe_allow_html=True)
         
         with st.form("login_form"):
-            username = st.text_input("아이디", placeholder="아이디를 입력하세요")
-            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요")
-            submit = st.form_submit_button("🔐  로그인", use_container_width=True)
+            username = st.text_input("아이디", placeholder="아이디를 입력하세요", key="staff_login_user")
+            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요", key="staff_login_pass")
+            submit = st.form_submit_button("🔐  로그인", use_container_width=True, key="staff_login_btn")
             
             if submit:
                 user = authenticate_user(username, password)
@@ -84,20 +84,17 @@ def main():
     elif role == 'teacher':
         menu_options = ["👩‍🏫 선생님 화면"]
         
-    choice = st.sidebar.selectbox("메뉴 선택", menu_options)
+    choice = st.sidebar.selectbox("메뉴 선택", menu_options, key="staff_main_menu")
     
-    if st.sidebar.button("🚪 로그아웃", use_container_width=True):
+    if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="staff_logout_btn"):
         st.session_state.authenticated = False
         st.session_state.user = None
         st.rerun()
 
-    try:
-        if choice == "🏠 관리자 홈":
-            import admin_app
-        elif choice == "👩‍🏫 선생님 화면":
-            import teacher_app
-    except Exception as e:
-        st.error(f"화면을 불러오는 중 오류가 발생했습니다: {e}")
+    if choice == "🏠 관리자 홈":
+        import admin_app
+    elif choice == "👩‍🏫 선생님 화면":
+        import teacher_app
 
 if __name__ == "__main__":
     main()

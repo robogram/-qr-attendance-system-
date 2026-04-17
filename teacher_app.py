@@ -65,10 +65,10 @@ if not st.session_state.authenticated or st.session_state.user is None:
     
     with st.form("quick_login"):
         st.markdown("### 👩‍🏫 선생님 로그인")
-        username = st.text_input("아이디")
-        password = st.text_input("비밀번호", type="password")
+        username = st.text_input("아이디", key="teacher_auto_68")
+        password = st.text_input("비밀번호", type="password", key="teacher_auto_69")
         
-        if st.form_submit_button("로그인", use_container_width=True):
+        if st.form_submit_button("로그인", use_container_width=True, key="teacher_auto_71"):
             from auth import authenticate_user
             user = authenticate_user(username, password)
             
@@ -88,7 +88,7 @@ if user.get('role') not in ['teacher', 'admin']:
     st.error("⚠️ 선생님 또는 관리자만 접근 가능한 페이지입니다.")
     st.info(f"현재 로그인: {user.get('name')} ({user.get('role')})")
     
-    if st.button("🚪 로그아웃", use_container_width=True):
+    if st.button("🚪 로그아웃", use_container_width=True, key="teacher_auto_91"):
         st.session_state.authenticated = False
         st.session_state.user = None
         st.rerun()
@@ -1171,7 +1171,7 @@ def main():
             with col_status:
                 st.success("✅ Flask 서버 연결됨 - 출석 체크 준비 완료!")
             with col_stop:
-                if st.button("🛑 서버 끄기", use_container_width=True, help="QR 카메라 서버를 완전히 종료합니다."):
+                if st.button("🛑 서버 끄기", use_container_width=True, help="QR 카메라 서버를 완전히 종료합니다.", key="teacher_auto_1174"):
                     try:
                         requests.post(f"http://localhost:{FLASK_PORT}/api/shutdown", timeout=1)
                         st.session_state['flask_connected'] = False
@@ -1219,7 +1219,7 @@ def main():
                 3. 🔗 또는 아래 버튼을 눌러 새 창에서 여세요
                 """)
                 
-                st.link_button("📹 새 창에서 카메라 열기", stream_url_network)
+                st.link_button("📹 새 창에서 카메라 열기", stream_url_network, key="teacher_link_btn_1222")
             
             # ⭐ 반응형 iframe 높이
             # 모바일: 400px, PC: 700px
@@ -1767,14 +1767,14 @@ def main():
                                             "💾 수정",
                                             use_container_width=True,
                                             type="primary"
-                                        )
+                                        , key="teacher_auto_1766")
                                     
                                     with col_delete:
                                         deleted = st.form_submit_button(
                                             "🗑️ 삭제",
                                             use_container_width=True,
                                             type="secondary"
-                                        )
+                                        , key="teacher_auto_1773")
                                     
                                     if submitted:
                                         if update_attendance_status(
@@ -2047,7 +2047,7 @@ def main():
                     "💾 메모 저장",
                     use_container_width=True,
                     type="primary"
-                )
+                , key="teacher_auto_2046")
                 
                 if submitted:
                     if note_student and note_text and len(note_text.strip()) >= 5:

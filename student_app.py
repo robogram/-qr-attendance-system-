@@ -229,10 +229,10 @@ if not st.session_state.authenticated or st.session_state.user is None:
     st.error("🔒 로그인이 필요합니다.")
     with st.form("quick_login"):
         st.markdown("### 🎮 학생 로그인")
-        username = st.text_input("아이디")
-        password = st.text_input("비밀번호", type="password")
+        username = st.text_input("아이디", key="student_auto_232")
+        password = st.text_input("비밀번호", type="password", key="student_auto_233")
         
-        if st.form_submit_button("로그인", use_container_width=True):
+        if st.form_submit_button("로그인", use_container_width=True, key="student_auto_235"):
             from auth import authenticate_user
             user = authenticate_user(username, password)
             
@@ -247,7 +247,7 @@ if not st.session_state.authenticated or st.session_state.user is None:
     st.stop()
 
 # --- 🆕 사이드바 새로고침 버튼 ---
-if st.sidebar.button("🔄 데이터 새로고침", use_container_width=True):
+if st.sidebar.button("🔄 데이터 새로고침", use_container_width=True, key="student_auto_250"):
     st.cache_data.clear()
     st.success("데이터를 새로 불러옵니다.")
     st.rerun()
@@ -257,7 +257,7 @@ user = st.session_state.user
 # 학생 권한 체크
 if user.get('role') != 'student':
     st.error("⚠️ 학생만 접근 가능한 페이지입니다.")
-    if st.button("🚪 로그아웃", use_container_width=True):
+    if st.button("🚪 로그아웃", use_container_width=True, key="student_auto_260"):
         st.session_state.authenticated = False
         st.session_state.user = None
         st.rerun()
@@ -1025,7 +1025,7 @@ def main():
     diag_expanded = st.session_state.diag_show_students or st.session_state.diag_trace_student or ('diag_logs' in st.session_state)
     # ✅ 데이터 새로고침 (간결한 관리 도구)
     with st.expander("🛠️ 시스템 관리", expanded=False):
-        if st.button("🔄 모든 데이터 강제 새로고침", use_container_width=True):
+        if st.button("🔄 모든 데이터 강제 새로고침", use_container_width=True, key="student_refresh_all"):
             st.cache_data.clear()
             st.rerun()
         st.write(f"📡 서버 연결 상태: ✅ 정상")
@@ -1141,7 +1141,7 @@ def main():
         st.markdown("---")
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
-            if st.button("🚪 로그아웃", use_container_width=True):
+            if st.button("🚪 로그아웃", use_container_width=True, key="student_logout"):
                 st.session_state.authenticated = False
                 st.session_state.user = None
                 st.rerun()
@@ -1204,7 +1204,8 @@ def main():
                     qr_buf.getvalue(),
                     file_name=f"{student_name}_QR.png",
                     mime="image/png",
-                    use_container_width=True
+                    use_container_width=True,
+                    key="download_qr_png"
                 )
             else:
                 st.error("QR 코드 생성 실패")
@@ -1438,7 +1439,8 @@ def main():
                 csv,
                 file_name=f"{student_name}_{selected_group_info['group_name']}_출석기록.csv",
                 mime="text/csv",
-                use_container_width=True
+                use_container_width=True,
+                key=f"download_attendance_csv_{student_name}_{selected_group_info['group_id']}"
             )
         else:
             st.info("아직 이 수업의 출석 기록이 없습니다.")
@@ -1514,7 +1516,8 @@ def main():
             uploaded_photo = st.file_uploader(
                 "사진 선택",
                 type=['png', 'jpg', 'jpeg'],
-                help="📸 사진이 자동으로 회전 보정되고 최적화됩니다"
+                help="📸 사진이 자동으로 회전 보정되고 최적화됩니다",
+                key="student_photo_upload"
             )
             
             photo_buffer = None
@@ -1540,7 +1543,7 @@ def main():
             course_name = f"{selected_group_info['group_name']} 과정"
             
             # 수료증 발급 버튼
-            if st.button("🎓 수료증 발급", use_container_width=True, type="primary"):
+            if st.button("🎓 수료증 발급", use_container_width=True, type="primary", key="student_auto_1546"):
                 with st.spinner("수료증 생성 중..."):
                     certificate_img = generate_certificate(
                         student_name=student_name,
@@ -1566,7 +1569,8 @@ def main():
                             buf.getvalue(),
                             file_name=f"{student_name}_{selected_group_info['group_name']}_수료증.png",
                             mime="image/png",
-                            use_container_width=True
+                            use_container_width=True,
+                            key=f"download_cert_png_{student_name}_{selected_group_info['group_id']}"
                         )
                         st.balloons()
         
@@ -1610,7 +1614,7 @@ def main():
     st.markdown("---")
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("🚪 로그아웃", use_container_width=True):
+        if st.button("🚪 로그아웃", use_container_width=True, key="student_auto_1617"):
             st.session_state.authenticated = False
             st.session_state.user = None
             st.session_state.selected_group_id = None

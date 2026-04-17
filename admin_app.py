@@ -146,17 +146,6 @@ CLASS_GROUPS_CSV = "class_groups.csv"
 STUDENT_GROUPS_CSV = "student_groups.csv"
 INQUIRIES_CSV = "inquiries.csv"
 
-# 페이지 설정 (포털 통합 시 중복 호출 방지)
-try:
-    st.set_page_config(
-        page_title="관리자 - 온라인아카데미",
-        page_icon="👨‍💼",
-        layout="wide",
-        initial_sidebar_state="collapsed"
-    )
-except st.errors.StreamlitAPIException:
-    pass
-
 # 세션 초기화
 session_defaults = {
     'authenticated': False,
@@ -188,10 +177,10 @@ if not st.session_state.authenticated or st.session_state.user is None:
     
     with st.form("quick_login"):
         st.markdown("### 👨‍💼 관리자 로그인")
-        username = st.text_input("아이디")
-        password = st.text_input("비밀번호", type="password")
+        username = st.text_input("아이디", key="login_username")
+        password = st.text_input("비밀번호", type="password", key="login_password")
         
-        if st.form_submit_button("로그인", use_container_width=True):
+        if st.form_submit_button("로그인", use_container_width=True, key="login_submit"):
             from auth import authenticate_user
             user = authenticate_user(username, password)
             
@@ -210,7 +199,7 @@ user = st.session_state.user
 if user.get('role') not in ['admin', 'teacher']:
     st.error("⚠️ 관리자 또는 선생님만 접근 가능한 페이지입니다.")
     st.info(f"현재 로그인: {user.get('name')} ({get_role_display_name(user.get('role'))})")
-    if st.button("🚪 로그아웃", use_container_width=True):
+    if st.button("🚪 로그아웃", use_container_width=True, key="auth_error_logout"):
         st.session_state.authenticated = False
         st.session_state.user = None
         st.rerun()
@@ -1037,17 +1026,12 @@ with st.sidebar:
     이메일: {user.get('email', 'N/A')}
     """)
     
-    if st.button("🚪 로그아웃", use_container_width=True):
-        st.session_state.authenticated = False
-        st.session_state.user = None
-        st.rerun()
-    
     st.markdown("---")
 
     st.markdown('---')
     st.markdown('### 🛑 서버 강제 종료')
     st.info('카메라 스캐너 창을 바로 끌 수 있습니다.')
-    if st.button('🛑 QR 카메라(서버) 끄기', use_container_width=True):
+    if st.button('🛑 QR 카메라(서버) 끄기', use_container_width=True, key="sidebar_shutdown_flask"):
         try:
             import requests
             from config import FLASK_PORT
@@ -1063,7 +1047,7 @@ with st.sidebar:
             st.rerun()
 
     st.markdown("### 📌 서버 상태")
-    if st.button("🔄 연결 확인"):
+    if st.button("🔄 연결 확인", key="sidebar_check_flask"):
         check_flask_connection()
     
     if st.session_state.get('flask_connected', False):
@@ -1079,7 +1063,8 @@ else:
     tab = st.radio(
         "메뉴",
         ["📊 대시보드", "👥 학생 관리", "🎓 수업 그룹","👨‍🏫 선생님 배정", "📅 일정 관리", "👨‍👩‍👧 보호자 관리","📞 문의 관리", "🔹 출석 체크", "📈 리포트", "🔐 사용자 관리"],
-        horizontal=True
+        horizontal=True,
+        key="main_nav_radio"
     )
 
 st.markdown("---")
@@ -1218,14 +1203,14 @@ elif tab == "👥 학생 관리":
             st.markdown("---")
         
         with st.expander("➕ 새 학생 추가", expanded=False):
-            add_method = st.radio("추가 방법", ["직접 입력", "CSV 업로드"], horizontal=True)
+            add_method = st.radio("추가 방법", ["직접 입력", "CSV 업로드"], horizontal=True, key="student_add_choice")
             
             if add_method == "직접 입력":
-                new_name = st.text_input("학생명", placeholder="홍길동")
-                new_phone = st.text_input("전화번호 (선택)", placeholder="010-1234-5678")
-                new_school = st.text_input("학교명", placeholder="서울초등학교")
+                new_name = st.text_input("학생명", placeholder="홍길동", key="new_student_name_input")
+                new_phone = st.text_input("전화번호 (선택)", placeholder="010-1234-5678", key="new_student_phone_input")
+                new_school = st.text_input("학교명", placeholder="서울초등학교", key="new_student_school_input")
                 
-                if st.button("➕ 학생 추가", use_container_width=True):
+                if st.button("➕ 학생 추가", use_container_width=True, key="btn_add_student_manual"):
                     if new_name:
                         if new_name not in st.session_state.attendees:
                             normalized_phone = normalize_phone(new_phone)
@@ -1258,7 +1243,7 @@ elif tab == "👥 학생 관리":
             
             else:
                 st.info("💡 **파일 작성 가이드:** 1열(A열)=이름, 2열(B열)=학교, 3열(C열)=전화번호, 4열(D열)=보호자명, 5열(E열)=보호자 연락처 순으로 작성해주세요. 첫 번째 행(1행)은 제목 행으로 무시됩니다.")
-                uploaded_file = st.file_uploader("명단 파일 업로드 (CSV, Excel)", type=['csv', 'xlsx', 'xls'])
+                uploaded_file = st.file_uploader("명단 파일 업로드 (CSV, Excel)", type=['csv', 'xlsx', 'xls'], key="admin_student_batch_upload")
                 
                 if uploaded_file:
                     try:
@@ -1386,10 +1371,10 @@ elif tab == "👥 학생 관리":
                     col_submit, col_cancel = st.columns(2)
                     
                     with col_submit:
-                        submitted = st.form_submit_button("💾 저장", use_container_width=True, type="primary")
+                        submitted = st.form_submit_button("💾 저장", use_container_width=True, type="primary", key=f"save_edit_student_{idx}")
                     
                     with col_cancel:
-                        cancelled = st.form_submit_button("❌ 취소", use_container_width=True)
+                        cancelled = st.form_submit_button("❌ 취소", use_container_width=True, key=f"cancel_edit_student_{idx}")
                     
                     if submitted:
                         normalized_phone = normalize_phone(edited_phone)
@@ -1444,7 +1429,7 @@ elif tab == "👥 학생 관리":
                         buf.getvalue(),
                         file_name=f"{name}_QR.png",
                         mime='image/png',
-                        key=f"qr_{idx}",
+                        key=f"admin_qr_download_{idx}_{name}",
                         use_container_width=True
                     )
                 
@@ -1494,7 +1479,7 @@ elif tab == "👥 학생 관리":
                     if len(needs_fix) > 5:
                         st.caption(f"... 외 {len(needs_fix) - 5}개")
                     
-                    if st.button("🔧 일괄 수정 실행", use_container_width=True, type="primary"):
+                    if st.button("🔧 일괄 수정 실행", use_container_width=True, type="primary", key="btn_fix_phones_batch"):
                         for name, old_phone, new_phone in needs_fix:
                             st.session_state.phones[name] = new_phone
                         
@@ -1507,7 +1492,7 @@ elif tab == "👥 학생 관리":
         
         st.markdown("###")
         
-        if st.button("📦 전체 QR ZIP 다운로드", use_container_width=True):
+        if st.button("📦 전체 QR ZIP 다운로드", use_container_width=True, key="btn_download_all_qr"):
             with st.spinner("ZIP 파일 생성 중..."):
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
@@ -1522,7 +1507,8 @@ elif tab == "👥 학생 관리":
                     zip_buffer.getvalue(),
                     file_name=f"QR_Codes_{date.today()}.zip",
                     mime='application/zip',
-                    use_container_width=True
+                    use_container_width=True,
+                    key="download_all_qr_zip"
                 )
     else:
         st.info("등록된 학생이 없습니다.")
@@ -1539,7 +1525,7 @@ elif tab == "🎓 수업 그룹":
     st.markdown("### 📋 그룹 목록")
     col_hide1, col_hide2 = st.columns([3, 1])
     with col_hide2:
-        hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=True, help="종료 날짜가 지난 수강 그룹을 대시보드에서 숨깁니다.")
+        hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=True, help="종료 날짜가 지난 수강 그룹을 대시보드에서 숨깁니다.", key="hide_passed_groups")
     
     if hide_ended:
         try:
@@ -1552,9 +1538,8 @@ elif tab == "🎓 수업 그룹":
         # 🔗 일정 동기화(복구) 기능 추가
         with st.expander("🔄 시스템 관리 및 일정 복구", expanded=False):
             st.info("💡 **일정 동기화**: 로컬 설정(class_groups.csv)을 기준으로 Supabase의 일정을 동기화합니다. 누락된 일정을 복구하거나 잘못된 시간을 바로잡습니다.")
-            if st.button("🚀 모든 수업 일정 강제 동기화 (Supabase 복구)", use_container_width=True):
+            if st.button("🚀 모든 수업 일정 강제 동기화 (Supabase 복구)", use_container_width=True, key="sync_all_schedules_btn"):
                 with st.spinner("일정 데이터를 동기화하는 중..."):
-                    from admin_app import generate_recurring_schedule
                     
                     sync_count = 0
                     fix_count = 0
@@ -1630,18 +1615,18 @@ elif tab == "🎓 수업 그룹":
     else:
         with st.expander("➕ 새 수업 그룹 생성", expanded=False):
             st.markdown("### 📋 그룹 정보")
-            group_name = st.text_input("그룹명 (예: A반, 초급반)", placeholder="A반")
+            group_name = st.text_input("그룹명 (예: A반, 초급반)", placeholder="A반", key="create_group_name_input")
             
             st.markdown("### 📅 수업 일정")
             col1, col2 = st.columns(2)
             
             with col1:
-                group_start_date = st.date_input("시작 날짜", date.today())
-                group_end_date = st.date_input("종료 날짜", date.today() + timedelta(days=90))
+                group_start_date = st.date_input("시작 날짜", date.today(), key="create_group_start_date")
+                group_end_date = st.date_input("종료 날짜", date.today() + timedelta(days=90), key="create_group_end_date")
             
             with col2:
-                group_start_time = st.time_input("수업 시작 시간", time(9, 0), step=timedelta(minutes=5))
-                group_end_time = st.time_input("수업 종료 시간", time(10, 0), step=timedelta(minutes=5))
+                group_start_time = st.time_input("수업 시작 시간", time(9, 0), step=timedelta(minutes=5), key="create_group_start_time")
+                group_end_time = st.time_input("수업 종료 시간", time(10, 0), step=timedelta(minutes=5), key="create_group_end_time")
             
             st.markdown("### 📆 수업 요일")
             weekday_names = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
@@ -1649,7 +1634,8 @@ elif tab == "🎓 수업 그룹":
                 "수업 요일 선택",
                 options=list(range(7)),
                 default=[0, 2, 4],
-                format_func=lambda x: weekday_names[x]
+                format_func=lambda x: weekday_names[x],
+                key="create_group_weekdays_select"
             )
             
             st.markdown("### 🕐 총 교육시간 설정")
@@ -1678,7 +1664,7 @@ elif tab == "🎓 수업 그룹":
                 col_auto, col_manual = st.columns(2)
                 
                 with col_auto:
-                    use_auto = st.checkbox("자동 계산 사용", value=True)
+                    use_auto = st.checkbox("자동 계산 사용", value=True, key="create_group_use_auto_hours")
                 
                 with col_manual:
                     if not use_auto:
@@ -1687,7 +1673,8 @@ elif tab == "🎓 수업 그룹":
                             min_value=0.0,
                             max_value=1000.0,
                             value=auto_total_hours,
-                            step=0.5
+                            step=0.5,
+                            key="create_group_manual_hours_input"
                         )
                         final_total_hours = manual_hours
                     else:
@@ -1702,7 +1689,7 @@ elif tab == "🎓 수업 그룹":
             
             st.markdown("###")
             
-            if st.button("🎓 수업 그룹 생성", use_container_width=True, type="primary"):
+            if st.button("🎓 수업 그룹 생성", use_container_width=True, type="primary", key="btn_create_class_group"):
                 if not group_name:
                     st.error("그룹명을 입력해주세요.")
                 elif not group_weekdays:
@@ -1948,7 +1935,7 @@ elif tab == "👨‍🏫 선생님 배정":
                 f"📚 정규 담당 ({len(regular_groups)}개)",
                 f"🔄 대타 수업 ({len(substitute_groups)}개)",
                 "➕ 새 배정"
-            ])
+            ], key="admin_auto_1939")
             
             # 📚 정규 담당 수업
             with tab_regular:
@@ -2062,7 +2049,7 @@ elif tab == "👨‍🏫 선생님 배정":
                         "🎓 수업 그룹 선택",
                         available_groups['group_id'].tolist(),
                         format_func=lambda x: available_groups[available_groups['group_id'] == x]['group_name'].iloc[0],
-                        key=f"group_select_{teacher_username}"
+                        key=f"admin_group_select_{teacher_username}_{idx}"
                     )
                     
                     # 그룹 정보 표시
@@ -2286,11 +2273,11 @@ elif tab == "👨‍👩‍👧 보호자 관리":
     
     if check_permission(user['role'], 'can_manage_students'):
         with st.expander("➕ 새 보호자 추가", expanded=False):
-            p_student = st.selectbox("학생 선택", st.session_state.attendees)
-            p_name = st.text_input("👨‍👩‍👧 보호자명")
-            p_phone = st.text_input("📞 전화번호")
+            p_student = st.selectbox("학생 선택", st.session_state.attendees, key="add_parent_student_select")
+            p_name = st.text_input("👨‍👩‍👧 보호자명", key="add_parent_name_input")
+            p_phone = st.text_input("📞 전화번호", key="add_parent_phone_input")
             
-            if st.button("➕ 보호자 추가", use_container_width=True):
+            if st.button("➕ 보호자 추가", use_container_width=True, key="btn_add_parent_manual"):
                 if p_student and p_name and p_phone:
                     new_parent = pd.DataFrame([{
                         'student': p_student,
@@ -2596,14 +2583,16 @@ elif tab == "📞 문의 관리":
                         submitted = st.form_submit_button(
                             "💾 답변 저장",
                             use_container_width=True,
-                            type="primary"
+                            type="primary",
+                            key=f"save_inquiry_resp_{idx}"
                         )
                     
                     with col_delete:
                         deleted = st.form_submit_button(
                             "🗑️ 삭제",
                             use_container_width=True,
-                            type="secondary"
+                            type="secondary",
+                            key=f"delete_inquiry_btn_{idx}"
                         )
                     
                     if submitted:
@@ -2741,7 +2730,7 @@ elif tab == "🔹 출석 체크":
         
         with col_mode2:
             if flask_available:
-                use_mobile = st.checkbox("📱 모바일 카메라로 전환", value=False)
+                use_mobile = st.checkbox("📱 모바일 카메라로 전환", value=False, key="attendance_mobile_switch")
             else:
                 use_mobile = True
                 st.caption("💡 Flask 서버가 없어 자동으로 모바일 모드")
@@ -2788,7 +2777,7 @@ elif tab == "🔹 출석 체크":
             except Exception as e:
                 st.warning(f"통계 정보를 불러올 수 없습니다: {e}")
             
-            if st.button("🔄 출석현황 새로고침", use_container_width=True):
+            if st.button("🔄 출석현황 새로고침", use_container_width=True, key="attendance_refresh_log_btn"):
                 st.rerun()
         
         # 📱 Streamlit Camera (모바일)
@@ -2796,7 +2785,7 @@ elif tab == "🔹 출석 체크":
             st.subheader("📱 모바일 출석 체크 (단일 스캔)")
             st.info("💡 **한 명씩 촬영**: 사진을 찍으면 QR 코드를 인식합니다.")
             
-            picture = st.camera_input("📸 QR 코드를 카메라에 비춰주세요")
+            picture = st.camera_input("📸 QR 코드를 카메라에 비춰주세요", key="attendance_mobile_camera_input")
             
             if picture:
                 try:
@@ -2933,7 +2922,7 @@ elif tab == "🔹 출석 체크":
 elif tab == "📈 리포트":
     st.header("📊 출석 리포트")
     
-    report_tab1, report_tab2, report_tab3 = st.tabs(["📋 출석 조회", "✏️ 출석 수정", "🎓 강좌 이수 현황"])
+    report_tab1, report_tab2, report_tab3 = st.tabs(["📋 출석 조회", "✏️ 출석 수정", "🎓 강좌 이수 현황"], key="admin_auto_2930")
     
     # ========================================
     # 📋 출석 조회 탭
@@ -3082,7 +3071,7 @@ elif tab == "📈 리포트":
             
             filename = f"출석기록_{'_'.join(filename_parts) if filename_parts else '전체'}.csv"
             
-            st.download_button("📥 CSV 다운로드", df_display.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig'), file_name=filename, mime="text/csv", use_container_width=True)
+            st.download_button("📥 CSV 다운로드", df_display.to_csv(index=False, encoding='utf-8-sig').encode('utf-8-sig'), file_name=filename, mime="text/csv", use_container_width=True, key="attendance_log_csv_download")
         else:
             st.warning("⚠️ 선택한 조건에 해당하는 출석 기록이 없습니다.")
     
@@ -3187,7 +3176,7 @@ elif tab == "📈 리포트":
                             col_save, col_delete = st.columns(2)
                             
                             with col_save:
-                                if st.form_submit_button("💾 상태 변경", use_container_width=True):
+                                if st.form_submit_button("💾 상태 변경", use_container_width=True, key=f"btn_update_status_{form_key}"):
                                     try:
                                         df_full = get_attendance_df()
                                         column_mapping = {'name': 'student_name', 'student': 'student_name', 'code': 'qr_code', 'time': 'timestamp'}
@@ -3219,7 +3208,7 @@ elif tab == "📈 리포트":
                                         logger.error(f"Failed to update attendance: {e}")
                             
                             with col_delete:
-                                if st.form_submit_button("🗑️ 기록 삭제", use_container_width=True):
+                                if st.form_submit_button("🗑️ 기록 삭제", use_container_width=True, key=f"btn_delete_record_{form_key}"):
                                     try:
                                         df_full = get_attendance_df()
                                         column_mapping = {'name': 'student_name', 'student': 'student_name', 'code': 'qr_code', 'time': 'timestamp'}
@@ -3269,7 +3258,7 @@ elif tab == "📈 리포트":
         
         missing_students = sorted(list(all_students - recorded_students))
         
-        add_tab1, add_tab2 = st.tabs(["➕ 개별 추가", "⚡ 일괄 결석 처리"])
+        add_tab1, add_tab2 = st.tabs(["➕ 개별 추가", "⚡ 일괄 결석 처리"], key="admin_auto_3266")
         
         with add_tab1:
             if missing_students:
@@ -3280,7 +3269,7 @@ elif tab == "📈 리포트":
                     add_status = st.selectbox("출석 상태", [ATTENDANCE_STATUS_PRESENT, ATTENDANCE_STATUS_LATE, ATTENDANCE_STATUS_ABSENT], key="add_individual_status")
                     add_time = st.time_input("시간", value=datetime.strptime(selected_class['start'], '%H:%M').time(), key="add_individual_time")
                     
-                    if st.form_submit_button("➕ 출석 기록 추가", use_container_width=True):
+                    if st.form_submit_button("➕ 출석 기록 추가", use_container_width=True, key="btn_add_manual_attendance_item"):
                         try:
                             if os.path.exists(ATTENDANCE_LOG_CSV):
                                 df_full = get_attendance_df()
@@ -3354,7 +3343,7 @@ elif tab == "📈 리포트":
                     """)
                 
                 with col_action:
-                    if st.button("⚡ 일괄 결석 처리", type="primary", use_container_width=True):
+                    if st.button("⚡ 일괄 결석 처리", type="primary", use_container_width=True, key="btn_batch_absence_process"):
                         try:
                             if os.path.exists(ATTENDANCE_LOG_CSV):
                                 df_full = get_attendance_df()
@@ -3505,7 +3494,8 @@ elif tab == "📈 리포트":
                     csv,
                     "course_completion_report.csv",
                     "text/csv",
-                    use_container_width=True
+                    use_container_width=True,
+                    key="download_course_completion_csv"
                 )
             else:
                 st.warning("⚠️ 대상 날짜(4/4~4/25)의 출석 데이터가 없습니다.")
@@ -3566,17 +3556,17 @@ elif tab == "🔐 사용자 관리":
         
         new_username = st.text_input("아이디", key="new_user_id")
         new_password = st.text_input("비밀번호", type="password", key="new_user_pw")
-        new_role = st.selectbox("역할", ["admin", "teacher", "parent", "student"])
+        new_role = st.selectbox("역할", ["admin", "teacher", "parent", "student"], key="new_user_role_select")
         new_name = st.text_input("이름", key="new_user_name")
         new_phone = st.text_input("전화번호 (선택)", key="new_user_phone")
         new_email = st.text_input("이메일 (선택)", key="new_user_email")
         
         if new_role in ['parent', 'student']:
-            new_student_id = st.selectbox("연결할 학생", st.session_state.attendees)
+            new_student_id = st.selectbox("연결할 학생", st.session_state.attendees, key="new_user_student_connect")
         else:
             new_student_id = ""
         
-        if st.button("➕ 사용자 생성", use_container_width=True):
+        if st.button("➕ 사용자 생성", use_container_width=True, key="btn_create_user_final"):
             if new_username and new_password and new_name:
                 result = create_user(
                     username=new_username,

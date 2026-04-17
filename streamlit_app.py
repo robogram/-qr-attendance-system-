@@ -221,10 +221,10 @@ def show_login_page():
         """, unsafe_allow_html=True)
         
         with st.form("login_form", clear_on_submit=False):
-            username = st.text_input("아이디", placeholder="아이디를 입력하세요")
-            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요")
+            username = st.text_input("아이디", placeholder="아이디를 입력하세요", key="login_username_input")
+            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요", key="login_password_input")
             
-            submit = st.form_submit_button("🚀  로그인", use_container_width=True)
+            submit = st.form_submit_button("🚀  로그인", use_container_width=True, key="login_submit_btn")
             
             if submit:
                 if not username or not password:
@@ -355,7 +355,7 @@ def show_logout_section():
     🎭 {get_role_display_name(user['role'])}
     """)
     
-    if st.sidebar.button("🚪 로그아웃", use_container_width=True):
+    if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="sidebar_logout_btn"):
         st.session_state.authenticated = False
         st.session_state.user = None
         st.rerun()
@@ -384,7 +384,7 @@ else:
         show_student_app()
     else:
         st.error("알 수 없는 사용자 역할입니다.")
-        if st.button("🚪 로그아웃"):
+        if st.button("🚪 로그아웃", key="error_logout_btn"):
             st.session_state.authenticated = False
             st.session_state.user = None
             st.rerun()

@@ -796,10 +796,10 @@ def main():
         
         with st.form("quick_login"):
             st.markdown("### 👨‍👩‍👧 학부모 로그인")
-            username = st.text_input("아이디")
-            password = st.text_input("비밀번호", type="password")
+            username = st.text_input("아이디", key="parent_auto_799")
+            password = st.text_input("비밀번호", type="password", key="parent_auto_800")
             
-            if st.form_submit_button("로그인", use_container_width=True):
+            if st.form_submit_button("로그인", use_container_width=True, key="parent_auto_802"):
                 if AUTH_AVAILABLE:
                     user = authenticate_user(username, password)
                     
@@ -1116,7 +1116,7 @@ def main():
                 file_name=f"{selected_child}_출석기록_{datetime.now().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
                 use_container_width=True
-            )
+            , key="parent_auto_1113")
     
     # 탭 3: 수업 정보
     elif active_tab == 2:
@@ -1299,7 +1299,7 @@ def main():
                 "표시 옵션",
                 ["전체 보기", "접수/처리중만", "완료만"],
                 horizontal=True
-            )
+            , key="parent_auto_1298")
             
             filtered_inquiries = my_inquiries.copy()
             if filter_option == "접수/처리중만":
@@ -1445,7 +1445,7 @@ def main():
                     if bulk_delete_confirm:
                         st.warning("⚠️ 삭제된 문의는 복구할 수 없습니다!")
                         
-                        if st.button("🗑️ 일괄 삭제 확정", use_container_width=True, type="secondary"):
+                        if st.button("🗑️ 일괄 삭제 확정", use_container_width=True, type="secondary", key="parent_auto_1448"):
                             deleted_count = 0
                             for inq in completed_inquiries:
                                 if delete_inquiry(inq['timestamp'], selected_child):
@@ -1487,16 +1487,16 @@ def main():
                 "문의 유형",
                 ["일반 문의", "결석 사유", "상담 요청", "그룹 변경 요청", "기타"],
                 help="문의 유형을 선택해주세요"
-            )
+            , key="parent_auto_1486")
             
             inquiry_text = st.text_area(
                 "문의 내용", 
                 height=150,
                 placeholder="문의하실 내용을 자세히 작성해주세요...\n\n예시:\n- 결석 사유: 내일 병원 진료로 결석합니다.\n- 상담 요청: 자녀의 학습 진도에 대해 상담하고 싶습니다.",
                 help="구체적으로 작성하실수록 빠른 답변이 가능합니다"
-            )
+            , key="parent_auto_1492")
             
-            submitted = st.form_submit_button("📨 문의 전송", use_container_width=True, type="primary")
+            submitted = st.form_submit_button("📨 문의 전송", use_container_width=True, type="primary", key="parent_auto_1499")
             
             st.caption("💡 문의 전송 후 입력 내용이 자동으로 초기화됩니다.")
             
@@ -1561,7 +1561,7 @@ def main():
                 file_name=f"{selected_child}_수업정보_{datetime.now().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
                 use_container_width=True
-            )
+            , key="parent_auto_1558")
     
     with col3:
         if st.button("🚪 로그아웃", use_container_width=True, key="logout_main"):
