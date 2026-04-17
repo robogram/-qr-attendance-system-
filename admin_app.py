@@ -1935,7 +1935,7 @@ elif tab == "👨‍🏫 선생님 배정":
                 f"📚 정규 담당 ({len(regular_groups)}개)",
                 f"🔄 대타 수업 ({len(substitute_groups)}개)",
                 "➕ 새 배정"
-            ], key="admin_auto_1939")
+            ])
             
             # 📚 정규 담당 수업
             with tab_regular:
