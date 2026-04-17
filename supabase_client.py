@@ -22,6 +22,43 @@ class SupabaseManager:
         response = self.client.table('users').select('*').eq('username', username).execute()
         return response.data[0] if response.data else None
 
+    def get_user_by_id(self, user_id):
+        if not self.client: return None
+        response = self.client.table('users').select('*').eq('id', user_id).execute()
+        return response.data[0] if response.data else None
+        
+    def get_all_users(self):
+        if not self.client: return []
+        response = self.client.table('users').select('*').execute()
+        return response.data
+        
+    def insert_user(self, user_data):
+        if not self.client: return None
+        try:
+            res = self.client.table('users').insert(user_data).execute()
+            return res.data[0] if res.data else None
+        except Exception as e:
+            print(f"Error inserting user: {e}")
+            return None
+            
+    def update_user(self, user_id, user_data):
+        if not self.client: return False
+        try:
+            self.client.table('users').update(user_data).eq('id', user_id).execute()
+            return True
+        except Exception as e:
+            print(f"Error updating user: {e}")
+            return False
+            
+    def delete_user(self, user_id):
+        if not self.client: return False
+        try:
+            self.client.table('users').delete().eq('id', user_id).execute()
+            return True
+        except Exception as e:
+            print(f"Error deleting user: {e}")
+            return False
+
     # --- Students ---
     def get_all_students(self):
         if not self.client: return []
