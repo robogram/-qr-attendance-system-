@@ -100,6 +100,8 @@ def main():
         if "teacher_app" in sys.modules:
             del sys.modules["teacher_app"]
         import teacher_app
+        if hasattr(teacher_app, "main"):
+            teacher_app.main()
 
 if __name__ == "__main__":
     main()
