@@ -1,16 +1,6 @@
 import streamlit as st
 from auth import authenticate_user, get_role_display_name
 import os
-import base64
-
-def get_base64_img(path):
-    try:
-        if os.path.exists(path):
-            with open(path, "rb") as f:
-                return base64.b64encode(f.read()).decode()
-        return ""
-    except:
-        return ""
 
 # 세션 초기화
 if 'authenticated' not in st.session_state:
@@ -21,6 +11,7 @@ if 'user' not in st.session_state:
 def login_screen():
     st.set_page_config(page_title="로보그램 관리자 포털", page_icon="🛡️", layout="centered")
     
+    # 강력한 가독성 확보를 위한 CSS (Troubleshooting Guide 패턴 적용)
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
@@ -29,27 +20,19 @@ def login_screen():
         .main .block-container { padding-top: 2rem; }
         label { color: rgba(255, 255, 255, 0.8) !important; font-weight: 600 !important; font-size: 13px !important; }
         
-        /* 입력창 가독성 최우선 설정 (완전한 흰색 배경 + 검정색 글자) */
-        div[data-testid="stTextInput"] div[data-baseweb="input"] {
+        /* [핵심] 입력창 가독성 강제 설정 (흰색 배경 + 검정색 글자) */
+        input[type="text"], input[type="password"], [data-baseweb="input"] {
             background-color: #ffffff !important;
-            border-radius: 14px !important;
-            border: 2px solid #e1e1e1 !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
-        }
-        div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
-            border: 2px solid #4f46e5 !important;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
-        }
-        input {
             color: #000000 !important;
             -webkit-text-fill-color: #000000 !important;
-            font-size: 16px !important;
-            font-weight: 600 !important;
-            caret-color: #000000 !important;
+            border-radius: 14px !important;
         }
-        input::placeholder { color: rgba(0, 0, 0, 0.3) !important; }
         
+        div[data-testid="stTextInput"] div[data-baseweb="input"] {
+            border: 2px solid #e1e1e1 !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+        }
+
         .stFormSubmitButton > button, .stButton > button {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
             color: white !important; border: none !important; border-radius: 14px !important;
@@ -61,10 +44,10 @@ def login_screen():
     st.markdown("<br>", unsafe_allow_html=True)
     _, col2, _ = st.columns([1, 1.8, 1])
     with col2:
-        mascot_b64 = get_base64_img("static/mascot_small.png")
-        st.markdown(f"""
+        # [핵심] st.image를 사용한 안정적인 마스코트 로딩
+        st.image("static/mascot_small.png", width=140)
+        st.markdown("""
         <div style="text-align:center; margin-bottom:28px;">
-            <img src="data:image/png;base64,{mascot_b64}" style="width:140px; height:auto; display:block; margin:0 auto 12px; filter:drop-shadow(0 8px 24px rgba(0,0,0,0.4));">
             <div style="font-size:30px; font-weight:900; background:linear-gradient(to right,#fff,#a5b4fc);
                         -webkit-background-clip:text; -webkit-text-fill-color:transparent;">관리자 포털</div>
             <div style="font-size:13px; color:rgba(255,255,255,0.5); letter-spacing:2px;">ADMIN & TEACHER ACCESS</div>
@@ -100,7 +83,7 @@ def main():
     now_kst = get_now_kst()
     st.sidebar.title(f"안녕하세요, {user['name']}님")
     st.sidebar.info(f"권한: {get_role_display_name(role)}")
-    st.sidebar.caption(f"v1.1.9+Branding Fix")
+    st.sidebar.caption(f"v1.2.0+Final Fix")
     st.sidebar.markdown(f"🕒 **현재 시간 (KST):**  \n`{now_kst.strftime('%Y-%m-%d %H:%M:%S')}`")
     
     menu_options = []

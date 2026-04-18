@@ -1,16 +1,6 @@
 import streamlit as st
 from auth import authenticate_user, get_role_display_name
 import os
-import base64
-
-def get_base64_img(path):
-    try:
-        if os.path.exists(path):
-            with open(path, "rb") as f:
-                return base64.b64encode(f.read()).decode()
-        return ""
-    except:
-        return ""
 
 # 세션 초기화
 if 'authenticated' not in st.session_state:
@@ -21,6 +11,7 @@ if 'user' not in st.session_state:
 def login_screen():
     st.set_page_config(page_title="로보그램 출석 앱", page_icon="🎒", layout="centered")
     
+    # 강력한 가독성 확보를 위한 CSS (Troubleshooting Guide 패턴 적용)
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
@@ -47,7 +38,15 @@ def login_screen():
             box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
         }
         
-        /* Input Styling */
+        /* [핵심] 입력창 가독성 강제 설정 (흰색 배경 + 검정색 글자) */
+        input[type="text"], input[type="password"], [data-baseweb="input"] {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+            border-radius: 12px !important;
+            height: 48px !important;
+        }
+        
         div[data-testid="stTextInput"] label {
             color: white !important;
             font-weight: 500 !important;
@@ -56,33 +55,10 @@ def login_screen():
         }
         
         div[data-testid="stTextInput"] div[data-baseweb="input"] {
-            background-color: #ffffff !important;
-            border-radius: 12px !important;
             border: 2px solid #e1e1e1 !important;
-            height: 48px !important;
-            transition: all 0.2s ease-in-out !important;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
         }
-        
-        input {
-            color: #000000 !important;
-            -webkit-text-fill-color: #000000 !important;
-            font-size: 16px !important;
-            font-weight: 600 !important;
-            caret-color: #000000 !important;
-        }
 
-        /* Focus state */
-        div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
-            border: 2px solid #4f46e5 !important;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
-        }
-
-        /* Input Placeholder Styling */
-        input::placeholder {
-            color: rgba(30, 41, 59, 0.4) !important;
-        }
-        
         /* Button Styling */
         .stFormSubmitButton > button {
             background: linear-gradient(90deg, #ffffff 0%, #f0f0f0 100%) !important;
@@ -97,41 +73,18 @@ def login_screen():
             transition: all 0.3s ease !important;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
         }
-        
-        .stFormSubmitButton > button:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
-            background: #ffffff !important;
-        }
-
-        .header-container {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .header-title {
-            font-size: 32px;
-            font-weight: 900;
-            color: white;
-            letter-spacing: -1px;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .header-subtitle {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.8);
-            letter-spacing: 0.5px;
-        }
     </style>
     """, unsafe_allow_html=True)
     
-    mascot_b64 = get_base64_img("static/mascot_small.png")
+    # [핵심] st.image를 사용한 안정적인 마스코트 로딩
+    _, col2, _ = st.columns([1, 2, 1])
+    with col2:
+        st.image("static/mascot_small.png", width=140)
+    
     st.markdown(f"""
-    <div class="header-container">
-        <img src="data:image/png;base64,{mascot_b64}" style="width:120px; height:auto; display:block; margin:0 auto 12px; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.3));">
-        <div class="header-title">로보그램 출석 앱</div>
-        <div class="header-subtitle">학생 / 학부모 전용 로그인</div>
+    <div style="text-align:center; margin-top:15px; margin-bottom: 40px;">
+        <div style="font-size: 32px; font-weight: 900; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">로보그램 출석 앱</div>
+        <div style="font-size: 15px; color: rgba(255, 255, 255, 0.8);">학생 / 학부모 전용 로그인</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -171,7 +124,7 @@ def main():
     st.sidebar.title(f"👋 안녕하세요!")
     st.sidebar.subheader(f"{user.get('name', '사용자')}님 환영합니다")
     st.sidebar.info(f"권한: {get_role_display_name(role)}")
-    st.sidebar.caption(f"v1.1.9+Branding Fix")
+    st.sidebar.caption(f"v1.2.0+Final Fix")
 
     if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="user_logout_btn"):
         st.session_state.authenticated = False
