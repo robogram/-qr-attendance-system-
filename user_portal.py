@@ -73,6 +73,10 @@ def main():
     user = st.session_state.user
     role = user.get('role')
     
+    st.sidebar.title(f"안녕하세요, {user.get('name', '사용자')}님")
+    st.sidebar.info(f"권한: {get_role_display_name(role)}")
+    st.sidebar.caption(f"v1.1.5+UI Architecture Fix")
+
     if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="user_logout_btn"):
         st.session_state.authenticated = False
         st.session_state.user = None

@@ -37,318 +37,150 @@ CLASS_GROUPS_CSV = "class_groups.csv"
 STUDENT_GROUPS_CSV = "student_groups.csv"
 ATTENDANCE_NOTES_CSV = "attendance_notes.csv"  # 🆕 메모 저장
 
-# 페이지 설정
-st.set_page_config(
-    page_title="선생님 앱 - 온라인아카데미",
-    page_icon="👩‍🏫",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+def main():
+    # 페이지 설정
+    st.set_page_config(
+        page_title="선생님 앱 - 온라인아카데미",
+        page_icon="👩‍🏫",
+        layout="wide",
+        initial_sidebar_state="collapsed"
+    )
 
-# 세션 초기화
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'user' not in st.session_state:
-    st.session_state.user = None
-if 'flask_connected' not in st.session_state:
-    st.session_state.flask_connected = False
+    # ==================== CSS 스타일 (프리미엄 리치 디자인) ====================
+    st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
-# 로그인 체크
-if not st.session_state.authenticated or st.session_state.user is None:
-    st.error("🔒 로그인이 필요합니다.")
-    st.info("""
-    선생님 앱을 사용하려면 먼저 로그인해주세요.
-    
-    **선생님 계정:**
-    - 아이디: `teacher1`
-    - 비밀번호: `teacher123`
-    """)
-    
-    with st.form("quick_login"):
-        st.markdown("### 👩‍🏫 선생님 로그인")
-        username = st.text_input("아이디", key="teacher_auto_68")
-        password = st.text_input("비밀번호", type="password", key="teacher_auto_69")
-        
-        if st.form_submit_button("로그인", use_container_width=True, key="teacher_auto_71"):
-            from auth import authenticate_user
-            user = authenticate_user(username, password)
-            
-            if user:
-                st.session_state.user = user
-                st.session_state.authenticated = True
-                st.success("로그인 성공!")
-                st.rerun()
-            else:
-                st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
-    st.stop()
-
-user = st.session_state.user
-
-# 선생님/관리자 권한 체크
-if user.get('role') not in ['teacher', 'admin']:
-    st.error("⚠️ 선생님 또는 관리자만 접근 가능한 페이지입니다.")
-    st.info(f"현재 로그인: {user.get('name')} ({user.get('role')})")
-    
-    if st.button("🚪 로그아웃", use_container_width=True, key="teacher_auto_91"):
-        st.session_state.authenticated = False
-        st.session_state.user = None
-        st.rerun()
-    st.stop()
-
-# ⭐ 반응형 CSS - 모바일/PC 완전 최적화
-st.markdown("""
-<style>
-    /* PC 레이아웃 최적화 */
-    .main { 
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-    
-    .block-container {
-        max-width: 1400px;
-        padding-left: 2rem;
-        padding-right: 2rem;
-    }
-    
-    /* 큰 화면 */
-    @media (min-width: 1920px) {
-        .main {
-            max-width: 1600px;
-        }
-    }
-    
-    /* 중간 화면 */
-    @media (max-width: 1400px) {
-        .main {
-            max-width: 100%;
-            padding: 1.5rem;
-        }
-        .block-container {
-            padding-left: 1.5rem;
-            padding-right: 1.5rem;
-        }
-    }
-    
-    /* 태블릿 */
-    @media (max-width: 1024px) {
-        .main {
-            padding: 1rem;
-        }
-        .block-container {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-    }
-    
-    .teacher-header {
-        background: white; color: #333; padding: 30px; border-radius: 15px;
-        text-align: center; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .teacher-title { font-size: 32px; font-weight: bold; color: #4CAF50; margin-bottom: 10px; }
-    .stat-card-large {
-        background: white; border-radius: 20px; padding: 40px; text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin: 15px 0;
-    }
-    .stat-icon-large { font-size: 72px; margin-bottom: 20px; }
-    .stat-number-large { font-size: 64px; font-weight: bold; margin: 20px 0; }
-    .stat-label-large { font-size: 24px; color: #666; font-weight: 600; }
-    .stat-present { color: #4CAF50; }
-    .stat-late { color: #FF9800; }
-    .stat-absent { color: #f44336; }
-    .student-list-item {
-        background: white; border-radius: 12px; padding: 20px; margin: 10px 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex;
-        justify-content: space-between; align-items: center;
-    }
-    .student-name { font-size: 20px; font-weight: bold; color: #333; }
-    .student-status { padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; }
-    .status-present { background: #d4edda; color: #155724; }
-    .status-late { background: #fff3cd; color: #856404; }
-    .status-absent { background: #f8d7da; color: #721c24; }
-    .progress-container {
-        background: #e0e0e0; border-radius: 20px; height: 50px; overflow: hidden; margin: 20px 0;
-    }
-    .progress-bar {
-        height: 100%; background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
-        display: flex; align-items: center; justify-content: center;
-        color: white; font-weight: bold; font-size: 24px; transition: width 1s ease;
-    }
-    .time-display {
-        background: white; border-radius: 15px; padding: 20px; text-align: center;
-        margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .time-value { font-size: 48px; font-weight: bold; color: #4CAF50; }
-    .time-label { font-size: 18px; color: #666; margin-top: 10px; }
-    .group-badge {
-        display: inline-block; padding: 8px 16px; border-radius: 20px;
-        background: #667eea; color: white; font-weight: bold; margin: 5px;
-    }
-    
-    /* 선택 수업 카드 */
-    .schedule-card {
-        background: #d4edda;
-        border-left: 5px solid #28a745;
-        padding: 15px;
-        border-radius: 10px;
-        margin: 15px 0;
-    }
-    
-    /* ⭐ QR 스캔 컨테이너 */
-    .qr-container {
-        width: 100%;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    
-    /* ⭐ 모바일 최적화 */
-    @media (max-width: 768px) {
-        .main {
-            padding: 10px !important;
+        /* 글로벌 배경 및 폰트 */
+        .stApp {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
+            font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
         }
         
-        .block-container {
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+        [data-testid="stAppViewContainer"] {
+            background: transparent !important;
         }
-        
-        /* 헤더 */
+
+        /* 선생님용 헤더 (그린 테마 포인트) */
         .teacher-header {
-            padding: 20px 15px !important;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
         .teacher-title {
-            font-size: 24px !important;
+            font-size: 36px !important;
+            font-weight: 800 !important;
+            color: #10b981 !important;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
         }
-        
-        /* 통계 카드 */
+
+        /* 대형 통계 카드 */
         .stat-card-large {
-            padding: 20px !important;
-            margin: 10px 0 !important;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
-        .stat-icon-large {
-            font-size: 48px !important;
+        .stat-card-large:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(16, 185, 129, 0.4);
         }
         
         .stat-number-large {
-            font-size: 42px !important;
+            font-size: 72px;
+            font-weight: 900;
+            margin: 20px 0;
+            text-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
         }
-        
-        .stat-label-large {
-            font-size: 16px !important;
-        }
-        
-        /* 학생 목록 */
+        .stat-present { color: #10b981; }
+        .stat-late { color: #f59e0b; }
+        .stat-absent { color: #ef4444; }
+
+        /* 학생 리스트 아이템 디자인 */
         .student-list-item {
-            padding: 12px !important;
-            flex-direction: column !important;
-            align-items: flex-start !important;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 12px 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
         }
-        
-        .student-name {
-            font-size: 16px !important;
-            margin-bottom: 8px;
+        .student-list-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.1);
         }
-        
+
+        /* 상태 배지 */
         .student-status {
-            padding: 8px 16px !important;
-            font-size: 14px !important;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        
-        /* 시간 표시 */
-        .time-display {
-            padding: 15px !important;
-        }
-        
-        .time-value {
-            font-size: 36px !important;
-        }
-        
-        .time-label {
-            font-size: 14px !important;
-        }
-        
-        /* 진행률 바 */
+        .status-present { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .status-late { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .status-absent { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* 프로그레스 바 */
         .progress-container {
-            height: 40px !important;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            height: 48px;
+            overflow: hidden;
+            margin: 24px 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        
         .progress-bar {
-            font-size: 18px !important;
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            transition: width 1.5s ease-out;
         }
-        
-        /* 그룹 뱃지 */
-        .group-badge {
-            display: block !important;
-            margin: 8px 0 !important;
-            text-align: center !important;
+
+        /* 시간 표시 장치 */
+        .time-display {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            margin: 20px 0;
         }
-        
-        /* 선택 수업 모바일 최적화 */
-        .schedule-card {
-            padding: 12px !important;
-        }
-        
-        .schedule-card div {
-            font-size: 14px !important;
-            line-height: 1.6 !important;
-        }
-        
-        /* 버튼 */
-        .stButton > button {
-            min-height: 48px !important;
-            font-size: 16px !important;
-            padding: 12px 20px !important;
-        }
-        
-        /* 선택 박스 */
-        .stSelectbox {
-            font-size: 16px !important;
-        }
-        
-        /* ⭐ 탭 모바일 최적화 */
-        .stTabs [data-baseweb="tab"] {
-            font-size: 13px !important;
-            padding: 10px 6px !important;
-            white-space: nowrap !important;
-        }
-        
-        /* Metric */
-        .stMetric {
-            font-size: 14px !important;
-        }
-        
-        /* ⭐ QR 스캔 모바일 */
-        .qr-container {
-            max-width: 100% !important;
-        }
-    }
-    
-    /* 작은 모바일 */
-    @media (max-width: 375px) {
-        .teacher-title {
-            font-size: 20px !important;
-        }
-        
-        .stat-number-large {
-            font-size: 36px !important;
-        }
-        
         .time-value {
-            font-size: 28px !important;
+            font-size: 56px;
+            font-weight: 800;
+            color: #10b981;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -1px;
         }
-        
+
+        /* 탭 및 기타 컴포넌트 */
+        .stTabs [data-baseweb="tab-list"] { gap: 10px; }
         .stTabs [data-baseweb="tab"] {
-            font-size: 11px !important;
-            padding: 8px 4px !important;
-        }
-    }
-    
-    /* 가로 모드 */
-    @media (max-height: 500px) and (orientation: landscape) {
-        .teacher-header {
             padding: 15px !important;
         }
         
@@ -996,8 +828,101 @@ def auto_process_absences():
 
 
 
-# 메인 앱
+# ==================== 메인 앱 ====================
 def main():
+    # 🆕 세션 초기화 (포털 통합 대응)
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    if 'user' not in st.session_state:
+        st.session_state.user = None
+    if 'flask_connected' not in st.session_state:
+        st.session_state.flask_connected = False
+
+    # 1. 페이지 설정 (중복 호출 방지)
+    try:
+        st.set_page_config(
+            page_title="선생님 앱 - 온라인아카데미",
+            page_icon="👩‍🏫",
+            layout="wide",
+            initial_sidebar_state="collapsed"
+        )
+    except:
+        pass
+
+    # 2. 로그인 체크
+    if not st.session_state.authenticated or st.session_state.user is None:
+        st.error("🔒 로그인이 필요합니다.")
+        st.info("선생님 앱을 사용하려면 먼저 로그인해주세요.")
+        with st.form("quick_login"):
+            st.markdown("### 👩‍🏫 선생님 로그인")
+            username = st.text_input("아이디", key="teacher_login_user")
+            password = st.text_input("비밀번호", type="password", key="teacher_login_pass")
+            if st.form_submit_button("로그인", use_container_width=True):
+                from auth import authenticate_user
+                user = authenticate_user(username, password)
+                if user:
+                    st.session_state.user = user
+                    st.session_state.authenticated = True
+                    st.rerun()
+                else:
+                    st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
+        st.stop()
+
+    user = st.session_state.user
+
+    # 3. 선생님/관리자 권한 체크
+    if user.get('role') not in ['teacher', 'admin']:
+        st.error("⚠️ 선생님 또는 관리자만 접근 가능한 페이지입니다.")
+        if st.button("🚪 로그아웃", use_container_width=True):
+            st.session_state.authenticated = False
+            st.session_state.user = None
+            st.rerun()
+        st.stop()
+
+    # 4. ⭐ 반응형 CSS (매 세션 적용)
+    st.markdown("""
+    <style>
+        .main { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); margin: 0 auto; }
+        .teacher-header { background: white; color: #333; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .teacher-title { font-size: 32px; font-weight: bold; color: #4CAF50; margin-bottom: 10px; }
+        .stat-card-large { background: white; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin: 15px 0; }
+        .stat-icon-large { font-size: 72px; margin-bottom: 20px; }
+        .stat-number-large { font-size: 64px; font-weight: bold; margin: 20px 0; }
+        .stat-label-large { font-size: 24px; color: #666; font-weight: 600; }
+        .stat-present { color: #4CAF50; }
+        .stat-late { color: #FF9800; }
+        .stat-absent { color: #f44336; }
+        .student-list-item { background: white; border-radius: 12px; padding: 20px; margin: 10px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .student-name { font-size: 20px; font-weight: bold; color: #333; }
+        .student-status { padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; }
+        .status-present { background: #d4edda; color: #155724; }
+        .status-late { background: #fff3cd; color: #856404; }
+        .status-absent { background: #f8d7da; color: #721c24; }
+        
+        @media (max-width: 768px) {
+            .teacher-title { font-size: 24px !important; }
+            .stat-card-large { padding: 20px !important; }
+            .stat-number-large { font-size: 42px !important; }
+            .student-list-item { flex-direction: column !important; align-items: flex-start !important; }
+            .schedule-card div { font-size: 14px !important; word-break: break-all !important; }
+        }
+        /* 사이드바 스타일링 */
+        [data-testid="stSidebar"] {
+            background-color: rgba(15, 23, 42, 0.95) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        [data-testid="stSidebar"] * {
+            color: #cbd5e1 !important;
+        }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.5); }
+    </style>
+    """, unsafe_allow_html=True)
+
     # 🆕 자동 결석 처리 (조용히 백그라운드에서 실행)
     if 'auto_absence_processed' not in st.session_state:
         try:

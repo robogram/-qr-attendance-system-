@@ -153,11 +153,7 @@ except ImportError:
 
 # 기존 호출 제거
 
-# 세션 초기화
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'user' not in st.session_state:
-    st.session_state.user = None
+
 # ==========================================
 # Config import 추가 (🆕)
 # ==========================================
@@ -170,6 +166,139 @@ from config import (
     ATTENDANCE_STATUS_ABSENT
 )
 
+# ==================== CSS 스타일 (프리미엄 리치 디자인) ====================
+st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        /* 글로벌 배경 및 폰트 */
+        .stApp {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
+            font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
+        }
+        
+        [data-testid="stAppViewContainer"] {
+            background: transparent !important;
+        }
+
+        /* 부모용 헤더 (인디고 테마 포인트) */
+        .parent-header {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .parent-header h1 {
+            font-size: 32px !important;
+            font-weight: 800 !important;
+            color: #a5b4fc !important;
+            margin-bottom: 5px;
+        }
+
+        /* 자녀 정보 카드 */
+        .child-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+        .child-card:hover { transform: translateY(-5px); border-color: rgba(99, 102, 241, 0.3); }
+
+        /* 상태 배지 */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 14px;
+            margin: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .status-present { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-late { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .status-absent { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        /* 통계 위젯 */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .stat-number { font-size: 42px; font-weight: 800; color: #818cf8; }
+        .stat-label { font-size: 14px; color: #94a3b8; }
+
+        /* 캘린더 스타일 */
+        .calendar-day {
+            display: inline-block;
+            width: 38px;
+            height: 38px;
+            line-height: 38px;
+            text-align: center;
+            margin: 2px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .day-present { background: #10b981; color: white; }
+        .day-late { background: #f59e0b; color: white; }
+        .day-absent { background: #ef4444; color: white; }
+        .day-future { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.2); }
+        .day-today { border: 2px solid #6366f1; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
+
+        /* 익스팬더 & 프로그레스 */
+        .stExpander {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            border-radius: 16px !important;
+        }
+        .progress-bar {
+            height: 30px;
+            background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .parent-header h1 { font-size: 24px !important; }
+            .calendar-day { width: 32px; height: 32px; line-height: 32px; font-size: 11px; }
+            .stat-number { font-size: 32px !important; }
+        }
+        
+        /* 사이드바 스타일링 */
+        [data-testid="stSidebar"] {
+            background-color: rgba(15, 23, 42, 0.95) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        [data-testid="stSidebar"] * {
+            color: #cbd5e1 !important;
+        }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+    </style>
+    """, unsafe_allow_html=True)
+
 ATTENDANCE_CSV = 'attendance.csv'
 STUDENTS_CSV = 'students.csv'
 CLASS_GROUPS_CSV = 'class_groups.csv'
@@ -177,213 +306,6 @@ STUDENT_GROUPS_CSV = 'student_groups.csv'
 SCHEDULE_CSV = 'schedule.csv'
 PARENTS_CSV = 'parents.csv'
 INQUIRIES_CSV = 'inquiries.csv'
-
-# CSS 스타일링 (주석 없음)
-st.markdown("""
-<style>
-    .main { 
-        background: #f8f9fa;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-    .block-container {
-        max-width: 1400px;
-        padding-left: 2rem;
-        padding-right: 2rem;
-    }
-    @media (min-width: 1920px) {
-        .main { max-width: 1600px; }
-    }
-    @media (max-width: 1400px) {
-        .main { max-width: 100%; padding: 1.5rem; }
-        .block-container { padding-left: 1.5rem; padding-right: 1.5rem; }
-    }
-    @media (max-width: 1024px) {
-        .main { padding: 1rem; }
-        .block-container { padding-left: 1rem; padding-right: 1rem; }
-    }
-    .parent-header {
-        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        text-align: center;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .child-card {
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        margin: 15px 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        border-left: 5px solid #4CAF50;
-    }
-    .status-badge {
-        display: inline-block;
-        padding: 10px 20px;
-        border-radius: 25px;
-        font-weight: bold;
-        font-size: 18px;
-        margin: 10px 5px;
-    }
-    .status-present {
-        background: #d4edda;
-        color: #155724;
-        border: 2px solid #28a745;
-    }
-    .status-late {
-        background: #fff3cd;
-        color: #856404;
-        border: 2px solid #ffc107;
-    }
-    .status-absent {
-        background: #f8d7da;
-        color: #721c24;
-        border: 2px solid #dc3545;
-    }
-    .stat-card {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin: 10px 0;
-    }
-    .stat-number {
-        font-size: 48px;
-        font-weight: bold;
-        margin: 15px 0;
-    }
-    .stat-label {
-        font-size: 16px;
-        color: #666;
-        margin-bottom: 10px;
-    }
-    .stat-green { color: #4CAF50; }
-    .stat-orange { color: #FF9800; }
-    .stat-red { color: #f44336; }
-    .group-badge {
-        display: inline-block;
-        background: #f0f2f6;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        margin: 0.25rem;
-        font-size: 0.9rem;
-        color: #333;
-        font-weight: 500;
-    }
-    .group-info {
-        background: #667eea;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 20px;
-        display: inline-block;
-        margin: 10px 0;
-        font-weight: bold;
-    }
-    .progress-bar {
-        background: #e0e0e0;
-        border-radius: 10px;
-        height: 30px;
-        overflow: hidden;
-        margin: 15px 0;
-    }
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        transition: width 0.5s ease;
-    }
-    .alert-card {
-        background: #fff3cd;
-        border-left: 5px solid #ffc107;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 15px 0;
-    }
-    .calendar-day {
-        display: inline-block;
-        width: 40px;
-        height: 40px;
-        line-height: 40px;
-        text-align: center;
-        margin: 2px;
-        border-radius: 8px;
-        font-weight: bold;
-    }
-    .day-present { background: #4CAF50; color: white; }
-    .day-late { background: #FF9800; color: white; }
-    .day-absent { background: #f44336; color: white; }
-    .day-future { background: #e0e0e0; color: #999; }
-    .day-today { border: 3px solid #2196F3; }
-    .streamlit-expanderHeader {
-        font-size: 16px;
-        font-weight: 600;
-        padding: 15px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 10px;
-        margin: 10px 0;
-        border: 1px solid #dee2e6;
-        transition: all 0.3s ease;
-    }
-    .streamlit-expanderHeader:hover {
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .streamlit-expanderContent {
-        padding: 20px;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-top: none;
-        border-radius: 0 0 10px 10px;
-    }
-    .success-message {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 15px;
-        margin: 20px 0;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        text-align: center;
-        animation: slideIn 0.5s ease;
-    }
-    @keyframes slideIn {
-        from { transform: translateY(-20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    @media (max-width: 768px) {
-        .main { padding: 10px; }
-        .block-container { padding-left: 1rem; padding-right: 1rem; }
-        .parent-header { padding: 20px 15px; }
-        .parent-header h1 { font-size: 22px; }
-        .parent-header p { font-size: 14px; }
-        .child-card { padding: 15px; margin: 10px 0; }
-        .status-badge { padding: 8px 16px; font-size: 14px; margin: 8px 2px; }
-        .stat-card { padding: 15px; margin: 8px 0; }
-        .stat-number { font-size: 36px; }
-        .stat-label { font-size: 14px; }
-        .group-badge, .group-info { padding: 8px 16px; font-size: 14px; display: block; text-align: center; }
-        .stButton > button { min-height: 48px; font-size: 16px; padding: 12px; }
-        .stTabs [data-baseweb="tab"] { font-size: 13px; padding: 10px 6px; }
-        .progress-bar, .progress-fill { height: 25px; font-size: 14px; }
-        .streamlit-expanderHeader { font-size: 14px; padding: 12px; }
-        .streamlit-expanderContent { padding: 15px; font-size: 14px; }
-        .calendar-day { width: 35px; height: 35px; line-height: 35px; font-size: 14px; margin: 1px; }
-    }
-    @media (max-width: 375px) {
-        .parent-header h1 { font-size: 20px; }
-        .stat-number { font-size: 32px; }
-        .stTabs [data-baseweb="tab"] { font-size: 12px; padding: 8px 4px; }
-        .calendar-day { width: 32px; height: 32px; line-height: 32px; font-size: 12px; }
-    }
-</style>
-""", unsafe_allow_html=True)
 
 # 캐시된 데이터 로딩 함수들
 @st.cache_data(ttl=60)
@@ -785,9 +707,55 @@ def show_monthly_calendar(attendance_df, year, month):
     """, unsafe_allow_html=True)
 
 def main():
-    # 로그인 체크
+    # 🆕 세션 초기화 (포털 통합 대응)
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    if 'user' not in st.session_state:
+        st.session_state.user = None
+
+    # 1. 페이지 설정 (중복 호출 방지)
+    try:
+        st.set_page_config(
+            page_title="학부모 앱 - 온라인아카데미",
+            page_icon="👨‍👩‍👧",
+            layout="wide",
+            initial_sidebar_state="collapsed"
+        )
+    except:
+        pass
+
+    # 2. ⭐ 반응형 CSS (매 세션 적용)
+    st.markdown("""
+    <style>
+        .main { background: #f8f9fa; margin: 0 auto; }
+        .parent-header { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }
+        .child-card { background: white; border-radius: 15px; padding: 25px; margin: 15px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #4CAF50; }
+        .status-badge { display: inline-block; padding: 10px 20px; border-radius: 25px; font-weight: bold; font-size: 18px; margin: 10px 5px; }
+        .status-present { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+        .status-late { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+        .status-absent { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+        .stat-card { background: white; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 10px 0; }
+        .stat-number { font-size: 48px; font-weight: bold; margin: 15px 0; }
+        .stat-green { color: #4CAF50; }
+        .stat-orange { color: #FF9800; }
+        .stat-red { color: #f44336; }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; font-size: 14px; background: #f8f9fa; }
+        .day-present { background: #d4edda; color: #155724; }
+        .day-late { background: #fff3cd; color: #856404; }
+        .day-absent { background: #f8d7da; color: #721c24; }
+        .day-today { border: 2px solid #4CAF50; }
+        @media (max-width: 768px) {
+            .stat-number { font-size: 32px; }
+            .parent-header h1 { font-size: 24px !important; }
+            .child-card { padding: 15px !important; }
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # 3. 로그인 체크
     if not st.session_state.authenticated or st.session_state.user is None:
         st.error("🔒 로그인이 필요합니다.")
+
         st.info("""
         학부모 앱을 사용하려면 먼저 로그인해주세요.
         

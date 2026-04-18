@@ -79,7 +79,7 @@ def main():
     now_kst = get_now_kst()
     st.sidebar.title(f"안녕하세요, {user['name']}님")
     st.sidebar.info(f"권한: {get_role_display_name(role)}")
-    st.sidebar.caption(f"v1.1.2+KST (Data Restored)")
+    st.sidebar.caption(f"v1.1.5+UI Architecture Fix")
     st.sidebar.markdown(f"🕒 **현재 시간 (KST):**  \n`{now_kst.strftime('%Y-%m-%d %H:%M:%S')}`")
     
     menu_options = []
@@ -96,20 +96,25 @@ def main():
         st.rerun()
 
     import sys
-    if choice == "🏠 관리자 홈":
-        # 최신 코드 반영을 위해 모듈 캐시 삭제
-        for mod in ["utils", "admin_app"]:
-            if mod in sys.modules:
-                del sys.modules[mod]
-        import admin_app
-    elif choice == "👩‍🏫 선생님 화면":
-        # 최신 코드 반영을 위해 모듈 캐시 삭제
-        for mod in ["utils", "teacher_app"]:
-            if mod in sys.modules:
-                del sys.modules[mod]
-        import teacher_app
-        if hasattr(teacher_app, "main"):
-            teacher_app.main()
+    try:
+        if choice == "🏠 관리자 홈":
+            # 최신 코드 반영을 위해 모듈 캐시 삭제
+            for mod in ["utils", "admin_app"]:
+                if mod in sys.modules:
+                    del sys.modules[mod]
+            import admin_app
+            if hasattr(admin_app, "main"):
+                admin_app.main()
+        elif choice == "👩‍🏫 선생님 화면":
+            # 최신 코드 반영을 위해 모듈 캐시 삭제
+            for mod in ["utils", "teacher_app"]:
+                if mod in sys.modules:
+                    del sys.modules[mod]
+            import teacher_app
+            if hasattr(teacher_app, "main"):
+                teacher_app.main()
+    except Exception as e:
+        st.error(f"앱 로드 오류: {e}")
 
 if __name__ == "__main__":
     main()

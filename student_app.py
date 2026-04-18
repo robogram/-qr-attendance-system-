@@ -253,103 +253,7 @@ if st.sidebar.button("🔄 데이터 새로고침", use_container_width=True, ke
     st.rerun()
 
 
-# ==================== CSS 스타일 ====================
-st.markdown("""
-<style>
-    .main { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .student-header {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white; padding: 30px; border-radius: 20px; text-align: center;
-        margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-    
-    /* 🔥 모바일 최적화 */
-    @media (max-width: 768px) {
-        .student-header {
-            padding: 20px 15px;
-        }
-        .student-header h1 {
-            font-size: 24px !important;
-            line-height: 1.3;
-            word-wrap: break-word;
-        }
-        .stat-card {
-            padding: 15px !important;
-            margin: 5px 0 !important;
-        }
-        .stat-number {
-            font-size: 28px !important;
-        }
-        .mission-card {
-            padding: 15px !important;
-            margin: 10px 0 !important;
-        }
-        .progress-container {
-            height: 30px !important;
-        }
-        .progress-bar {
-            font-size: 14px !important;
-        }
-    }
-    
-    .stat-card {
-        background: white; border-radius: 20px; padding: 25px; text-align: center;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin: 10px 0;
-        transition: transform 0.2s;
-    }
-    .stat-card:hover {
-        transform: translateY(-2px);
-    }
-    .stat-number { 
-        font-size: 36px; font-weight: bold; color: #667eea; margin: 10px 0;
-        word-wrap: break-word;
-    }
-    .mission-card {
-        background: white; border-left: 5px solid #4CAF50; border-radius: 10px;
-        padding: 20px; margin: 15px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        transition: all 0.2s;
-    }
-    .mission-card:hover {
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .mission-complete { border-left-color: #4CAF50; background: #e8f5e9; }
-    .mission-progress { border-left-color: #FF9800; background: #fff3e0; }
-    .progress-container {
-        background: #e0e0e0; border-radius: 20px; height: 40px; overflow: hidden; margin: 20px 0;
-    }
-    .progress-bar {
-        height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        display: flex; align-items: center; justify-content: center; color: white;
-        font-weight: bold; font-size: 18px; transition: width 1s ease;
-    }
-    .certificate-card {
-        background: white; border-radius: 20px; padding: 30px; text-align: center;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2); margin: 20px 0;
-    }
-    
-    /* 텍스트 줄바꿈 처리 */
-    h1, h2, h3, p {
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-    }
-    
-    /* 로딩 스피너 */
-    .loading-spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-</style>
-""", unsafe_allow_html=True)
+
 
 
 # ==================== 캐싱된 데이터 로드 함수 ====================
@@ -1002,6 +906,164 @@ def generate_certificate(student_name, school_name, course_name, start_date, end
 
 # ==================== 메인 앱 ====================
 def main():
+    # ==================== CSS 스타일 (매 세션 적용) ====================
+    # ==================== CSS 스타일 (프리미엄 리치 디자인) ====================
+    st.markdown("""
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+        /* 글로벌 배경 및 폰트 */
+        .stApp {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
+            font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
+        }
+        
+        [data-testid="stAppViewContainer"] {
+            background: transparent !important;
+        }
+
+        /* 헤더 스타일 */
+        .student-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .student-header h1 {
+            font-size: 42px !important;
+            font-weight: 800 !important;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 글래스모피즘 카드 */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+        
+        .stat-number { 
+            font-size: 48px;
+            font-weight: 800;
+            color: #6366f1;
+            margin: 10px 0;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        /* 미션 카드 스타일 */
+        .mission-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 6px solid #6366f1;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 16px 0;
+            transition: all 0.3s ease;
+        }
+        .mission-complete {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .mission-progress {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        /* 프로그레스 바 커스텀 */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            height: 48px;
+            overflow: hidden;
+            margin: 24px 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* 탭 스타일 최적화 */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 12px;
+            background-color: transparent;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 10px 20px;
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: #6366f1 !important;
+            color: white !important;
+            border-color: #818cf8 !important;
+        }
+
+        /* 텍스트 가독성 */
+        h1, h2, h3 { color: #f1f5f9; letter-spacing: -0.5px; }
+        p, span { color: #cbd5e1; }
+
+        /* 익스팬더 디자인 */
+        .stExpander {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 16px !important;
+        }
+
+        /* 🔥 모바일 최적화 */
+        @media (max-width: 768px) {
+            .student-header { padding: 25px 15px; }
+            .student-header h1 { font-size: 28px !important; }
+            .stat-number { font-size: 32px !important; }
+        }
+        
+        /* 사이드바 스타일링 */
+        [data-testid="stSidebar"] {
+            background-color: rgba(15, 23, 42, 0.95) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        [data-testid="stSidebar"] * {
+            color: #cbd5e1 !important;
+        }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+    """, unsafe_allow_html=True)
+
     # 🆕 세션 동기화 (모듈 캐싱 방지)
     user = st.session_state.user
     if not user:
