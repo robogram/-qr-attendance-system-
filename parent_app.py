@@ -62,17 +62,18 @@ def get_schedule_df():
         
         data = []
         for s in schedules:
-            # 🆕 타임존 고려 (UTC -> KST 변환)
+            # 🆕 KST 표준화 유틸리티 사용 (UTC -> KST 변환은 내부에서 처리)
+            # s['start_time']과 s['end_time']은 ISO 포맷임
             st_dt = pd.to_datetime(s['start_time'])
             en_dt = pd.to_datetime(s['end_time'])
             
-            # 타임존 정보가 없으면 UTC로 가정하고 KST(+09:00)로 변환
-            if st_dt.tzinfo is None:
-                st_dt = st_dt.replace(tzinfo=pd.Timestamp.now(tz='UTC').tzinfo)
-                en_dt = en_dt.replace(tzinfo=pd.Timestamp.now(tz='UTC').tzinfo)
-            
-            st_dt = st_dt.astimezone(pd.Timestamp.now(tz='Asia/Seoul').tzinfo)
-            en_dt = en_dt.astimezone(pd.Timestamp.now(tz='Asia/Seoul').tzinfo)
+            # UTC로 명시되어 있으면 KST로 변환, 없으면 KST로 간주
+            if st_dt.tzinfo is not None:
+                st_dt = st_dt.tz_convert('Asia/Seoul')
+                en_dt = en_dt.tz_convert('Asia/Seoul')
+            else:
+                st_dt = st_dt.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=9)))
+                en_dt = en_dt.replace(tzinfo=timezone.utc).astimezone(timezone(timedelta(hours=9)))
             
             data.append({
                 'date': st_dt.strftime('%Y-%m-%d'),

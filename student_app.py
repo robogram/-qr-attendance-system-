@@ -252,17 +252,6 @@ if st.sidebar.button("🔄 데이터 새로고침", use_container_width=True, ke
     st.success("데이터를 새로 불러옵니다.")
     st.rerun()
 
-user = st.session_state.user
-
-# 학생 권한 체크
-if user.get('role') != 'student':
-    st.error("⚠️ 학생만 접근 가능한 페이지입니다.")
-    if st.button("🚪 로그아웃", use_container_width=True, key="student_auto_260"):
-        st.session_state.authenticated = False
-        st.session_state.user = None
-        st.rerun()
-    st.stop()
-
 
 # ==================== CSS 스타일 ====================
 st.markdown("""
@@ -1013,8 +1002,24 @@ def generate_certificate(student_name, school_name, course_name, start_date, end
 
 # ==================== 메인 앱 ====================
 def main():
+    # 🆕 세션 동기화 (모듈 캐싱 방지)
+    user = st.session_state.user
+    if not user:
+        st.error("🔒 로그인이 필요합니다.")
+        st.stop()
+        
+    # 학생 권한 체크
+    if user.get('role') != 'student':
+        st.error("⚠️ 학생만 접근 가능한 페이지입니다.")
+        if st.button("🚪 로그아웃", use_container_width=True, key="student_logout_role_fail"):
+            st.session_state.authenticated = False
+            st.session_state.user = None
+            st.rerun()
+        st.stop()
+
     # 🆕 로그인 사용자 이름 정규화
     student_name = normalize_text(user.get('name', '학생'))
+    now_kst = get_now_kst()
     
     # ========== 0. 시스템 진단 (디버그 모드) ==========
     # 진단 상태 초기화
