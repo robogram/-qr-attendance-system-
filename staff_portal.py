@@ -18,17 +18,25 @@ def login_screen():
         .stApp { background: linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
         .main .block-container { padding-top: 2rem; }
         label { color: rgba(255, 255, 255, 0.8) !important; font-weight: 600 !important; font-size: 13px !important; }
-        /* 입력창 가독성 최우선 설정 (흰색 배경 + 검은색 글자) */
+        /* 입력창 가독성 최우선 설정 (흰색 배경 + 짙은 남색 글자) */
         div[data-testid="stTextInput"] div[data-baseweb="input"] {
-            background-color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
             border-radius: 14px !important;
-            border: 2px solid #e1e1e1 !important;
+            border: 2px solid rgba(255, 255, 255, 0.5) !important;
+            transition: all 0.2s ease !important;
+        }
+        div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
+            background-color: #ffffff !important;
+            border: 2px solid #4f46e5 !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
         }
         input {
-            color: #000000 !important;
-            -webkit-text-fill-color: #000000 !important;
+            color: #1e293b !important;
+            -webkit-text-fill-color: #1e293b !important;
+            font-size: 16px !important;
+            font-weight: 500 !important;
         }
-        input::placeholder { color: #888888 !important; }
+        input::placeholder { color: rgba(30, 41, 59, 0.4) !important; }
         .stFormSubmitButton > button, .stButton > button {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
             color: white !important; border: none !important; border-radius: 14px !important;
