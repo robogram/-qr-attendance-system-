@@ -1051,7 +1051,8 @@ if tab == "📊 대시보드":
     
     df_groups = load_class_groups()
     if not df_groups.empty:
-        st.info(f"🎓 **등록된 수업 그룹:** {len(df_groups)}개")
+        total_sessions = len(df_schedule)
+        st.info(f"🎓 **전체 등록된 수업 세션:** {total_sessions}개 (총 {len(df_groups)}개 그룹)")
     
     st.markdown("###")
     

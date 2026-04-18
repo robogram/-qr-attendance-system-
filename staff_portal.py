@@ -75,9 +75,12 @@ def main():
     user = st.session_state.user
     role = user['role']
     
+    from utils import get_now_kst
+    now_kst = get_now_kst()
     st.sidebar.title(f"안녕하세요, {user['name']}님")
     st.sidebar.info(f"권한: {get_role_display_name(role)}")
-    st.sidebar.caption("v1.1.0+KST (Time Standardized)")
+    st.sidebar.caption(f"v1.1.2+KST (Data Restored)")
+    st.sidebar.markdown(f"🕒 **현재 시간 (KST):**  \n`{now_kst.strftime('%Y-%m-%d %H:%M:%S')}`")
     
     menu_options = []
     if role == 'admin':
