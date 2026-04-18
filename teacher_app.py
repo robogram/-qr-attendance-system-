@@ -46,15 +46,15 @@ def main():
         initial_sidebar_state="collapsed"
     )
 
-    # ==================== CSS 스타일 (프리미엄 리치 디자인) ====================
+    # ==================== CSS 스타일 (화사한 프리미엄 그린 디자인) ====================
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
         /* 글로벌 배경 및 폰트 */
         .stApp {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #f8fafc;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: #1a3a1e;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
         }
         
@@ -62,91 +62,94 @@ def main():
             background: transparent !important;
         }
 
-        /* 선생님용 헤더 (그린 테마 포인트) */
+        /* 선생님용 헤더 (화사한 화이트 글래스) */
         .teacher-header {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 30px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 35px;
+            border-radius: 24px;
             text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
         
         .teacher-title {
-            font-size: 36px !important;
-            font-weight: 800 !important;
-            color: #10b981 !important;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            font-size: 38px !important;
+            font-weight: 900 !important;
+            color: #ffffff !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.15);
         }
 
-        /* 대형 통계 카드 */
+        /* 대형 통계 카드 (브라이트 글래스) */
         .stat-card-large {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 28px;
+            padding: 45px;
             text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #1e293b !important;
         }
         .stat-card-large:hover {
-            transform: translateY(-8px);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(16, 185, 129, 0.4);
+            transform: translateY(-10px);
+            background: #ffffff;
+            box-shadow: 0 25px 55px rgba(0,0,0,0.15);
         }
         
         .stat-number-large {
-            font-size: 72px;
+            font-size: 82px;
             font-weight: 900;
-            margin: 20px 0;
-            text-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+            margin: 25px 0;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .stat-present { color: #10b981; }
-        .stat-late { color: #f59e0b; }
-        .stat-absent { color: #ef4444; }
+        .stat-present { color: #10b981 !important; }
+        .stat-late { color: #f59e0b !important; }
+        .stat-absent { color: #ef4444 !important; }
 
         /* 학생 리스트 아이템 디자인 */
         .student-list-item {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            padding: 20px;
-            margin: 12px 0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 18px;
+            padding: 24px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.6);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
         }
         .student-list-item:hover {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+            background: #ffffff;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
         }
 
         /* 상태 배지 */
         .student-status {
-            padding: 8px 18px;
+            padding: 10px 22px;
             border-radius: 50px;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 16px;
-            text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .status-present { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .status-late { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .status-absent { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .status-present { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-late { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .status-absent { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
         /* 프로그레스 바 */
         .progress-container {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f1f5f9;
             border-radius: 50px;
-            height: 48px;
+            height: 42px;
             overflow: hidden;
             margin: 24px 0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
         }
         .progress-bar {
             height: 100%;
@@ -156,26 +159,50 @@ def main():
             justify-content: center;
             color: white;
             font-weight: 800;
-            font-size: 20px;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            font-size: 18px;
             transition: width 1.5s ease-out;
         }
 
         /* 시간 표시 장치 */
         .time-display {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            padding: 30px;
             text-align: center;
-            margin: 20px 0;
+            margin: 25px 0;
         }
         .time-value {
-            font-size: 56px;
-            font-weight: 800;
-            color: #10b981;
+            font-size: 64px;
+            font-weight: 900;
+            color: #ffffff;
             font-family: 'Inter', sans-serif;
-            letter-spacing: -1px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 사이드바 스타일링 */
+        [data-testid="stSidebar"] {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-right: 1px solid #e2e8f0;
+        }
+        [data-testid="stSidebar"] * {
+            color: #1a3a1e !important;
+        }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+
+        @media (max-width: 768px) {
+            .teacher-title { font-size: 28px !important; }
+            .stat-number-large { font-size: 56px !important; }
+            .time-value { font-size: 42px !important; }
+            .student-list-item { flex-direction: column !important; align-items: flex-start !important; }
+            .schedule-card div { font-size: 14px !important; }
+        }
+    </style>
+          letter-spacing: -1px;
         }
 
         /* 탭 및 기타 컴포넌트 */

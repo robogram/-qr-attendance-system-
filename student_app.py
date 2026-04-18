@@ -246,6 +246,25 @@ if not st.session_state.authenticated or st.session_state.user is None:
                 st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
     st.stop()
 
+user = st.session_state.get('user')
+
+# 세션 복구 및 안전장치
+if user is None:
+    st.warning("⚠️ 세션이 만료되었습니다. 다시 로그인해 주세요.")
+    st.session_state.authenticated = False
+    st.rerun()
+    st.stop()
+
+# 역할 확인
+if user.get('role') != 'student':
+    st.error("⚠️ 학생만 접근 가능한 페이지입니다.")
+    st.info(f"현재 로그인: {user.get('name', '알 수 없음')} ({user.get('role', '권한 없음')})")
+    if st.button("🚪 로그아웃", use_container_width=True, key="logout_role_check_student"):
+        st.session_state.authenticated = False
+        st.session_state.user = None
+        st.rerun()
+    st.stop()
+
 # --- 🆕 사이드바 새로고침 버튼 ---
 if st.sidebar.button("🔄 데이터 새로고침", use_container_width=True, key="student_auto_250"):
     st.cache_data.clear()
@@ -914,8 +933,8 @@ def main():
 
         /* 글로벌 배경 및 폰트 */
         .stApp {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #f8fafc;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #1a202c;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
         }
         
@@ -923,77 +942,80 @@ def main():
             background: transparent !important;
         }
 
-        /* 헤더 스타일 */
+        /* 헤더 스타일 (화사한 화이트 글래스) */
         .student-header {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             padding: 40px;
             border-radius: 24px;
             text-align: center;
             margin-bottom: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         
         .student-header h1 {
             font-size: 42px !important;
-            font-weight: 800 !important;
-            background: linear-gradient(to right, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-weight: 900 !important;
+            color: #ffffff !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
-        /* 글래스모피즘 카드 */
+        /* 브라이트 글래스모피즘 카드 */
         .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 24px;
             padding: 30px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #1e293b !important;
         }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(99, 102, 241, 0.5);
+        .stat-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+            background: rgba(255, 255, 255, 0.95);
         }
         
-        .stat-number { 
-            font-size: 48px;
-            font-weight: 800;
-            color: #6366f1;
+        .stat-number {
+            font-size: 52px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin: 10px 0;
-            text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
         }
 
-        /* 미션 카드 스타일 */
-        .mission-card {
-            background: rgba(255, 255, 255, 0.03);
-            border-left: 6px solid #6366f1;
-            border-radius: 16px;
-            padding: 24px;
-            margin: 16px 0;
-            transition: all 0.3s ease;
+        /* 미션 및 증명서 카드 */
+        .certificate-card, .mission-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            color: #1e293b;
         }
+        
         .mission-complete {
-            border-left-color: #10b981;
-            background: rgba(16, 185, 129, 0.05);
+            border-left: 8px solid #10b981;
+            background: linear-gradient(to right, #f0fdf4, #ffffff);
         }
         .mission-progress {
-            border-left-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.05);
+            border-left: 8px solid #f59e0b;
+            background: linear-gradient(to right, #fffbeb, #ffffff);
         }
 
         /* 프로그레스 바 커스텀 */
         .progress-container {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f1f5f9;
             border-radius: 50px;
-            height: 48px;
+            height: 42px;
             overflow: hidden;
             margin: 24px 0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
         }
         .progress-bar {
             height: 100%;
@@ -1003,62 +1025,65 @@ def main():
             justify-content: center;
             color: white;
             font-weight: 800;
-            font-size: 20px;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
-            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 18px;
+            transition: width 1.5s ease-out;
         }
 
         /* 탭 스타일 최적화 */
         .stTabs [data-baseweb="tab-list"] {
             gap: 12px;
-            background-color: transparent;
+            background-color: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 50px;
         }
         .stTabs [data-baseweb="tab"] {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 10px 20px;
-            color: rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s;
+            background-color: transparent;
+            border-radius: 50px;
+            padding: 10px 25px;
+            color: #ffffff;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s;
         }
         .stTabs [aria-selected="true"] {
-            background-color: #6366f1 !important;
-            color: white !important;
-            border-color: #818cf8 !important;
+            background-color: #ffffff !important;
+            color: #6366f1 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         /* 텍스트 가독성 */
-        h1, h2, h3 { color: #f1f5f9; letter-spacing: -0.5px; }
-        p, span { color: #cbd5e1; }
+        h1, h2, h3 { color: #2d3748; letter-spacing: -0.5px; }
+        p, span { color: #4a5568; }
+        label { color: #ffffff !important; font-weight: 600 !important; }
 
         /* 익스팬더 디자인 */
         .stExpander {
-            background: rgba(255, 255, 255, 0.03) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: rgba(255, 255, 255, 0.7) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
             border-radius: 16px !important;
+            color: #1e293b !important;
         }
 
         /* 🔥 모바일 최적화 */
         @media (max-width: 768px) {
-            .student-header { padding: 25px 15px; }
-            .student-header h1 { font-size: 28px !important; }
-            .stat-number { font-size: 32px !important; }
+            .student-header { padding: 30px 20px; }
+            .student-header h1 { font-size: 32px !important; }
+            .stat-number { font-size: 42px !important; }
         }
         
-        /* 사이드바 스타일링 */
+        /* 사이드바 스타일링 (화사한 글래스) */
         [data-testid="stSidebar"] {
-            background-color: rgba(15, 23, 42, 0.95) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-right: 1px solid #e2e8f0;
         }
         [data-testid="stSidebar"] * {
-            color: #cbd5e1 !important;
+            color: #1e293b !important;
         }
         
         /* 스크롤바 커스텀 */
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>

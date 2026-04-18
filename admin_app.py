@@ -209,15 +209,15 @@ def main():
             st.rerun()
         st.stop()
     
-    # ==================== CSS 스타일 (프리미엄 리치 디자인) ====================
+    # ==================== CSS 스타일 (화사한 프리미엄 어드민 디자인) ====================
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
         /* 글로벌 배경 및 폰트 */
         .stApp {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #f8fafc;
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: #1e293b;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
         }
         
@@ -225,104 +225,106 @@ def main():
             background: transparent !important;
         }
 
-        /* 관리자용 헤더 (슬레이트/블루 테마 포인트) */
+        /* 관리자용 헤더 (화사한 화이트 글래스) */
         .admin-header {
-            background: linear-gradient(135deg, rgba(30, 64, 175, 0.2) 0%, rgba(30, 58, 138, 0.2) 100%);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             text-align: center;
         }
         
         .admin-header h1 {
-            font-size: 28px !important;
-            font-weight: 800 !important;
-            color: #60a5fa !important;
+            font-size: 32px !important;
+            font-weight: 900 !important;
+            color: #ffffff !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* 통계 카드 */
+        /* 통계 카드 (브라이트 글래스) */
         .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            padding: 28px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #1e293b !important;
         }
         .stat-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(96, 165, 250, 0.4);
+            transform: translateY(-6px);
+            background: #ffffff;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
         }
         
         .stat-number {
-            font-size: 42px;
-            font-weight: 800;
-            color: #3b82f6;
-            margin: 10px 0;
-            text-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 12px 0;
         }
 
         /* 그룹 및 유저 아이템 */
         .group-card {
-            background: rgba(255, 255, 255, 0.03);
-            border-left: 5px solid #3b82f6;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 12px 0;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.85);
+            border-left: 8px solid #3b82f6;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
+            color: #1e293b;
         }
-        .group-card:hover { background: rgba(255, 255, 255, 0.06); }
+        .group-card:hover { transform: scale(1.01); background: #ffffff; }
 
         /* 권한 배지 */
         .user-badge {
             display: inline-block;
-            padding: 4px 12px;
+            padding: 6px 14px;
             border-radius: 50px;
-            font-size: 11px;
-            font-weight: 700;
-            margin: 2px 4px;
+            font-size: 12px;
+            font-weight: 800;
+            margin: 3px 6px;
             text-transform: uppercase;
         }
-        .badge-admin { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-        .badge-teacher { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-student { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-admin { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .badge-teacher { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .badge-student { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
 
         /* 테이블 및 입력란 */
         .stDataFrame, div[data-testid="stTable"] {
-            background: rgba(255, 255, 255, 0.02) !important;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8) !important;
+            border-radius: 16px;
             overflow: hidden;
-        }
-        
-        /* 모바일 최적화 */
-        @media (max-width: 768px) {
-            .admin-header h1 { font-size: 20px !important; }
-            .stat-number { font-size: 32px !important; }
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
         
         /* 사이드바 스타일링 */
         [data-testid="stSidebar"] {
-            background-color: rgba(15, 23, 42, 0.95) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-right: 1px solid #e2e8f0;
         }
         [data-testid="stSidebar"] * {
-            color: #cbd5e1 !important;
+            color: #1e293b !important;
         }
         
         /* 스크롤바 커스텀 */
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-        ::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.3); border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.5); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .admin-header h1 { font-size: 24px !important; }
+            .stat-number { font-size: 36px !important; }
+        }
     </style>
     """, unsafe_allow_html=True)
     

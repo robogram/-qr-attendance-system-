@@ -4,6 +4,7 @@
 import pandas as pd
 import hashlib
 import os
+import unicodedata
 from datetime import datetime, timedelta
 from supabase_client import supabase_mgr
 
@@ -62,6 +63,11 @@ DEFAULT_ACCOUNTS = [
     {'user_id': 4, 'username': 'student1', 'password': 'student123', 'role': 'student', 'name': '학생', 'phone': '010-3333-3333', 'student_id': 'student1', 'email': ''},
 ]
 
+def normalize_text(text):
+    """한글 정규화 (NFC) 및 공백 제거"""
+    if text is None: return ""
+    return unicodedata.normalize('NFC', str(text)).strip()
+
 def load_users():
     """사용자 목록 로드 (Supabase 기반)"""
     users_data = supabase_mgr.get_all_users()
@@ -73,6 +79,11 @@ def load_users():
     # 기존 코드 호환성을 위해 Supabase의 'id'를 'user_id'로 복제
     if 'id' in df.columns:
         df['user_id'] = df['id']
+    
+    # 이름 정규화 적용
+    if 'name' in df.columns:
+        df['name'] = df['name'].apply(normalize_text)
+        
     return df
 
 
@@ -83,6 +94,8 @@ def authenticate_user(username, password):
     user = supabase_mgr.get_user_by_username(username)
     if user and user.get('password') == password:
         user['user_id'] = user.get('id')  # 호환성
+        if 'name' in user:
+            user['name'] = normalize_text(user['name'])
         return user
         
     # Supabase에 없으면 기본 계정에서 찾기 (fallback)
@@ -102,6 +115,8 @@ def get_user_by_id(user_id):
     user = supabase_mgr.get_user_by_id(user_id)
     if user:
         user['user_id'] = user.get('id')
+        if 'name' in user:
+            user['name'] = normalize_text(user['name'])
     return user
 
 
@@ -110,6 +125,8 @@ def get_user_by_username(username):
     user = supabase_mgr.get_user_by_username(username)
     if user:
         user['user_id'] = user.get('id')
+        if 'name' in user:
+            user['name'] = normalize_text(user['name'])
     return user
 
 

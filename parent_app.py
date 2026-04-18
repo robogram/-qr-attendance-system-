@@ -151,9 +151,6 @@ except ImportError:
     AUTH_AVAILABLE = False
     logger.warning("auth 모듈을 찾을 수 없습니다. 테스트 모드로 실행됩니다.")
 
-# 기존 호출 제거
-
-
 # ==========================================
 # Config import 추가 (🆕)
 # ==========================================
@@ -166,15 +163,15 @@ from config import (
     ATTENDANCE_STATUS_ABSENT
 )
 
-# ==================== CSS 스타일 (프리미엄 리치 디자인) ====================
+# ==================== CSS 스타일 (화사한 프리미엄 바이올렛 디자인) ====================
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
         /* 글로벌 배경 및 폰트 */
         .stApp {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: #f8fafc;
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            color: #2d1a3a;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
         }
         
@@ -182,109 +179,135 @@ st.markdown("""
             background: transparent !important;
         }
 
-        /* 부모용 헤더 (인디고 테마 포인트) */
+        /* 부모용 헤더 (화사한 화이트 글래스) */
         .parent-header {
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 35px;
+            border-radius: 24px;
             text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 35px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
         }
         
         .parent-header h1 {
-            font-size: 32px !important;
-            font-weight: 800 !important;
-            color: #a5b4fc !important;
-            margin-bottom: 5px;
+            font-size: 34px !important;
+            font-weight: 900 !important;
+            color: #ffffff !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* 자녀 정보 카드 */
+        /* 자녀 정보 카드 (브라이트 글래스) */
         .child-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 28px;
+            padding: 35px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.08);
             margin-bottom: 25px;
-            transition: transform 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #1e293b !important;
         }
-        .child-card:hover { transform: translateY(-5px); border-color: rgba(99, 102, 241, 0.3); }
+        .child-card:hover { 
+            transform: translateY(-8px); 
+            background: #ffffff;
+            box-shadow: 0 25px 55px rgba(0,0,0,0.12);
+        }
 
         /* 상태 배지 */
         .status-badge {
             display: inline-block;
-            padding: 6px 16px;
+            padding: 8px 20px;
             border-radius: 50px;
-            font-weight: 700;
-            font-size: 14px;
+            font-weight: 800;
+            font-size: 15px;
             margin: 5px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .status-present { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .status-late { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .status-absent { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status-present { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-late { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .status-absent { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
         /* 통계 위젯 */
         .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 16px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 24px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
         }
-        .stat-number { font-size: 42px; font-weight: 800; color: #818cf8; }
-        .stat-label { font-size: 14px; color: #94a3b8; }
+        .stat-number { 
+            font-size: 48px; 
+            font-weight: 900; 
+            background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 15px; color: #64748b; font-weight: 600; }
 
         /* 캘린더 스타일 */
         .calendar-day {
             display: inline-block;
-            width: 38px;
-            height: 38px;
-            line-height: 38px;
+            width: 42px;
+            height: 42px;
+            line-height: 42px;
             text-align: center;
-            margin: 2px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 13px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin: 3px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         .day-present { background: #10b981; color: white; }
         .day-late { background: #f59e0b; color: white; }
         .day-absent { background: #ef4444; color: white; }
-        .day-future { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.2); }
-        .day-today { border: 2px solid #6366f1; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
+        .day-future { background: #f1f5f9; color: #cbd5e1; }
+        .day-today { border: 3px solid #7c3aed; box-shadow: 0 0 15px rgba(124, 58, 237, 0.3); }
 
         /* 익스팬더 & 프로그레스 */
         .stExpander {
-            background: rgba(255, 255, 255, 0.02) !important;
-            border: 1px solid rgba(255, 255, 255, 0.05) !important;
-            border-radius: 16px !important;
+            background: rgba(255, 255, 255, 0.7) !important;
+            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+            border-radius: 20px !important;
+            color: #1e293b !important;
         }
         .progress-bar {
-            height: 30px;
-            background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
-            border-radius: 15px;
+            height: 35px;
+            background: linear-gradient(90deg, #7c3aed 0%, #4f46e5 100%);
+            border-radius: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: 700;
+            font-weight: 800;
+            font-size: 16px;
+            box-shadow: 0 5px 15px rgba(124, 58, 237, 0.2);
         }
+
+        /* 사이드바 스타일링 */
+        [data-testid="stSidebar"] {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-right: 1px solid #e2e8f0;
+        }
+        [data-testid="stSidebar"] * {
+            color: #2d1a3a !important;
+        }
+        
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
 
         /* 모바일 최적화 */
         @media (max-width: 768px) {
-            .parent-header h1 { font-size: 24px !important; }
-            .calendar-day { width: 32px; height: 32px; line-height: 32px; font-size: 11px; }
-            .stat-number { font-size: 32px !important; }
+            .parent-header h1 { font-size: 26px !important; }
+            .calendar-day { width: 34px; height: 34px; line-height: 34px; font-size: 12px; }
+            .stat-number { font-size: 36px !important; }
         }
-        
-        /* 사이드바 스타일링 */
-        [data-testid="stSidebar"] {
-            background-color: rgba(15, 23, 42, 0.95) !important;
+    </style>
+, 42, 0.95) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
         [data-testid="stSidebar"] * {
@@ -790,12 +813,19 @@ def main():
                         st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
         st.stop()
     
-    user = st.session_state.user
+    user = st.session_state.get('user')
+    
+    # 세션 복구 및 안전장치
+    if user is None:
+        st.warning("⚠️ 세션이 만료되었습니다. 다시 로그인해 주세요.")
+        st.session_state.authenticated = False
+        st.rerun()
+        st.stop()
     
     # 역할 확인
     if user.get('role') != 'parent':
         st.error("⚠️ 학부모만 접근 가능한 페이지입니다.")
-        st.info(f"현재 로그인: {user.get('name')} ({user.get('role')})")
+        st.info(f"현재 로그인: {user.get('name', '알 수 없음')} ({user.get('role', '권한 없음')})")
         
         if st.button("🚪 로그아웃", use_container_width=True, key="logout_role_check"):
             st.session_state.authenticated = False

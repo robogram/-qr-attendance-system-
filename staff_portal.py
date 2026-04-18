@@ -79,7 +79,7 @@ def main():
     now_kst = get_now_kst()
     st.sidebar.title(f"안녕하세요, {user['name']}님")
     st.sidebar.info(f"권한: {get_role_display_name(role)}")
-    st.sidebar.caption(f"v1.1.5+UI Architecture Fix")
+    st.sidebar.caption(f"v1.1.7+Session Fix")
     st.sidebar.markdown(f"🕒 **현재 시간 (KST):**  \n`{now_kst.strftime('%Y-%m-%d %H:%M:%S')}`")
     
     menu_options = []
