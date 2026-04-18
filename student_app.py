@@ -931,161 +931,169 @@ def main():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
-        /* 글로벌 배경 및 폰트 */
+        /* 글로벌 배경 및 폰트 - 화이트 & 브라이트 테마 */
         .stApp {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #1a202c;
+            background-color: #fcfcfc;
+            color: #0f172a;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
         }
         
-        [data-testid="stAppViewContainer"] {
-            background: transparent !important;
+        [data-testid="stAppViewContainer"] { background: transparent !important; }
+
+        /* 이모티콘 시인성 강화 */
+        .emoji-glow {
+            filter: drop-shadow(0 0 5px rgba(244, 114, 182, 0.3));
+            display: inline-block;
         }
 
-        /* 헤더 스타일 (화사한 화이트 글래스) */
+        /* 프리미엄 핑크-레드 헤더 */
         .student-header {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 40px;
-            border-radius: 24px;
+            background: linear-gradient(135deg, #f472b6 0%, #ef4444 100%);
+            padding: 45px;
+            border-radius: 32px;
             text-align: center;
-            margin-bottom: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 35px;
+            box-shadow: 0 20px 40px rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .student-header h1 {
-            font-size: 42px !important;
+            font-size: 38px !important;
             font-weight: 900 !important;
             color: #ffffff !important;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            letter-spacing: -1.5px !important;
+            margin-bottom: 5px !important;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* 브라이트 글래스모피즘 카드 */
-        .stat-card {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 24px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: #1e293b !important;
+        /* 레벨 배지 디자인 (화이트 배경에 어울리는 골드) */
+        .level-badge {
+            background: #ffffff;
+            color: #ef4444;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: 900;
+            display: inline-block;
+            margin-top: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 2px solid #ef4444;
         }
-        .stat-card:hover { 
-            transform: translateY(-8px); 
-            box-shadow: 0 20px 45px rgba(0,0,0,0.15);
-            background: rgba(255, 255, 255, 0.95);
+
+        /* 화이트 테마 카드 */
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 28px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #f472b6;
+            box-shadow: 0 15px 35px rgba(244, 114, 182, 0.15);
         }
         
         .stat-number {
-            font-size: 52px;
+            font-size: 48px;
             font-weight: 900;
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 10px 0;
+            color: #ef4444;
+            margin: 5px 0;
+        }
+        .stat-label {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 15px;
+            text-transform: uppercase;
         }
 
-        /* 미션 및 증명서 카드 */
-        .certificate-card, .mission-card {
-            background: rgba(255, 255, 255, 0.9);
+        /* 미션 카드 (브라이트 모드) */
+        .mission-card {
+            background: #ffffff;
             border-radius: 24px;
-            padding: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
             color: #1e293b;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
         }
-        
-        .mission-complete {
-            border-left: 8px solid #10b981;
-            background: linear-gradient(to right, #f0fdf4, #ffffff);
-        }
-        .mission-progress {
-            border-left: 8px solid #f59e0b;
-            background: linear-gradient(to right, #fffbeb, #ffffff);
+        .mission-complete { border-left: 8px solid #10b981; background: #f0fdf4; }
+        .mission-progress { border-left: 8px solid #f472b6; background: #fdf2f8; }
+
+        /* 배지 카드 (화이트 모드) */
+        .badge-card {
+            background: #ffffff;
+            color: #1e293b;
+            padding: 20px;
+            border-radius: 24px;
+            margin: 10px;
+            text-align: center;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
         }
 
-        /* 프로그레스 바 커스텀 */
+        /* QR 전용 카드 */
+        .qr-frame {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 28px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            display: inline-block;
+            border: 2px solid #f1f5f9;
+            max-width: 250px;
+        }
+
+        /* 프로그레스 바 (핑크 테마) */
         .progress-container {
             background: #f1f5f9;
             border-radius: 50px;
-            height: 42px;
+            height: 14px;
             overflow: hidden;
-            margin: 24px 0;
-            border: 1px solid #e2e8f0;
+            margin: 15px 0;
         }
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 800;
-            font-size: 18px;
-            transition: width 1.5s ease-out;
+            background: linear-gradient(90deg, #f472b6 0%, #ef4444 100%);
         }
 
-        /* 탭 스타일 최적화 */
+        /* 탭 가독성 (화이트 모드) */
         .stTabs [data-baseweb="tab-list"] {
-            gap: 12px;
-            background-color: rgba(255,255,255,0.1);
+            background-color: #f1f5f9;
             padding: 8px;
-            border-radius: 50px;
+            border-radius: 16px;
         }
         .stTabs [data-baseweb="tab"] {
-            background-color: transparent;
-            border-radius: 50px;
-            padding: 10px 25px;
-            color: #ffffff;
-            font-weight: 600;
-            border: none;
-            transition: all 0.3s;
+            color: #64748b !important;
+            font-size: 16px;
+            font-weight: 700;
+            padding: 10px 15px !important;
         }
         .stTabs [aria-selected="true"] {
+            color: #ef4444 !important;
             background-color: #ffffff !important;
-            color: #6366f1 !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        /* 텍스트 가독성 */
-        h1, h2, h3 { color: #2d3748; letter-spacing: -0.5px; }
-        p, span { color: #4a5568; }
-        label { color: #ffffff !important; font-weight: 600 !important; }
-
-        /* 익스팬더 디자인 */
-        .stExpander {
-            background: rgba(255, 255, 255, 0.7) !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
-            border-radius: 16px !important;
-            color: #1e293b !important;
-        }
-
-        /* 🔥 모바일 최적화 */
-        @media (max-width: 768px) {
-            .student-header { padding: 30px 20px; }
-            .student-header h1 { font-size: 32px !important; }
-            .stat-number { font-size: 42px !important; }
-        }
+        /* 텍스트 선명도 */
+        h2, h3 { color: #0f172a !important; font-weight: 800 !important; }
+        p, span, label { color: #334155 !important; }
         
-        /* 사이드바 스타일링 (화사한 글래스) */
+        /* 화이트 모드 입력창 */
+        input {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+        }
+
+        /* 사이드바 가독성 */
         [data-testid="stSidebar"] {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            border-right: 1px solid #e2e8f0;
+            background-color: #ffffff !important;
         }
-        [data-testid="stSidebar"] * {
-            color: #1e293b !important;
-        }
-        
-        /* 스크롤바 커스텀 */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-        ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
-
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
     """, unsafe_allow_html=True)
 
@@ -1259,13 +1267,10 @@ def main():
     
     st.markdown(f"""
     <div class="student-header">
-        <h1>🎮 {student_name}님의 출석 레벨업!</h1>
+        <h1><span class="emoji-glow">🎮</span> {student_name}님의 출석 레벨업!</h1>
         {group_info_html}
-        <div style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); 
-                    color: white; padding: 15px 30px; border-radius: 30px; 
-                    font-size: 28px; font-weight: bold; display: inline-block; 
-                    margin-top: 15px;">
-            ⭐ Level {stats['level']}
+        <div class="level-badge">
+            <span class="emoji-glow">⭐</span> Level {stats['level']}
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -1287,9 +1292,11 @@ def main():
             
             if qr_buf:
                 # 모바일: QR 중앙 정렬
-                col1, col2, col3 = st.columns([1, 2, 1])
+                col1, col2, col3 = st.columns([1.5, 2, 1.5])
                 with col2:
-                    st.image(qr_buf, use_container_width=True)
+                    st.markdown('<div class="qr-frame" style="text-align: center;">', unsafe_allow_html=True)
+                    st.image(qr_buf, width=210)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
                 st.download_button(
                     "📥 QR 코드 다운로드",
@@ -1332,35 +1339,35 @@ def main():
                 🕐 총 교육시간: {total_hours}시간
                 """)
         
-        # 통계 카드 (모바일 최적화: 2열 레이아웃)
-        col_a, col_b = st.columns(2)
+        # 통계 카드 (미드나잇 다크 테마)
+        col_a, col_b, col_c = st.columns(3)
         
         with col_a:
             st.markdown(f"""
             <div class="stat-card">
-                <div style="font-size: 48px;">📚</div>
+                <div class="emoji-glow" style="font-size: 42px;">📚</div>
                 <div class="stat-number">{stats['total_attendance']}</div>
-                <div style="font-size: 16px; color: #666;">출석 횟수</div>
+                <div class="stat-label">출석 횟수</div>
             </div>
             """, unsafe_allow_html=True)
         
         with col_b:
             st.markdown(f"""
             <div class="stat-card">
-                <div style="font-size: 48px;">🔥</div>
+                <div class="emoji-glow" style="font-size: 42px;">🔥</div>
                 <div class="stat-number">{stats['consecutive_classes']}</div>
-                <div style="font-size: 16px; color: #666;">연속 출석</div>
+                <div class="stat-label">연속 출석</div>
             </div>
             """, unsafe_allow_html=True)
         
-        # 출석률
-        st.markdown(f"""
-        <div class="stat-card">
-            <div style="font-size: 48px;">💯</div>
-            <div class="stat-number">{stats['attendance_rate']:.0f}%</div>
-            <div style="font-size: 16px; color: #666;">출석률</div>
-        </div>
-        """, unsafe_allow_html=True)
+        with col_c:
+            st.markdown(f"""
+            <div class="stat-card">
+                <div class="emoji-glow" style="font-size: 42px;">💯</div>
+                <div class="stat-number">{stats['attendance_rate']:.0f}%</div>
+                <div class="stat-label">출석률</div>
+            </div>
+            """, unsafe_allow_html=True)
         
         st.markdown("###")
         
@@ -1436,14 +1443,12 @@ def main():
             for idx, badge in enumerate(badges):
                 with cols[idx % 2]:
                     st.markdown(f"""
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                color: white; padding: 15px 20px; border-radius: 15px; margin: 10px 5px;
-                                font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center;">
-                        <div style="font-size: 48px;">{badge['icon']}</div>
-                        <div style="font-size: 18px; font-weight: bold; margin-top: 10px;">
+                    <div class="badge-card">
+                        <div class="emoji-glow" style="font-size: 48px;">{badge['icon']}</div>
+                        <div style="font-size: 19px; font-weight: 800; margin-top: 10px; color: #ef4444;">
                             {badge['name']}
                         </div>
-                        <div style="font-size: 14px; margin-top: 5px;">
+                        <div style="font-size: 14px; margin-top: 5px; opacity: 0.8;">
                             {badge['desc']}
                         </div>
                     </div>
