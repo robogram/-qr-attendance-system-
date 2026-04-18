@@ -68,8 +68,8 @@ def show_login_page():
         * { font-family: 'Noto Sans KR', sans-serif !important; }
         
         .stApp {
-            background: linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            min-height: 100vh;
+            background-color: #fcfcfc;
+            color: #0f172a;
         }
         
         .main .block-container {
@@ -90,7 +90,7 @@ def show_login_page():
         .brand-name {
             font-size: 32px;
             font-weight: 900;
-            background: linear-gradient(135deg, #ffffff 0%, #c084fc 100%);
+            background: linear-gradient(135deg, #f472b6 0%, #ef4444 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-align: center;

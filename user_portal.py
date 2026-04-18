@@ -18,8 +18,8 @@ def login_screen():
         * { font-family: 'Noto Sans KR', sans-serif !important; }
         
         .stApp {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-attachment: fixed;
+            background-color: #fcfcfc;
+            color: #0f172a;
         }
         
         .main .block-container {
@@ -27,42 +27,40 @@ def login_screen():
             max-width: 450px;
         }
         
-        /* Glassmorphism Logic Card */
+        /* Glassmorphism Logic Card (White Mode) */
         div[data-testid="stForm"] {
-            background: rgba(255, 255, 255, 0.15) !important;
-            backdrop-filter: blur(15px) !important;
-            -webkit-backdrop-filter: blur(15px) !important;
-            border-radius: 24px !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            padding: 30px !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+            background: #ffffff !important;
+            border-radius: 28px !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 40px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05) !important;
         }
         
-        /* [핵심] 입력창 가독성 강제 설정 (흰색 배경 + 검정색 글자) */
+        /* [핵심] 입력창 가독성 강제 설정 (화이트 모드 고대비) */
         input[type="text"], input[type="password"], [data-baseweb="input"] {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            -webkit-text-fill-color: #000000 !important;
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            -webkit-text-fill-color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
             border-radius: 12px !important;
             height: 48px !important;
         }
         
         div[data-testid="stTextInput"] label {
-            color: white !important;
-            font-weight: 500 !important;
+            color: #334155 !important;
+            font-weight: 700 !important;
             font-size: 15px !important;
             margin-bottom: 8px !important;
         }
         
         div[data-testid="stTextInput"] div[data-baseweb="input"] {
-            border: 2px solid #e1e1e1 !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+            border: 1px solid #cbd5e1 !important;
         }
 
-        /* Button Styling */
+        /* 핑크-레드 버튼 */
         .stFormSubmitButton > button {
-            background: linear-gradient(90deg, #ffffff 0%, #f0f0f0 100%) !important;
-            color: #4f46e5 !important;
+            background: linear-gradient(90deg, #f472b6 0%, #ef4444 100%) !important;
+            color: #ffffff !important;
             border: none !important;
             border-radius: 12px !important;
             height: 50px !important;
@@ -71,7 +69,11 @@ def login_screen():
             width: 100% !important;
             margin-top: 20px !important;
             transition: all 0.3s ease !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2) !important;
+        }
+        .stFormSubmitButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3) !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -83,8 +85,8 @@ def login_screen():
     
     st.markdown(f"""
     <div style="text-align:center; margin-top:15px; margin-bottom: 40px;">
-        <div style="font-size: 32px; font-weight: 900; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">로보그램 출석 앱</div>
-        <div style="font-size: 15px; color: rgba(255, 255, 255, 0.8);">학생 / 학부모 전용 로그인</div>
+        <div style="font-size: 32px; font-weight: 900; color: #0f172a;">로보그램 출석 앱</div>
+        <div style="font-size: 15px; color: #64748b;">학생 / 학부모 전용 로그인</div>
     </div>
     """, unsafe_allow_html=True)
     
