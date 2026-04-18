@@ -5,7 +5,7 @@ import pandas as pd
 import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image as PILImage
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 import os
 import logging
 from logging.handlers import RotatingFileHandler
@@ -148,7 +148,7 @@ def load_schedule_for_today(schedule_csv):
     """
     try:
         df = pd.read_csv(schedule_csv, parse_dates=["date"])
-        today = date.today()
+        today = get_today_kst()
         today_row = df[df["date"].dt.date == today]
         
         if today_row.empty:
@@ -357,8 +357,8 @@ def auto_process_absences_unified(schedule_csv, attendance_csv, students_csv,
                 # 학생 로드
                 df_students = load_csv_safe(students_csv, ['name', 'qr_code', 'phone', 'school'])
                 
-                now = datetime.now()
-                today = date.today()
+                now = get_now_kst()
+                today = get_today_kst()
                 processed_count = 0
                 
                 # 오늘의 끝난 수업들 확인
@@ -429,3 +429,13 @@ def auto_process_absences_unified(schedule_csv, attendance_csv, students_csv,
         logger.error(f"Error in auto_process_absences_unified: {e}")
         return 0
 
+
+def get_now_kst():
+    """서버 위치와 상관없이 항상 한국 표준시(KST)를 반환합니다. (Stable version)"""
+    from datetime import datetime, timedelta, timezone
+    return datetime.now(timezone(timedelta(hours=9)))
+
+
+def get_today_kst():
+    """KST 기준 오늘의 날짜를 반환합니다."""
+    return get_now_kst().date()

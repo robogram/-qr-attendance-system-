@@ -135,5 +135,101 @@ class SupabaseManager:
             print(f"❌ Supabase insert failed: {e}")
             return False
 
+    # --- Class Groups ---
+    def get_all_class_groups(self):
+        if not self.client: return []
+        response = self.client.table('class_groups').select('*').execute()
+        return response.data
+
+    def upsert_class_group(self, group_data):
+        if not self.client: return None
+        try:
+            # group_id를 기준으로 upsert (conflict 시 update)
+            res = self.client.table('class_groups').upsert(group_data, on_conflict='group_id').execute()
+            return res.data[0] if res.data else None
+        except Exception as e:
+            print(f"Error upserting class group: {e}")
+            return None
+
+    def delete_class_group(self, group_id):
+        if not self.client: return False
+        try:
+            self.client.table('class_groups').delete().eq('group_id', group_id).execute()
+            return True
+        except Exception as e:
+            print(f"Error deleting class group: {e}")
+            return False
+
+    # --- Student Groups ---
+    def get_all_student_groups(self):
+        if not self.client: return []
+        response = self.client.table('student_groups').select('*').execute()
+        return response.data
+
+    def insert_student_group(self, mapping_data):
+        if not self.client: return None
+        try:
+            res = self.client.table('student_groups').insert(mapping_data).execute()
+            return res.data[0] if res.data else None
+        except Exception as e:
+            print(f"Error inserting student group mapping: {e}")
+            return None
+
+    def delete_student_group(self, student_name, group_id):
+        if not self.client: return False
+        try:
+            self.client.table('student_groups').delete().eq('student_name', student_name).eq('group_id', group_id).execute()
+            return True
+        except Exception as e:
+            print(f"Error deleting student group mapping: {e}")
+            return False
+
+    # --- Teacher Groups ---
+    def get_all_teacher_groups(self):
+        if not self.client: return []
+        response = self.client.table('teacher_groups').select('*').execute()
+        return response.data
+
+    def get_teacher_groups_by_teacher(self, teacher_username):
+        if not self.client: return []
+        response = self.client.table('teacher_groups').select('*').eq('teacher_username', teacher_username).execute()
+        return response.data
+
+    def insert_teacher_group(self, mapping_data):
+        if not self.client: return None
+        try:
+            res = self.client.table('teacher_groups').insert(mapping_data).execute()
+            return res.data[0] if res.data else None
+        except Exception as e:
+            print(f"Error inserting teacher group mapping: {e}")
+            return None
+
+    def delete_teacher_group(self, mapping_id):
+        if not self.client: return False
+        try:
+            self.client.table('teacher_groups').delete().eq('id', mapping_id).execute()
+            return True
+        except Exception as e:
+            print(f"Error deleting teacher group mapping: {e}")
+            return False
+
+    def delete_teacher_group_strict(self, teacher_username, group_id, date_str=None):
+        """선생님 배정 해제 (상세 조건)"""
+        if not self.client: return False
+        query = self.client.table('teacher_groups').delete()\
+            .eq('teacher_username', teacher_username)\
+            .eq('group_id', group_id)
+        if date_str:
+            query = query.eq('date', date_str)
+        else:
+            query = query.is_('date', 'null')
+            
+        try:
+            query.execute()
+            return True
+        except Exception as e:
+            print(f"Error deleting teacher group mapping strict: {e}")
+            return False
+
 # 글로벌 인스턴스
 supabase_mgr = SupabaseManager()

@@ -23,7 +23,8 @@ import pandas as pd
 import unicodedata
 import re
 import os
-from datetime import datetime, timedelta, time, date
+from datetime import datetime, timedelta, time, date, timezone
+from utils import load_csv_safe, save_csv_safe, get_now_kst, get_today_kst
 import calendar
 import logging
 
@@ -587,7 +588,7 @@ def get_child_attendance_data_all_groups(student_name):
             
         # 4. 시각화 데이터 구성 (일정 기준 루프)
         full_history = []
-        today_date = date.today()
+        today_date = get_today_kst()
         
         if not student_schedule.empty:
             # 최신순 정렬
@@ -646,7 +647,7 @@ def save_inquiry(student_name, parent_name, inquiry_type, content):
         df = load_inquiries_cached()
         
         new_inquiry = {
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'timestamp': get_now_kst().strftime('%Y-%m-%d %H:%M:%S'),
             'student_name': student_name,
             'parent_name': parent_name,
             'inquiry_type': inquiry_type,
@@ -740,7 +741,7 @@ def show_monthly_calendar(attendance_df, year, month):
     </div>
     """, unsafe_allow_html=True)
     
-    today = date.today()
+    today = get_today_kst()
     
     # 각 주별 표시
     for week in cal:
@@ -1047,11 +1048,11 @@ def main():
                 
                 with col2:
                     if months_in_year:
-                        current_month = date.today().month
+                        current_month = get_today_kst().month
                         default_index = months_in_year.index(current_month) if current_month in months_in_year else 0
                         selected_month = st.selectbox("월", months_in_year, index=default_index, key="month_select")
                     else:
-                        selected_month = date.today().month
+                        selected_month = get_today_kst().month
                         st.info("선택된 연도에 출석 기록이 없습니다.")
                 
                 show_monthly_calendar(attendance_df_clean, selected_year, selected_month)
@@ -1113,7 +1114,7 @@ def main():
             st.download_button(
                 "📥 출석 기록 다운로드",
                 info_text,
-                file_name=f"{selected_child}_출석기록_{datetime.now().strftime('%Y%m%d')}.txt",
+                file_name=f"{selected_child}_출석기록_{get_now_kst().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
                 use_container_width=True
             , key="parent_auto_1113")
@@ -1558,7 +1559,7 @@ def main():
             st.download_button(
                 "📥 수업 정보",
                 info_text,
-                file_name=f"{selected_child}_수업정보_{datetime.now().strftime('%Y%m%d')}.txt",
+                file_name=f"{selected_child}_수업정보_{get_now_kst().strftime('%Y%m%d')}.txt",
                 mime="text/plain",
                 use_container_width=True
             , key="parent_auto_1558")

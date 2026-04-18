@@ -20,11 +20,18 @@ query_params = st.query_params
 p_param = query_params.get("p", "").lower()
 app_type = p_param or os.getenv('APP_TYPE', '').lower()
 
+import sys
 if app_type == 'staff':
+    for mod in ["utils", "staff_portal"]:
+        if mod in sys.modules:
+            del sys.modules[mod]
     import staff_portal
     staff_portal.main()
     st.stop()
 elif app_type == 'user':
+    for mod in ["utils", "user_portal"]:
+        if mod in sys.modules:
+            del sys.modules[mod]
     import user_portal
     user_portal.main()
     st.stop()
@@ -377,10 +384,23 @@ else:
     if role == 'admin':
         show_admin_app()
     elif role == 'teacher':
+        # 최신 코드 반영을 위해 모듈 캐시 삭제
+        import sys
+        for mod in ["utils", "teacher_app"]:
+            if mod in sys.modules:
+                del sys.modules[mod]
         show_teacher_app()
     elif role == 'parent':
+        import sys
+        for mod in ["utils", "parent_app"]:
+            if mod in sys.modules:
+                del sys.modules[mod]
         show_parent_app()
     elif role == 'student':
+        import sys
+        for mod in ["utils", "student_app"]:
+            if mod in sys.modules:
+                del sys.modules[mod]
         show_student_app()
     else:
         st.error("알 수 없는 사용자 역할입니다.")

@@ -113,6 +113,8 @@ from utils import (
     load_csv_safe,
     save_csv_safe,
     logger,
+    get_now_kst,                   # 한국 시간 가져오기
+    get_today_kst,                 # 한국 날짜 가져오기
     # 🆕 아래 줄들 추가 ===================================
     normalize_phone,               # 전화번호 정규화 (공통 함수)
     generate_session_key,          # 세션 키 생성 (공통 함수)
@@ -383,99 +385,96 @@ st.markdown("""
 # ==========================================
 
 
-# 🆕 CSV 캐싱 함수
-@lru_cache(maxsize=10)
-def load_class_groups_cached(timestamp=None):
-    """수업 그룹 정보 로드 (캐싱)"""
-    return load_class_groups()
+# 🆕 Supabase 연동 정보 로드 함수들
+from supabase_client import supabase_mgr
 
 def load_class_groups():
-    """수업 그룹 정보 로드"""
-    if not os.path.exists(CLASS_GROUPS_CSV):
+    """수업 그룹 정보 로드 (Supabase)"""
+    data = supabase_mgr.get_all_class_groups()
+    if not data:
         return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours', 'zoom_meeting_id'])
-    try:
-        df = pd.read_csv(CLASS_GROUPS_CSV, encoding='utf-8-sig')
-        if 'total_hours' not in df.columns:
-            df['total_hours'] = 1.0
-        if 'zoom_meeting_id' not in df.columns:
-            df['zoom_meeting_id'] = ""
-        return df
-    except Exception as e:
-        logger.error(f"Error loading class groups: {e}")
-        return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours', 'zoom_meeting_id'])
+    df = pd.DataFrame(data)
+    if 'total_hours' not in df.columns: df['total_hours'] = 1.0
+    if 'zoom_meeting_id' not in df.columns: df['zoom_meeting_id'] = ""
+    return df
 
 def save_class_groups(df):
-    """수업 그룹 저장"""
-    try:
-        df.to_csv(CLASS_GROUPS_CSV, index=False, encoding='utf-8-sig')
-        # 🆕 캐시 무효화
-        load_class_groups_cached.cache_clear()
-        return True
-    except Exception as e:
-        logger.error(f"Error saving class groups: {e}")
-        return False
+    """수업 그룹 저장 (Supabase)"""
+    success = True
+    for _, row in df.iterrows():
+        res = supabase_mgr.upsert_class_group(row.to_dict())
+        if res is None: success = False
+    return success
 
 def load_student_groups():
-    """학생-그룹 매핑 로드"""
-    if not os.path.exists(STUDENT_GROUPS_CSV):
+    """학생-그룹 매핑 로드 (Supabase)"""
+    data = supabase_mgr.get_all_student_groups()
+    if not data:
         return pd.DataFrame(columns=['student_name', 'group_id'])
-    try:
-        return pd.read_csv(STUDENT_GROUPS_CSV, encoding='utf-8-sig')
-    except Exception as e:
-        logger.error(f"Error loading student groups: {e}")
-        return pd.DataFrame(columns=['student_name', 'group_id'])
+    return pd.DataFrame(data)
 
 def save_student_groups(df):
-    """학생-그룹 매핑 저장"""
+    """학생-그룹 매핑 저장 (Supabase)"""
     try:
-        df.to_csv(STUDENT_GROUPS_CSV, index=False, encoding='utf-8-sig')
+        # 기존 매핑 정보를 가져와서 현재 전달된 df와 비교하여 업데이트 (단순화를 위해 전체 삭제 후 재삽입도 고려 가능)
+        # 여기서는 개별 upsert 또는 sync 로직이 필요함. 
+        # 우선은 개별 레코드를 순회하며 저장합니다.
+        for _, row in df.iterrows():
+            supabase_mgr.client.table('student_groups').upsert({
+                'student_name': row['student_name'],
+                'group_id': row['group_id']
+            }, on_conflict='student_name, group_id').execute()
         return True
     except Exception as e:
-        logger.error(f"Error saving student groups: {e}")
+        logger.error(f"Error saving student groups to Supabase: {e}")
         return False
+
+
 # ==========================================
 # 👨‍🏫 선생님 배정 관련 함수들
 # load_teacher_groups() 함수 바로 아래에 추가하세요
 # ==========================================
 
 def load_teacher_groups():
-    """선생님-그룹 매핑 로드 (날짜 지원)"""
-    if not os.path.exists(TEACHER_GROUPS_CSV):
-        df = pd.DataFrame(columns=['teacher_username', 'group_id', 'date'])
-        df.to_csv(TEACHER_GROUPS_CSV, index=False, encoding='utf-8-sig')
-        return df
-    try:
-        df = pd.read_csv(TEACHER_GROUPS_CSV, encoding='utf-8-sig')
-        if 'date' not in df.columns:
-            df['date'] = ''
-        return df
-    except:
-        return pd.DataFrame(columns=['teacher_username', 'group_id', 'date'])
+    """선생님-그룹 매핑 로드 (Supabase)"""
+    data = supabase_mgr.get_all_teacher_groups()
+    if not data:
+        return pd.DataFrame(columns=['id', 'teacher_username', 'group_id', 'date'])
+    return pd.DataFrame(data)
 
 def save_teacher_groups(df):
-    """선생님-그룹 매핑 저장"""
+    """선생님-그룹 매핑 저장 (Supabase)"""
     try:
-        df.to_csv(TEACHER_GROUPS_CSV, index=False, encoding='utf-8-sig')
-        return True
+        success = True
+        for _, row in df.iterrows():
+            row_dict = row.to_dict()
+            # ID가 있는 경우 해당 레코드 업데이트, 없는 경우 신규 생성
+            if 'id' in row_dict and row_dict['id']:
+                res = supabase_mgr.client.table('teacher_groups').upsert(row_dict).execute()
+            else:
+                # ID 없이 새로 추가되는 경우
+                insert_data = {k: v for k, v in row_dict.items() if k != 'id'}
+                res = supabase_mgr.client.table('teacher_groups').insert(insert_data).execute()
+            
+            if not res.data: success = False
+        return success
     except Exception as e:
-        logger.error(f"Error saving teacher groups: {e}")
+        logger.error(f"Error saving teacher groups to Supabase: {e}")
         return False
 
+
 def assign_teacher_to_group(teacher_username, group_id, assignment_date=None):
-    """선생님을 그룹에 배정"""
+    """선생님을 그룹에 배정 (Supabase 연동)"""
     try:
-        df_teacher_groups = load_teacher_groups()
-        
         # 중복 체크
+        df_teacher_groups = load_teacher_groups()
         if assignment_date:
-            # 대타 수업 - 같은 날짜에 이미 배정되어 있는지 확인
             existing = df_teacher_groups[
                 (df_teacher_groups['teacher_username'] == teacher_username) &
                 (df_teacher_groups['group_id'] == group_id) &
                 (df_teacher_groups['date'] == assignment_date)
             ]
         else:
-            # 정규 수업 - 이미 정규 배정되어 있는지 확인
             existing = df_teacher_groups[
                 (df_teacher_groups['teacher_username'] == teacher_username) &
                 (df_teacher_groups['group_id'] == group_id) &
@@ -485,112 +484,70 @@ def assign_teacher_to_group(teacher_username, group_id, assignment_date=None):
         if not existing.empty:
             return False, "이미 배정되어 있습니다."
         
-        # 새 배정 추가
-        new_assignment = pd.DataFrame([{
+        # 새 배정 추가 (Supabase)
+        mapping_data = {
             'teacher_username': teacher_username,
             'group_id': group_id,
-            'date': assignment_date if assignment_date else ''
-        }])
+            'date': assignment_date if assignment_date else None
+        }
+        res = supabase_mgr.insert_teacher_group(mapping_data)
         
-        df_teacher_groups = pd.concat([df_teacher_groups, new_assignment], ignore_index=True)
-        
-        if save_teacher_groups(df_teacher_groups):
-            # ⭐ 자동으로 Supabase schedule 테이블에도 반영
-            try:
-                from supabase_client import supabase_mgr
-                # teacher_username → 실명 변환
-                df_users = pd.read_csv('users.csv', encoding='utf-8-sig')
-                teacher_row = df_users[df_users['username'] == teacher_username]
-                teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
-                
-                # group_id에 해당하는 그룹명 가져오기
-                df_groups_local = load_class_groups()
-                group_row = df_groups_local[df_groups_local['group_id'] == group_id]
-                if not group_row.empty:
-                    group_name = group_row.iloc[0]['group_name']
-                    # schedule 테이블에서 해당 그룹명을 포함하는 레코드 업데이트
-                    all_schedules = supabase_mgr.client.table('schedule').select('id, class_name').execute().data
-                    for sched in all_schedules:
-                        if group_name in sched.get('class_name', ''):
-                            supabase_mgr.client.table('schedule').update({
-                                'teacher_name': teacher_real_name
-                            }).eq('id', sched['id']).execute()
-                    logger.info(f"Auto-synced teacher '{teacher_real_name}' to schedule for group '{group_name}'")
-            except Exception as sync_err:
-                logger.warning(f"Schedule auto-sync failed (non-critical): {sync_err}")
-            
+        if res:
+            # ⭐ 자동으로 Supabase schedule 테이블에도 반영 (기존 로직 유지)
+            sync_teacher_to_schedule(teacher_username, group_id)
             return True, "배정되었습니다."
         else:
             return False, "저장 중 오류가 발생했습니다."
-    
     except Exception as e:
         logger.error(f"Error assigning teacher: {e}")
         return False, f"오류: {e}"
 
-def remove_teacher_assignment(teacher_username, group_id, assignment_date=None):
-    """선생님 배정 해제"""
+def sync_teacher_to_schedule(teacher_username, group_id):
+    """배정된 선생님 정보를 schedule 테이블에 동기화"""
     try:
-        df_teacher_groups = load_teacher_groups()
+        from auth import load_users
+        df_users = load_users()
+        teacher_row = df_users[df_users['username'] == teacher_username]
+        teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
         
-        # ⭐ 삭제 전 실명 정보 가져오기 (Supabase 동기화용)
-        try:
-            from auth import load_users
-            df_users = load_users()
-            teacher_row = df_users[df_users['username'] == teacher_username]
-            teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
-            
-            # group_id에 해당하는 그룹명 가져오기
-            df_groups_local = load_class_groups()
-            group_row = df_groups_local[df_groups_local['group_id'] == group_id]
-            group_name = group_row.iloc[0]['group_name'] if not group_row.empty else None
-        except:
-            teacher_real_name = None
-            group_name = None
+        df_groups = load_class_groups()
+        group_row = df_groups[df_groups['group_id'] == group_id]
+        if not group_row.empty:
+            group_name = group_row.iloc[0]['group_name']
+            all_schedules = supabase_mgr.client.table('schedule').select('id, class_name').execute().data
+            for sched in all_schedules:
+                if group_name in sched.get('class_name', ''):
+                    supabase_mgr.client.table('schedule').update({'teacher_name': teacher_real_name}).eq('id', sched['id']).execute()
+    except Exception as e:
+        logger.warning(f"Schedule sync failed: {e}")
 
-        if assignment_date:
-            # 특정 날짜 대타 제거
-            df_teacher_groups = df_teacher_groups[
-                ~((df_teacher_groups['teacher_username'] == teacher_username) &
-                  (df_teacher_groups['group_id'] == group_id) &
-                  (df_teacher_groups['date'] == assignment_date))
-            ]
-        else:
-            # 정규 배정 제거
-            df_teacher_groups = df_teacher_groups[
-                ~((df_teacher_groups['teacher_username'] == teacher_username) &
-                  (df_teacher_groups['group_id'] == group_id) &
-                  ((df_teacher_groups['date'].isna()) | (df_teacher_groups['date'] == '')))
-            ]
+def remove_teacher_assignment(teacher_username, group_id, assignment_date=None):
+    """선생님 배정 해제 (Supabase 연동)"""
+    try:
+        # 삭제 전 정보 백업 (동기화용)
+        from auth import load_users
+        df_users = load_users()
+        teacher_row = df_users[df_users['username'] == teacher_username]
+        teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
         
-        if save_teacher_groups(df_teacher_groups):
-            # ⭐ Supabase schedule 테이블에서도 해당 배정 해제 반영
+        df_groups = load_class_groups()
+        group_row = df_groups[df_groups['group_id'] == group_id]
+        group_name = group_row.iloc[0]['group_name'] if not group_row.empty else None
+
+        # Supabase에서 삭제
+        success = supabase_mgr.delete_teacher_group_strict(teacher_username, group_id, assignment_date)
+        
+        if success:
+            # ⭐ schedule 테이블에서도 해제 반영
             if teacher_real_name and group_name:
-                try:
-                    from supabase_client import supabase_mgr
-                    query = supabase_mgr.client.table('schedule').update({'teacher_name': None})
-                    
-                    if assignment_date:
-                        # 특정 날짜만 해제
-                        start_bound = f"{assignment_date}T00:00:00+09:00"
-                        end_bound = f"{assignment_date}T23:59:59+09:00"
-                        query.eq('teacher_name', teacher_real_name)\
-                             .like('class_name', f"{group_name}%")\
-                             .gte('start_time', start_bound)\
-                             .lte('start_time', end_bound).execute()
-                    else:
-                        # 정규 배정 전체 해제 (오늘 이후 일정만 혹은 전체)
-                        query.eq('teacher_name', teacher_real_name)\
-                             .like('class_name', f"{group_name}%").execute()
-                    
-                    logger.info(f"Unassigned teacher '{teacher_real_name}' from schedule for group '{group_name}'")
-                except Exception as sync_err:
-                    logger.warning(f"Schedule sync failed on remove (non-critical): {sync_err}")
+                query = supabase_mgr.client.table('schedule').update({'teacher_name': None})
+                query.eq('teacher_name', teacher_real_name).like('class_name', f"{group_name}%").execute()
             return True
         return False
-    
     except Exception as e:
         logger.error(f"Error removing teacher assignment: {e}")
         return False
+
 
 def get_teacher_assignments(teacher_username):
     """선생님의 배정 목록 가져오기"""
@@ -651,42 +608,34 @@ def get_student_groups(student_name):
     return df_student_groups[df_student_groups['student_name'] == student_name]['group_id'].tolist()
 
 def add_student_to_group(student_name, group_id):
-    """학생을 그룹에 추가"""
-    df_student_groups = load_student_groups()
-    
-    # 🆕 중복 체크 강화
-    existing = df_student_groups[
-        (df_student_groups['student_name'] == student_name) & 
-        (df_student_groups['group_id'] == group_id)
-    ]
-    
-    if not existing.empty:
-        logger.warning(f"Student {student_name} already in group {group_id}")
-        return False
-    
-    new_mapping = pd.DataFrame([{'student_name': student_name, 'group_id': group_id}])
-    df_student_groups = pd.concat([df_student_groups, new_mapping], ignore_index=True)
-    return save_student_groups(df_student_groups)
+    """학생을 그룹에 추가 (Supabase)"""
+    mapping_data = {'student_name': student_name, 'group_id': str(group_id)}
+    return supabase_mgr.insert_student_group(mapping_data)
+
 
 def remove_student_from_group(student_name, group_id):
-    """학생을 그룹에서 제거"""
-    df_student_groups = load_student_groups()
-    df_student_groups = df_student_groups[
-        ~((df_student_groups['student_name'] == student_name) & 
-          (df_student_groups['group_id'] == group_id))
-    ]
-    return save_student_groups(df_student_groups)
+    """학생을 그룹에서 제거 (Supabase)"""
+    return supabase_mgr.delete_student_group(student_name, str(group_id))
+
 
 def create_class_group(group_name, weekdays, start_time, end_time, start_date, end_date, total_hours=None, zoom_meeting_id=""):
-    """새 수업 그룹 생성"""
+    """새 수업 그룹 생성 (Supabase)"""
     df_groups = load_class_groups()
     
-    new_id = 1 if df_groups.empty else int(df_groups['group_id'].max()) + 1
+    # 숫자형 group_id 생성 (기존 호환성 유지)
+    if df_groups.empty:
+        new_id = 1
+    else:
+        try:
+            new_id = int(pd.to_numeric(df_groups['group_id'], errors='coerce').max()) + 1
+        except:
+            new_id = len(df_groups) + 1
+
     weekdays_str = ','.join(map(str, weekdays))
     
     if total_hours is None:
-        start_dt = datetime.combine(date.today(), start_time)
-        end_dt = datetime.combine(date.today(), end_time)
+        start_dt = datetime.combine(get_today_kst(), start_time)
+        end_dt = datetime.combine(get_today_kst(), end_time)
         duration_hours = (end_dt - start_dt).total_seconds() / 3600
         
         total_classes = 0
@@ -727,7 +676,7 @@ def delete_class_group(group_id):
             try:
                 from supabase_client import supabase_mgr
                 from datetime import datetime
-                now_str = datetime.now().isoformat()
+                now_str = get_now_kst().isoformat()
                 
                 # [개선] 현재 시간 이후의(미래) 일정만 삭제하여 과거 출석부 링크 보존
                 supabase_mgr.client.table('schedule').delete()\
@@ -1091,7 +1040,7 @@ if tab == "📊 대시보드":
     
     df_schedule = get_schedule_df()
     # df_schedule['date'] is already a string 'YYYY-MM-DD' from get_schedule_df()
-    today_sched = df_schedule[df_schedule['date'] == date.today().isoformat()]
+    today_sched = df_schedule[df_schedule['date'] == get_today_kst().isoformat()]
     
     if not today_sched.empty:
         st.markdown(f"### 📅 오늘의 수업 ({len(today_sched)}개)")
@@ -1505,7 +1454,7 @@ elif tab == "👥 학생 관리":
                 st.download_button(
                     "📥 ZIP 다운로드",
                     zip_buffer.getvalue(),
-                    file_name=f"QR_Codes_{date.today()}.zip",
+                    file_name=f"QR_Codes_{get_today_kst()}.zip",
                     mime='application/zip',
                     use_container_width=True,
                     key="download_all_qr_zip"
@@ -1529,7 +1478,7 @@ elif tab == "🎓 수업 그룹":
     
     if hide_ended:
         try:
-            today_str = date.today().isoformat()
+            today_str = get_today_kst().isoformat()
             df_groups = df_groups[df_groups['end_date'] >= today_str]
         except:
             pass
@@ -1621,8 +1570,8 @@ elif tab == "🎓 수업 그룹":
             col1, col2 = st.columns(2)
             
             with col1:
-                group_start_date = st.date_input("시작 날짜", date.today(), key="create_group_start_date")
-                group_end_date = st.date_input("종료 날짜", date.today() + timedelta(days=90), key="create_group_end_date")
+                group_start_date = st.date_input("시작 날짜", get_today_kst(), key="create_group_start_date")
+                group_end_date = st.date_input("종료 날짜", get_today_kst() + timedelta(days=90), key="create_group_end_date")
             
             with col2:
                 group_start_time = st.time_input("수업 시작 시간", time(9, 0), step=timedelta(minutes=5), key="create_group_start_time")
@@ -1641,8 +1590,8 @@ elif tab == "🎓 수업 그룹":
             st.markdown("### 🕐 총 교육시간 설정")
             
             if group_weekdays and group_start_date and group_end_date:
-                start_datetime = datetime.combine(date.today(), group_start_time)
-                end_datetime = datetime.combine(date.today(), group_end_time)
+                start_datetime = datetime.combine(get_today_kst(), group_start_time)
+                end_datetime = datetime.combine(get_today_kst(), group_end_time)
                 duration_hours = (end_datetime - start_datetime).total_seconds() / 3600
                 
                 estimated_classes = 0
@@ -2069,7 +2018,7 @@ elif tab == "👨‍🏫 선생님 배정":
                     if assignment_type == "🔄 대타 수업":
                         substitute_date = st.date_input(
                             "📅 대타 날짜",
-                            value=date.today(),
+                            value=get_today_kst(),
                             key=f"sub_date_{teacher_username}"
                         )
                         
@@ -2179,7 +2128,7 @@ elif tab == "📅 일정 관리":
         st.markdown("### 📋 전체 일정")
         
         for idx, row in df_sched_sorted.iterrows():
-            is_today = row['date'] == date.today()
+            is_today = row['date'] == get_today_kst()
             
             col1, col2, col3 = st.columns([4, 4, 1])
             
@@ -2379,7 +2328,7 @@ elif tab == "📞 문의 관리":
             
             if not df[mask].empty:
                 df.loc[mask, 'response'] = response_text
-                df.loc[mask, 'response_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                df.loc[mask, 'response_time'] = get_now_kst().strftime('%Y-%m-%d %H:%M:%S')
                 df.loc[mask, 'status'] = new_status
                 
                 return save_inquiries(df)
@@ -2629,19 +2578,19 @@ elif tab == "🔹 출석 체크":
     
     df_schedule = get_schedule_df()
     df_schedule['date'] = pd.to_datetime(df_schedule['date']).dt.date
-    today_sched = df_schedule[df_schedule['date'] == date.today()]
+    today_sched = df_schedule[df_schedule['date'] == get_today_kst()]
     
     if today_sched.empty:
         st.warning("⚠️ 오늘 예정된 수업이 없습니다.")
         st.info("💡 '수업 그룹' 탭에서 수업을 먼저 등록해주세요.")
     else:
-        now = datetime.now()
+        now = get_now_kst()
         
         # 종료된 수업 필터링
         active_classes = []
         for idx, sched in today_sched.iterrows():
             class_end = datetime.strptime(sched['end'], '%H:%M').time()
-            class_end_dt = datetime.combine(date.today(), class_end)
+            class_end_dt = datetime.combine(get_today_kst(), class_end)
             
             if now <= class_end_dt:
                 active_classes.append((idx, sched))
@@ -2692,8 +2641,8 @@ elif tab == "🔹 출석 체크":
             class_start_time = datetime.strptime(class_start_str, '%H:%M').time()
             class_end_time = datetime.strptime(class_end_str, '%H:%M').time()
             
-            class_start_dt = datetime.combine(date.today(), class_start_time)
-            class_end_dt = datetime.combine(date.today(), class_end_time)
+            class_start_dt = datetime.combine(get_today_kst(), class_start_time)
+            class_end_dt = datetime.combine(get_today_kst(), class_end_time)
             attendance_start_dt = class_start_dt - timedelta(minutes=30)
         except Exception as e:
             st.error(f"시간 변환 오류: {e}")
@@ -2816,13 +2765,13 @@ elif tab == "🔹 출석 체크":
                                 student_name = student_row.iloc[0]['name']
                                 
                                 # 중복 체크
-                                already_attended, source = is_already_attended(student_name, row['session'], date.today())
+                                already_attended, source = is_already_attended(student_name, row['session'], get_today_kst())
                                 
                                 if already_attended:
                                     st.warning(f"⚠️ {student_name} 학생은 이미 이 수업에 출석 체크되었습니다.")
                                     continue
                                 
-                                attendance_time = datetime.now()
+                                attendance_time = get_now_kst()
                                 
                                 # 상태 판정
                                 if attendance_time <= class_start_dt:
@@ -2851,7 +2800,7 @@ elif tab == "🔹 출석 체크":
                                     status_note = "수업 종료 후"
                                 
                                 attendance_record = {
-                                    'date': date.today().isoformat(),
+                                    'date': get_today_kst().isoformat(),
                                     'session': row['session'],
                                     'student_name': student_name,
                                     'qr_code': qr_data,
@@ -2865,7 +2814,7 @@ elif tab == "🔹 출석 체크":
                                     student_id = student_rec.data[0]['id'] if student_rec.data else None
                                     
                                     # Get schedule_id
-                                    class_start_dt_str = datetime.combine(date.today(), class_start_time).isoformat()
+                                    class_start_dt_str = datetime.combine(get_today_kst(), class_start_time).isoformat()
                                     sched_rec = supabase_mgr.client.table('schedule').select('id').eq('class_name', row['session']).eq('start_time', class_start_dt_str).execute()
                                     schedule_id = sched_rec.data[0]['id'] if sched_rec.data else None
                                     
@@ -2881,7 +2830,7 @@ elif tab == "🔹 출석 체크":
                                     logger.error(f"Mobile attendance SB error: {e}")
                                 
                                 # 세션에 기록
-                                session_key = f"scanned_{row['session']}_{row['start']}_{date.today()}"
+                                session_key = f"scanned_{row['session']}_{row['start']}_{get_today_kst()}"
                                 if session_key not in st.session_state:
                                     st.session_state[session_key] = set()
                                 st.session_state[session_key].add(student_name)

@@ -77,6 +77,7 @@ def main():
     
     st.sidebar.title(f"안녕하세요, {user['name']}님")
     st.sidebar.info(f"권한: {get_role_display_name(role)}")
+    st.sidebar.caption("v1.1.0+KST (Time Standardized)")
     
     menu_options = []
     if role == 'admin':
@@ -93,12 +94,16 @@ def main():
 
     import sys
     if choice == "🏠 관리자 홈":
-        if "admin_app" in sys.modules:
-            del sys.modules["admin_app"]
+        # 최신 코드 반영을 위해 모듈 캐시 삭제
+        for mod in ["utils", "admin_app"]:
+            if mod in sys.modules:
+                del sys.modules[mod]
         import admin_app
     elif choice == "👩‍🏫 선생님 화면":
-        if "teacher_app" in sys.modules:
-            del sys.modules["teacher_app"]
+        # 최신 코드 반영을 위해 모듈 캐시 삭제
+        for mod in ["utils", "teacher_app"]:
+            if mod in sys.modules:
+                del sys.modules[mod]
         import teacher_app
         if hasattr(teacher_app, "main"):
             teacher_app.main()

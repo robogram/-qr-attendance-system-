@@ -10,14 +10,16 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from utils import get_now_kst
+
 
 def backup_csv(filename):
     """CSV 파일 백업"""
     if os.path.exists(filename):
-        backup_name = f"{filename}.backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        backup_name = f"{filename}.backup_{get_now_kst().strftime('%Y%m%d_%H%M%S')}"
         import shutil
         shutil.copy(filename, backup_name)
-        logger.info(f"✅ 백업 완료: {backup_name}")
+        logger.info(f"[OK] backup complete: {backup_name}")
         return True
     return False
 
@@ -27,10 +29,10 @@ def standardize_attendance_csv():
     filename = "attendance.csv"
     
     if not os.path.exists(filename):
-        logger.warning(f"⚠️ {filename} 파일이 없습니다.")
+        logger.warning(f"[!] {filename} file not found.")
         return
     
-    logger.info(f"📂 {filename} 표준화 시작...")
+    logger.info(f"[File] {filename} standardization started...")
     
     # 백업
     backup_csv(filename)
@@ -39,12 +41,12 @@ def standardize_attendance_csv():
         # CSV 읽기
         df = pd.read_csv(filename, encoding='utf-8-sig')
         
-        logger.info(f"📊 현재 컬럼: {list(df.columns)}")
-        logger.info(f"📊 현재 데이터 타입:\n{df.dtypes}")
+        logger.info(f"[Stats] current columns: {list(df.columns)}")
+        logger.info(f"[Stats] current dtypes:\n{df.dtypes}")
         
         # ===== 1. 중복 컬럼 처리 =====
         if 'code' in df.columns:
-            logger.info("🔧 'code' 컬럼 제거 (qr_code와 중복)")
+            logger.info("[Fix] removing 'code' column (duplicate of qr_code)")
             df = df.drop(columns=['code'])
         
         # ===== 2. 컬럼명 표준화 =====
@@ -56,7 +58,7 @@ def standardize_attendance_csv():
         }
         
         df = df.rename(columns=column_mapping)
-        logger.info("✅ 컬럼명 표준화 완료")
+        logger.info("[OK] column renaming complete")
         
         # ===== 3. 필수 컬럼 확인 및 생성 =====
         required_columns = ['date', 'session', 'student_name', 'qr_code', 'timestamp', 'status']
@@ -71,20 +73,20 @@ def standardize_attendance_csv():
                     logger.info("✅ 'status' 컬럼 생성 (기본값: 출석)")
                 elif col == 'date' and 'timestamp' in df.columns:
                     df['date'] = pd.to_datetime(df['timestamp']).dt.date
-                    logger.info("✅ 'date' 컬럼 생성 (timestamp에서)")
+                    logger.info("[OK] 'date' column created (from timestamp)")
         
         # ===== 4. 데이터 타입 변환 =====
         if 'timestamp' in df.columns:
             df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
-            logger.info("✅ timestamp → DateTime 변환")
+            logger.info("[OK] timestamp -> DateTime conversion")
         
         if 'date' in df.columns:
             df['date'] = pd.to_datetime(df['date'], errors='coerce').dt.date
-            logger.info("✅ date → Date 변환")
+            logger.info("[OK] date -> Date conversion")
         
         if 'qr_code' in df.columns:
             df['qr_code'] = df['qr_code'].astype(str)
-            logger.info("✅ qr_code → String 변환")
+            logger.info("[OK] qr_code -> String conversion")
         
         # ===== 5. 컬럼 순서 정렬 =====
         final_columns = ['date', 'session', 'student_name', 'qr_code', 'timestamp', 'status']
@@ -93,7 +95,7 @@ def standardize_attendance_csv():
         available_columns = [col for col in final_columns if col in df.columns]
         df = df[available_columns]
         
-        logger.info(f"✅ 최종 컬럼 순서: {available_columns}")
+        logger.info(f"[OK] final column order: {available_columns}")
         
         # ===== 6. 중복 제거 =====
         before_count = len(df)
@@ -101,13 +103,13 @@ def standardize_attendance_csv():
         after_count = len(df)
         
         if before_count > after_count:
-            logger.info(f"✅ 중복 제거: {before_count - after_count}개 행 제거")
+            logger.info(f"[OK] duplicates removed: {before_count - after_count} rows removed")
         
         # ===== 7. 저장 =====
         df.to_csv(filename, index=False, encoding='utf-8-sig')
-        logger.info(f"✅ {filename} 표준화 완료!")
-        logger.info(f"📊 최종 행 수: {len(df)}")
-        logger.info(f"📊 최종 컬럼: {list(df.columns)}")
+        logger.info(f"[OK] {filename} standardization complete!")
+        logger.info(f"[Stats] final row count: {len(df)}")
+        logger.info(f"[Stats] final columns: {list(df.columns)}")
         
     except Exception as e:
         logger.error(f"❌ {filename} 표준화 실패: {e}")
@@ -158,7 +160,7 @@ def standardize_class_groups_csv():
         
         # ===== 4. 저장 =====
         df.to_csv(filename, index=False, encoding='utf-8-sig')
-        logger.info(f"✅ {filename} 표준화 완료!")
+        logger.info(f"[OK] {filename} standardization complete!")
         
     except Exception as e:
         logger.error(f"❌ {filename} 표준화 실패: {e}")
@@ -220,8 +222,8 @@ def standardize_students_csv():
         
         # ===== 4. 저장 =====
         df.to_csv(filename, index=False, encoding='utf-8-sig')
-        logger.info(f"✅ {filename} 표준화 완료!")
-        logger.info(f"📊 학생 수: {len(df)}")
+        logger.info(f"[OK] {filename} standardization complete!")
+        logger.info(f"[Stats] student count: {len(df)}")
         
     except Exception as e:
         logger.error(f"❌ {filename} 표준화 실패: {e}")
@@ -268,8 +270,8 @@ def standardize_schedule_csv():
         
         # ===== 3. 저장 =====
         df.to_csv(filename, index=False, encoding='utf-8-sig')
-        logger.info(f"✅ {filename} 표준화 완료!")
-        logger.info(f"📊 일정 수: {len(df)}")
+        logger.info(f"[OK] {filename} standardization complete!")
+        logger.info(f"[Stats] schedule count: {len(df)}")
         
     except Exception as e:
         logger.error(f"❌ {filename} 표준화 실패: {e}")
@@ -278,7 +280,7 @@ def standardize_schedule_csv():
 def verify_csv_structure():
     """모든 CSV 파일 구조 검증"""
     logger.info("\n" + "="*60)
-    logger.info("📋 CSV 파일 구조 검증")
+    logger.info("[List] CSV file structure verification")
     logger.info("="*60)
     
     files = {
@@ -300,13 +302,13 @@ def verify_csv_structure():
                 extra = set(actual_columns) - set(expected_columns)
                 
                 if missing or extra:
-                    logger.warning(f"\n⚠️ {filename}:")
+                    logger.warning(f"\n[!] {filename}:")
                     if missing:
                         logger.warning(f"   누락된 컬럼: {missing}")
                     if extra:
                         logger.warning(f"   추가 컬럼: {extra}")
                 else:
-                    logger.info(f"✅ {filename}: 정상 ({len(df)}행)")
+                    logger.info(f"[OK] {filename}: normal ({len(df)} rows)")
                 
             except Exception as e:
                 logger.error(f"❌ {filename}: 읽기 실패 - {e}")
@@ -318,17 +320,11 @@ def verify_csv_structure():
 
 def main():
     """메인 실행 함수"""
-    print("""
-╔═══════════════════════════════════════════════════════════╗
-║                                                           ║
-║       🔧 QR 출석 시스템 CSV 표준화 도구                  ║
-║                                                           ║
-║   기존 CSV 파일들의 구조 문제를 자동으로 수정합니다.      ║
-║                                                           ║
-╚═══════════════════════════════════════════════════════════╝
-    """)
+    print("-" * 60)
+    print("       QR 출석 시스템 CSV 표준화 도구")
+    print("-" * 60)
     
-    logger.info("🚀 CSV 표준화 시작...\n")
+    logger.info("[>>>] CSV standardization started...\n")
     
     # 1. 현재 상태 검증
     logger.info("=" * 60)
@@ -337,7 +333,7 @@ def main():
     verify_csv_structure()
     
     # 2. 사용자 확인
-    print("\n⚠️  백업 파일이 자동으로 생성됩니다.")
+    print("\n[!] Backup files will be automatically created.")
     while True:
         response = input("계속 진행하시겠습니까? (y/n): ").strip().lower()
         
@@ -348,7 +344,7 @@ def main():
             logger.info("❌ 사용자가 취소했습니다.")
             return
         else:
-            print("⚠️  'y' 또는 'n'만 입력해주세요.")
+            print("[!] Please enter 'y' or 'n'.")
             continue
     
     # 3. 표준화 실행
@@ -374,8 +370,8 @@ def main():
     logger.info("=" * 60)
     verify_csv_structure()
     
-    logger.info("\n✅ CSV 표준화 완료!")
-    logger.info("📁 백업 파일은 .backup_YYYYMMDD_HHMMSS 형식으로 저장되었습니다.")
+    logger.info("\n[OK] CSV standardization complete!")
+    logger.info("[File] backups saved in .backup_YYYYMMDD_HHMMSS format.")
 
 
 if __name__ == "__main__":

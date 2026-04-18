@@ -9,7 +9,7 @@ import pandas as pd
 from datetime import datetime, date, timedelta, time
 import requests
 import streamlit.components.v1 as components
-from utils import load_csv_safe
+from utils import load_csv_safe, get_now_kst, get_today_kst
 from config import (
     STUDENTS_CSV, 
     ATTENDANCE_LOG_CSV, 
@@ -28,6 +28,7 @@ from config import (
 
 
 import os
+from supabase_client import supabase_mgr
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -358,49 +359,40 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ⭐ 수업 그룹 관련 함수
 def load_class_groups():
-    """수업 그룹 정보 로드"""
-    if not os.path.exists(CLASS_GROUPS_CSV):
-        return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours'])
-    try:
-        df = pd.read_csv(CLASS_GROUPS_CSV, encoding='utf-8-sig')
-        if 'total_hours' not in df.columns:
-            df['total_hours'] = 1.0
-        return df
-    except:
-        return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours'])
+    """수업 그룹 정보 로드 (Supabase) status: Stable"""
+    data = supabase_mgr.get_all_class_groups()
+    if not data:
+        return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours', 'zoom_meeting_id'])
+    df = pd.DataFrame(data)
+    if 'total_hours' not in df.columns: df['total_hours'] = 1.0
+    if 'zoom_meeting_id' not in df.columns: df['zoom_meeting_id'] = ""
+    return df
+
 
 def load_student_groups():
-    """학생-그룹 매핑 로드"""
-    if not os.path.exists(STUDENT_GROUPS_CSV):
+    """학생-그룹 매핑 로드 (Supabase) status: Stable"""
+    data = supabase_mgr.get_all_student_groups()
+    if not data:
         return pd.DataFrame(columns=['student_name', 'group_id'])
-    try:
-        return pd.read_csv(STUDENT_GROUPS_CSV, encoding='utf-8-sig')
-    except:
-        return pd.DataFrame(columns=['student_name', 'group_id'])
+    return pd.DataFrame(data)
+
 
 # ⭐ 선생님-그룹 관련 함수
 def load_teacher_groups():
-    """선생님-그룹 매핑 로드 (날짜 지원)"""
-    if not os.path.exists(TEACHER_GROUPS_CSV):
-        df = pd.DataFrame(columns=['teacher_username', 'group_id', 'date'])
-        df.to_csv(TEACHER_GROUPS_CSV, index=False, encoding='utf-8-sig')
-        return df
-    try:
-        df = pd.read_csv(TEACHER_GROUPS_CSV, encoding='utf-8-sig')
-        if 'date' not in df.columns:
-            df['date'] = ''
-        return df
-    except:
-        return pd.DataFrame(columns=['teacher_username', 'group_id', 'date'])
+    """선생님-그룹 매핑 로드 (Supabase)"""
+    data = supabase_mgr.get_all_teacher_groups()
+    if not data:
+        return pd.DataFrame(columns=['id', 'teacher_username', 'group_id', 'date'])
+    return pd.DataFrame(data)
+
 
 def get_teacher_groups(username, check_date=None):
     """
     선생님이 담당하는 그룹 ID 목록 (날짜 고려)
     """
     if check_date is None:
-        check_date = date.today()
+        check_date = get_today_kst()
     
     df_teacher_groups = load_teacher_groups()
     
@@ -435,7 +427,7 @@ def get_teacher_groups(username, check_date=None):
 def get_teacher_schedule(username, check_date=None):
     """(Supabase 연동) 선생님의 담당 수업 일정 반환"""
     if check_date is None:
-        check_date = date.today()
+        check_date = get_today_kst()
     
     try:
         from supabase_client import supabase_mgr
@@ -712,16 +704,16 @@ def save_attendance_note(student_name, session, note_text, created_by, target_da
         df_notes = load_attendance_notes()
         
         if target_date is None:
-            target_date = date.today()
+            target_date = get_today_kst()
         
         new_note = pd.DataFrame([{
-            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'timestamp': get_now_kst().strftime('%Y-%m-%d %H:%M:%S'),
             'student_name': student_name,
             'session': session,
             'date': target_date.isoformat() if isinstance(target_date, date) else target_date,
             'note': note_text,
             'created_by': created_by,
-            'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            'created_at': get_now_kst().strftime('%Y-%m-%d %H:%M:%S')
         }])
         
         df_notes = pd.concat([df_notes, new_note], ignore_index=True)
@@ -798,7 +790,7 @@ def get_weekly_attendance_stats(teacher_username):
         df_log['date'] = pd.to_datetime(df_log['date']).dt.date
         
         # 최근 7일
-        today = date.today()
+        today = get_today_kst()
         week_ago = today - timedelta(days=7)
         
         df_week = df_log[(df_log['date'] >= week_ago) & (df_log['date'] <= today)]
@@ -845,7 +837,7 @@ def get_monthly_attendance_stats():
         df_log['date'] = pd.to_datetime(df_log['date']).dt.date
         
         # 최근 30일
-        today = date.today()
+        today = get_today_kst()
         month_ago = today - timedelta(days=30)
         
         df_month = df_log[(df_log['date'] >= month_ago) & (df_log['date'] <= today)]
@@ -901,14 +893,14 @@ def auto_process_absences():
         df_schedule['date'] = pd.to_datetime(df_schedule['date']).dt.date
         
         # 오늘 이전의 수업만 (어제까지)
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = get_today_kst() - timedelta(days=1)
         past_schedules = df_schedule[df_schedule['date'] <= yesterday]
         
         if past_schedules.empty:
             return 0, 0
         
         # 최근 7일 이내만 처리
-        week_ago = date.today() - timedelta(days=7)
+        week_ago = get_today_kst() - timedelta(days=7)
         recent_schedules = past_schedules[past_schedules['date'] >= week_ago]
         
         if recent_schedules.empty:
@@ -1032,7 +1024,7 @@ def main():
     """, unsafe_allow_html=True)
     
     # 현재 시간
-    now = datetime.now()
+    now = get_now_kst()
     st.markdown(f"""
     <div class="time-display">
         <div class="time-value">{now.strftime('%H:%M')}</div>
@@ -1330,7 +1322,7 @@ def main():
                                 
                                 if matched_student_id:
                                     if not supabase_mgr.check_already_attended(matched_student_id, selected_schedule['id']):
-                                        now_str = datetime.now().isoformat()
+                                        now_str = get_now_kst().isoformat()
                                         if supabase_mgr.insert_attendance(
                                             student_id=matched_student_id,
                                             schedule_id=selected_schedule['id'],
@@ -1667,7 +1659,7 @@ def main():
         with col_date1:
             edit_date = st.date_input(
                 "📅 수정할 날짜",
-                value=date.today(),
+                value=get_today_kst(),
                 key="edit_date_selector"
             )
         
@@ -2012,7 +2004,7 @@ def main():
                     # 날짜 선택
                     note_date = st.date_input(
                         "📅 날짜",
-                        value=date.today(),
+                        value=get_today_kst(),
                         key="note_date"
                     )
                 
@@ -2156,7 +2148,7 @@ def main():
             st.download_button(
                 "📥 출석 기록 다운로드",
                 csv,
-                file_name=f"attendance_{date.today()}.csv",
+                file_name=f"attendance_{get_today_kst()}.csv",
                 mime="text/csv",
                 use_container_width=True,
                 key="download_attendance_bottom"

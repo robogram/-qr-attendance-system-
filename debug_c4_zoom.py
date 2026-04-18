@@ -55,7 +55,8 @@ for s in c4_schedules:
                 print(f"  - {p.get('name') or p.get('user_name')}: join_time={p.get('join_time')}")
                 
             print("\n2. Filtered participants (today):")
-            filtered = zoom_mgr.get_meeting_participants(zoom_id, target_date=date.today())
+from utils import get_today_kst
+            filtered = zoom_mgr.get_meeting_participants(zoom_id, target_date=get_today_kst())
             for p in filtered:
                 print(f"  - {p.get('name') or p.get('user_name')}: join_time={p.get('join_time')}")
                 

@@ -174,7 +174,7 @@ def robust_match(target, candidate):
 from datetime import datetime, date, timedelta, time
 import qrcode
 import io
-from utils import load_csv_safe, save_csv_safe
+from utils import load_csv_safe, save_csv_safe, get_now_kst, get_today_kst
 from config import (
     STUDENTS_CSV,
     ATTENDANCE_LOG_CSV,
@@ -438,8 +438,8 @@ def calculate_total_education_hours(student_name, group_id=None):
             try:
                 start_time = datetime.strptime(group['start_time'], '%H:%M').time()
                 end_time = datetime.strptime(group['end_time'], '%H:%M').time()
-                start_dt = datetime.combine(date.today(), start_time)
-                end_dt = datetime.combine(date.today(), end_time)
+                start_dt = datetime.combine(get_today_kst(), start_time)
+                end_dt = datetime.combine(get_today_kst(), end_time)
                 duration_hours = (end_dt - start_dt).total_seconds() / 3600
                 
                 weekdays = [int(x) for x in str(group['weekdays']).split(',')]
@@ -525,7 +525,7 @@ def get_student_attendance_for_group(student_name, group_id):
         
         # 5. 시각화 데이터 구성 (일정 기준 루프)
         full_history = []
-        today_date = date.today()
+        today_date = get_today_kst()
         
         if not group_schedules.empty:
             # 일정을 최신순으로 정렬
@@ -695,7 +695,7 @@ def calculate_consecutive_classes(records):
             return 0
         
         # 날짜별로 정렬 (최신순)
-        sorted_records = sorted(records, key=lambda x: x.get('date', date.today()), reverse=True)
+        sorted_records = sorted(records, key=lambda x: x.get('date', get_today_kst()), reverse=True)
         
         consecutive = 0
         for record in sorted_records:
@@ -735,7 +735,7 @@ def calculate_streak(records):
             return 0
         
         streak = 0
-        today = date.today()
+        today = get_today_kst()
         expected_date = today
         
         for record_date in sorted_dates:
@@ -979,7 +979,7 @@ def generate_certificate(student_name, school_name, course_name, start_date, end
         
         # 발급일
         y_pos += 30
-        issue_date = f"{date.today().year}년 {date.today().month:02d}월 {date.today().day:02d}일"
+        issue_date = f"{get_today_kst().year}년 {get_today_kst().month:02d}월 {get_today_kst().day:02d}일"
         date_bbox = draw.textbbox((0, 0), issue_date, font=body_font)
         date_width = date_bbox[2] - date_bbox[0]
         draw.text(((width - date_width) / 2, y_pos), issue_date, fill='black', font=body_font)
@@ -1052,16 +1052,16 @@ def main():
                 # 종료 일시 계산
                 end_time = datetime.strptime(end_time_str, '%H:%M').time()
                 end_datetime = datetime.combine(end_dt, end_time)
-                now = datetime.now()
+                now = get_now_kst()
                 
                 # 상태 결정
                 if end_datetime < now:
                     # 종료 시간이 현재보다 과거
                     status = "🔴 종료"
-                elif end_dt == date.today():
+                elif end_dt == get_today_kst():
                     # 오늘 수업 (아직 끝나지 않음)
                     status = "🟡 오늘 수업"
-                elif end_dt < date.today():
+                elif end_dt < get_today_kst():
                     # 과거 날짜
                     status = "🔴 종료"
                 else:

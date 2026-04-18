@@ -233,7 +233,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-date_today = date.today()
+from utils import get_today_kst
+date_today = get_today_kst()
 
 # 세션 초기화
 session_defaults = {

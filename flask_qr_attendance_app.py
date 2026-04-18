@@ -34,7 +34,7 @@ from config import (
 from utils import (
     load_csv_safe, draw_text_on_frame, load_schedule_for_today,
     get_attendance_status, validate_qr_code, format_attendance_record,
-    check_camera_available, logger
+    check_camera_available, logger, get_now_kst
 )
 
 # Flask 앱 초기화
@@ -138,7 +138,7 @@ def mark_as_scanned(student_name, session_key):
         session_key: 세션 키
     """
     with scanned_lock:
-        scanned_students[student_name][session_key] = datetime.now()
+        scanned_students[student_name][session_key] = get_now_kst()
         logger.info(f"Marked as scanned: {student_name} for session {session_key}")
 
 
@@ -149,7 +149,7 @@ def get_student_schedule(student_name):
     """학생의 이름으로 오늘 진행 중인 해당 학생의 수업 정보를 찾습니다."""
     try:
         from supabase_client import supabase_mgr
-        now = datetime.now()
+        now = get_now_kst()
         target_date_str = now.date().isoformat()
         
         # 1. 학생이 속한 그룹 찾기 (STUDENT_GROUPS_CSV 사용)
@@ -212,7 +212,7 @@ def get_current_session():
     """오늘 전체 일정 중 현재 시간 기준으로 진행 중인 수업 정보를 찾습니다."""
     try:
         from supabase_client import supabase_mgr
-        now = datetime.now()
+        now = get_now_kst()
         target_date_str = now.date().isoformat()
         
         # 오늘 전체 일정 가져오기
@@ -287,7 +287,7 @@ def generate_frames():
             logger.warning("Failed to read frame")
             break
         
-        now = datetime.now()
+        now = get_now_kst()
         
         # 유효한 코드 로드
         valid_codes = load_valid_codes()
@@ -526,7 +526,7 @@ def status():
     """시스템 상태 확인 엔드포인트"""
     try:
         current_session = get_current_session()
-        now = datetime.now()
+        now = get_now_kst()
         
         # 출석 가능 여부 판단
         attendance_available = False
