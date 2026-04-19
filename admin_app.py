@@ -56,7 +56,7 @@ def get_attendance_df():
     # from admin_app perspective
     # attendance table: id, student_id, schedule_id, check_in_time, status, type, remark
     response = supabase_mgr.client.table('attendance')\
-        .select('id, check_in_time, status, students!student_id(student_name, qr_code_data), schedule(class_name, start_time)').execute()
+        .select('id, check_in_time, status, type, students!student_id(student_name, qr_code_data), schedule(class_name, start_time)').execute()
     data = []
     if response.data:
         for r in response.data:
@@ -80,7 +80,7 @@ def get_attendance_df():
                 'student_name': s_name,
                 'qr_code': qr_code,
                 'session': session,
-                'status': r['status'],
+                'status': r['status'],            'type': r.get('type'),
                 'date': str(r['check_in_time']).split('T')[0] if r['check_in_time'] else ''
             })
     if not data:
