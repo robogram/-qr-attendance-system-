@@ -16,27 +16,64 @@ def login_screen():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
         * { font-family: 'Noto Sans KR', sans-serif !important; }
-        .stApp { background: linear-gradient(160deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
-        .main .block-container { padding-top: 2rem; }
-        label { color: rgba(255, 255, 255, 0.8) !important; font-weight: 600 !important; font-size: 13px !important; }
         
-        /* [핵심] 입력창 가독성 강제 설정 (흰색 배경 + 검정색 글자) */
+        .stApp {
+            background-color: #fcfcfc;
+            color: #0f172a;
+        }
+        
+        .main .block-container {
+            padding-top: 3rem;
+            max-width: 450px;
+        }
+        
+        /* Glassmorphism Logic Card (White Mode) */
+        div[data-testid="stForm"] {
+            background: #ffffff !important;
+            border-radius: 28px !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 40px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05) !important;
+        }
+        
+        /* 입력창 가독성 강제 설정 (화이트 모드 고대비) */
         input[type="text"], input[type="password"], [data-baseweb="input"] {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            -webkit-text-fill-color: #000000 !important;
-            border-radius: 14px !important;
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            -webkit-text-fill-color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            height: 48px !important;
+        }
+        
+        div[data-testid="stTextInput"] label {
+            color: #334155 !important;
+            font-weight: 700 !important;
+            font-size: 15px !important;
+            margin-bottom: 8px !important;
         }
         
         div[data-testid="stTextInput"] div[data-baseweb="input"] {
-            border: 2px solid #e1e1e1 !important;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+            border: 1px solid #cbd5e1 !important;
         }
 
-        .stFormSubmitButton > button, .stButton > button {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
-            color: white !important; border: none !important; border-radius: 14px !important;
-            font-size: 16px !important; font-weight: 700 !important; width: 100% !important;
+        /* 핑크-레드 버튼 */
+        .stFormSubmitButton > button {
+            background: linear-gradient(90deg, #f472b6 0%, #ef4444 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 12px !important;
+            height: 50px !important;
+            font-size: 17px !important;
+            font-weight: 700 !important;
+            width: 100% !important;
+            margin-top: 20px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2) !important;
+        }
+        .stFormSubmitButton > button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3) !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -48,9 +85,8 @@ def login_screen():
         st.image("static/mascot_small.png", width=140)
         st.markdown("""
         <div style="text-align:center; margin-bottom:28px;">
-            <div style="font-size:30px; font-weight:900; background:linear-gradient(to right,#fff,#a5b4fc);
-                        -webkit-background-clip:text; -webkit-text-fill-color:transparent;">관리자 포털</div>
-            <div style="font-size:13px; color:rgba(255,255,255,0.5); letter-spacing:2px;">ADMIN & TEACHER ACCESS</div>
+            <div style="font-size: 32px; font-weight: 900; color: #0f172a;">관리자 포털</div>
+            <div style="font-size: 13px; color: #64748b; letter-spacing:2px;">ADMIN & TEACHER ACCESS</div>
         </div>
         """, unsafe_allow_html=True)
         

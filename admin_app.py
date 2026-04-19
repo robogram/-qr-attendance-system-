@@ -209,15 +209,15 @@ def main():
             st.rerun()
         st.stop()
     
-    # ==================== CSS 스타일 (화사한 프리미엄 어드민 디자인) ====================
+    # ==================== CSS 스타일 (화이트 & 핑크 프리미엄 어드민 디자인) ====================
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
-        /* 글로벌 배경 및 폰트 */
+        /* 글로벌 배경 및 폰트 - 화이트 테마 */
         .stApp {
-            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-            color: #1e293b;
+            background-color: #fcfcfc;
+            color: #0f172a;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
         }
         
@@ -225,105 +225,119 @@ def main():
             background: transparent !important;
         }
 
-        /* 관리자용 헤더 (화사한 화이트 글래스) */
+        /* 관리자용 헤더 (프리미엄 핑크-레드 그라데이션) */
         .admin-header {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 30px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            background: linear-gradient(135deg, #f472b6 0%, #ef4444 100%);
+            padding: 40px;
+            border-radius: 24px;
+            margin-bottom: 35px;
+            box-shadow: 0 20px 40px rgba(239, 68, 68, 0.15);
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .admin-header h1 {
-            font-size: 32px !important;
+            font-size: 36px !important;
             font-weight: 900 !important;
             color: #ffffff !important;
             text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            letter-spacing: -1.5px !important;
         }
 
-        /* 통계 카드 (브라이트 글래스) */
+        /* 통계 카드 (클린 화이트) */
         .stat-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 20px;
-            padding: 28px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 30px;
             text-align: center;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            color: #1e293b !important;
+            color: #0f172a !important;
         }
         .stat-card:hover {
-            transform: translateY(-6px);
-            background: #ffffff;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+            transform: translateY(-8px);
+            border-color: #f472b6;
+            box-shadow: 0 15px 35px rgba(244, 114, 182, 0.15);
         }
         
         .stat-number {
-            font-size: 48px;
+            font-size: 52px;
             font-weight: 900;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #f472b6 0%, #ef4444 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin: 12px 0;
+            margin: 15px 0;
+            letter-spacing: -1px;
         }
 
-        /* 그룹 및 유저 아이템 */
+        /* 그룹 및 유저 아이템 - 화이트 테마 최적화 */
         .group-card {
-            background: rgba(255, 255, 255, 0.85);
-            border-left: 8px solid #3b82f6;
-            border-radius: 16px;
+            background: #ffffff;
+            border-left: 8px solid #ef4444;
+            border-radius: 20px;
             padding: 24px;
             margin: 15px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
             transition: all 0.2s ease;
-            color: #1e293b;
+            color: #0f172a;
+            border-top: 1px solid #f1f5f9;
+            border-right: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .group-card:hover { transform: scale(1.01); background: #ffffff; }
+        .group-card:hover { transform: scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
 
-        /* 권한 배지 */
+        /* 권한 배지 (모던 컬러) */
         .user-badge {
             display: inline-block;
-            padding: 6px 14px;
+            padding: 6px 16px;
             border-radius: 50px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 800;
             margin: 3px 6px;
             text-transform: uppercase;
         }
-        .badge-admin { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-        .badge-teacher { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-        .badge-student { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        .badge-admin { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .badge-teacher { background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
+        .badge-student { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
         /* 테이블 및 입력란 */
         .stDataFrame, div[data-testid="stTable"] {
-            background: rgba(255, 255, 255, 0.8) !important;
-            border-radius: 16px;
+            background: #ffffff !important;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
         }
         
-        /* 사이드바 스타일링 */
+        /* 사이드바 스타일링 (화이트) */
         [data-testid="stSidebar"] {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-            border-right: 1px solid #e2e8f0;
+            background-color: #ffffff !important;
+            border-right: 1px solid #f1f5f9;
         }
         [data-testid="stSidebar"] * {
-            color: #1e293b !important;
+            color: #0f172a !important;
         }
         
         /* 스크롤바 커스텀 */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
+        ::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 10px; }
+
+        /* 데이터 조회 옵션 섹션 */
+        .search-container {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
 
         /* 모바일 최적화 */
         @media (max-width: 768px) {
-            .admin-header h1 { font-size: 24px !important; }
-            .stat-number { font-size: 36px !important; }
+            .admin-header h1 { font-size: 26px !important; }
+            .stat-number { font-size: 40px !important; }
+            .admin-header { padding: 30px 15px; }
         }
     </style>
     """, unsafe_allow_html=True)
@@ -2912,12 +2926,24 @@ def main():
                 st.markdown("###")
                 st.markdown("### 📋 상세 출석 기록")
                 
-                display_columns = ['student_name', 'timestamp', 'status']
+                display_columns = ['student_name', 'timestamp', 'status', 'type']
                 if 'session' in df_filtered.columns and selected_session == "전체 수업":
                     display_columns.insert(1, 'session')
                 
                 df_display = df_filtered[display_columns].copy()
+                
+                # '온라인' 타입인 경우 상태에 (줌) 추가 (학생 앱과 동일 로직)
+                if 'type' in df_display.columns:
+                    df_display['status'] = df_display.apply(
+                        lambda r: f"{r['status']}(줌)" if str(r.get('type')) == '온라인' else r['status'], 
+                        axis=1
+                    )
+                
                 df_display = df_display.sort_values('timestamp', ascending=False)
+                
+                # 표시용 컬럼명 변경 (type은 숨김)
+                final_cols = [c for c in df_display.columns if c != 'type']
+                df_display = df_display[final_cols]
                 
                 df_display.columns = ['학생명' if col == 'student_name' else '수업' if col == 'session' else '시간' if col == 'timestamp' else '상태' if col == 'status' else col for col in df_display.columns]
                 
@@ -2940,7 +2966,8 @@ def main():
                             for _, row in df_filtered.iterrows():
                                 ts = row.get('timestamp', '')
                                 ts_str = ts[11:19] if isinstance(ts, str) and len(ts) > 11 else str(ts)
-                                disp_str = f"{row.get('student_name', '알수없음')} | {row.get('session', '')} | {row.get('date', '')} {ts_str} | {row.get('status', '')}"
+                                status_label = f"{row.get('status', '')}(줌)" if str(row.get('type')) == '온라인' else row.get('status', '')
+                                disp_str = f"{row.get('student_name', '알수없음')} | {row.get('session', '')} | {row.get('date', '')} {ts_str} | {status_label}"
                                 
                                 col1, col2 = st.columns([8, 2])
                                 with col1:
