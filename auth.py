@@ -105,6 +105,25 @@ def authenticate_user(username, password):
     
     return None
 
+def authenticate_by_name_and_birth(name, birth):
+    """
+    이름과 생년월일(비밀번호)로 사용자 인증
+    """
+    name = normalize_text(name)
+    # Supabase에서 이름과 비밀번호로 직접 쿼리
+    response = supabase_mgr.client.table('users').select('*')\
+        .eq('name', name)\
+        .eq('password', birth)\
+        .execute()
+        
+    if response.data:
+        user = response.data[0]
+        user['user_id'] = user.get('id')
+        user['name'] = normalize_text(user['name'])
+        return user
+        
+    return None
+
 
 def check_permission(user_role, permission):
     return PERMISSIONS.get(user_role, {}).get(permission, False)

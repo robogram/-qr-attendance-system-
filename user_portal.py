@@ -1,110 +1,151 @@
 import streamlit as st
-from auth import authenticate_user, get_role_display_name
+import base64
 import os
+import time
+from auth import authenticate_by_name_and_birth, get_role_display_name
 
-# 세션 초기화
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'user' not in st.session_state:
-    st.session_state.user = None
+# 1. 이미지 파일을 Base64로 변환하는 함수
+def get_base64_image(image_path):
+    if os.path.exists(image_path):
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return None
 
 def login_screen():
-    st.set_page_config(page_title="로보그램 출석 앱", page_icon="🎒", layout="centered")
-    
-    # 강력한 가독성 확보를 위한 CSS (Troubleshooting Guide 패턴 적용)
-    st.markdown("""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
-        * { font-family: 'Noto Sans KR', sans-serif !important; }
-        
-        .stApp {
-            background-color: #fcfcfc;
-            color: #0f172a;
-        }
-        
-        .main .block-container {
-            padding-top: 3rem;
-            max-width: 450px;
-        }
-        
-        /* Glassmorphism Logic Card (White Mode) */
-        div[data-testid="stForm"] {
-            background: #ffffff !important;
-            border-radius: 28px !important;
-            border: 1px solid #e2e8f0 !important;
-            padding: 40px !important;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05) !important;
-        }
-        
-        /* [핵심] 입력창 가독성 강제 설정 (화이트 모드 고대비) */
-        input[type="text"], input[type="password"], [data-baseweb="input"] {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-            -webkit-text-fill-color: #0f172a !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 12px !important;
-            height: 48px !important;
-        }
-        
-        div[data-testid="stTextInput"] label {
-            color: #334155 !important;
-            font-weight: 700 !important;
-            font-size: 15px !important;
-            margin-bottom: 8px !important;
-        }
-        
-        div[data-testid="stTextInput"] div[data-baseweb="input"] {
-            border: 1px solid #cbd5e1 !important;
-        }
+    # 세션 상태 초기화 (애니메이션 및 에러 처리용)
+    if "login_success" not in st.session_state:
+        st.session_state.login_success = False
+    if "login_error" not in st.session_state:
+        st.session_state.login_error = False
 
-        /* 핑크-레드 버튼 */
-        .stFormSubmitButton > button {
-            background: linear-gradient(90deg, #f472b6 0%, #ef4444 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 12px !important;
-            height: 50px !important;
-            font-size: 17px !important;
-            font-weight: 700 !important;
-            width: 100% !important;
-            margin-top: 20px !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2) !important;
-        }
-        .stFormSubmitButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3) !important;
-        }
+    st.set_page_config(page_title="ROBOGRAM Kids", layout="centered")
+
+    mascot_path = "static/mascot_small.png"
+    mascot_base64 = get_base64_image(mascot_path)
+
+    # 3. 프리미엄 UI/UX 커스텀 CSS (Dedent 적용하여 안정성 확보)
+    st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+    /* 전체 배경: 경쾌한 파스텔 그라데이션 */
+    .stApp {{
+        background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%) !important;
+    }}
+
+    /* 글래스모피즘 컨테이너 및 반응형 설정 */
+    [data-testid="block-container"] {{
+        background: rgba(255, 255, 255, 0.6) !important;
+        backdrop-filter: blur(15px) !important;
+        -webkit-backdrop-filter: blur(15px) !important;
+        border-radius: 40px !important;
+        border: 2px solid #ffffff !important;
+        padding: 50px 40px !important;
+        max-width: 440px !important;
+        margin-top: 10vh !important;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.5s ease-in-out !important;
+    }}
+
+    /* 모바일 화면 최적화 (미디어 쿼리) */
+    @media (max-width: 768px) {{
+        [data-testid="block-container"] {{
+            margin-top: 2vh !important;
+            padding: 30px 20px !important;
+        }}
+        .title-text {{ font-size: 28px !important; }}
+        .stButton > button {{ height: 4em !important; font-size: 18px !important; }}
+    }}
+
+    /* 헤더 및 마스코트 애니메이션 */
+    .header-container {{ text-align: center; margin-bottom: 25px; }}
+    .mascot-welcome {{
+        width: 120px;
+        margin-bottom: -10px;
+        animation: hi-animation 2s ease-in-out infinite;
+    }}
+    @keyframes hi-animation {{
+        0%, 100% {{ transform: rotate(-5deg); }}
+        50% {{ transform: rotate(5deg); }}
+    }}
+
+    .title-text {{ font-family: 'Jua', sans-serif !important; font-size: 34px !important; color: #ff8cdd !important; margin-bottom: 5px !important; }}
+    .sub-text {{ font-size: 15px !important; color: #777 !important; margin-bottom: 20px !important; }}
+
+    /* 입력창 및 버튼 디자인 */
+    .stTextInput > div > div > input {{
+        border-radius: 20px !important;
+        border: 2px solid #eee !important;
+        padding: 12px 20px !important;
+    }}
+
+    /* [에러 발생 시] Shake 애니메이션 */
+    {'.stTextInput > div > div > input { border-color: #ff4b4b !important; animation: shake 0.5s !important; }' if st.session_state.login_error else ''}
+
+    @keyframes shake {{
+        0%, 100% {{ transform: translateX(0); }}
+        25% {{ transform: translateX(-8px); }}
+        75% {{ transform: translateX(8px); }}
+    }}
+
+    /* [로그인 성공 시] Fade-out 애니메이션 */
+    {'.stApp [data-testid="block-container"] { animation: fadeOut 0.8s forwards !important; }' if st.session_state.login_success else ''}
+
+    @keyframes fadeOut {{
+        from {{ opacity: 1; transform: translateY(0); }}
+        to {{ opacity: 0; transform: translateY(-30px); }}
+    }}
+
+    .stButton > button {{
+        background: linear-gradient(90deg, #ff8cdd, #ffb7b2) !important;
+        border-radius: 25px !important;
+        height: 3.5em !important;
+        font-family: 'Jua', sans-serif !important;
+        font-size: 20px !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 15px rgba(255, 140, 221, 0.3) !important;
+        transition: transform 0.2s !important;
+    }}
+    .stButton > button:hover {{ transform: scale(1.02) !important; }}
     </style>
     """, unsafe_allow_html=True)
-    
-    # [핵심] st.image를 사용한 안정적인 마스코트 로딩
-    _, col2, _ = st.columns([1, 2, 1])
-    with col2:
-        st.image("static/mascot_small.png", width=140)
-    
+
+    # 4. 화면 구성
     st.markdown(f"""
-    <div style="text-align:center; margin-top:15px; margin-bottom: 40px;">
-        <div style="font-size: 32px; font-weight: 900; color: #0f172a;">로보그램 출석 앱</div>
-        <div style="font-size: 15px; color: #64748b;">학생 / 학부모 전용 로그인</div>
+    <div class="header-container">
+        {"<img src='data:image/png;base64," + mascot_base64 + "' class='mascot-welcome'>" if mascot_base64 else ""}
+        <div class="title-text">안녕, 친구들!</div>
+        <div class="sub-text">오늘도 신나는 코딩 모험을 시작해볼까?</div>
     </div>
     """, unsafe_allow_html=True)
-    
-    with st.form("login_form"):
-        username = st.text_input("아이디", placeholder="아이디를 입력하세요", key="user_login_user")
-        password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요", key="user_login_pass")
-        submit = st.form_submit_button("🚀 로그인", use_container_width=True, key="user_login_btn")
-        
-        if submit:
-            user = authenticate_user(username, password)
-            if user and user['role'] in ['parent', 'student']:
-                st.session_state.user = user
-                st.session_state.authenticated = True
-                st.rerun()
-            elif user:
-                st.error("⛔ 학부모 또는 학생 계정이 아닙니다.")
-            else:
-                st.error("❌ 아이디 또는 비밀번호가 올바르지 않습니다.")
+
+    student_name = st.text_input("나의 이름", placeholder="이름을 입력해 주세요", key="user_login_name")
+    access_code = st.text_input("비밀번호 (생년월일 6자리)", type="password", placeholder="예: 150305", key="user_login_code")
+
+    st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)
+
+    # 5. 로그인 처리 로직
+    if st.button("수업 입장하기", key="user_login_submit"):
+        if student_name and access_code:
+            with st.spinner("로보미가 확인 중... 🤖"):
+                # Supabase 연동 코드 적용
+                user = authenticate_by_name_and_birth(student_name, access_code)
+                time.sleep(0.8) # 의도적인 약간의 딜레이로 UX 고도화
+                
+                if user and user['role'] in ['parent', 'student']:
+                    st.session_state.login_success = True
+                    st.session_state.login_error = False
+                    st.session_state.user = user
+                    st.session_state.authenticated = True
+                    st.rerun()
+                else:
+                    st.session_state.login_success = False
+                    st.session_state.login_error = True
+                    st.error("이름이나 비밀번호가 맞지 않아요! 💡")
+                    st.rerun()
+        else:
+            st.warning("이름과 비밀번호를 모두 입력해 주세요!")
 
 def main():
     if not st.session_state.authenticated:
