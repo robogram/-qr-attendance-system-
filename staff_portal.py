@@ -27,134 +27,134 @@ def login_screen():
     mascot_base64 = get_base64_image(mascot_path)
     mascot_bg_base64 = get_base64_image(mascot_bg_path)
 
-    # 1. 프리미엄 글래스모피즘 CSS 주입 (f-string이 아니므로 중괄호 {}를 그대로 사용)
+    # 1. 프리미엄 글래스모피즘 CSS 주입 (마크다운 코드 블록 인식을 막기 위해 인덴트 제거)
     st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
-    /* 전체 앱 배경 */
-    .stApp {
-        background: linear-gradient(135deg, #e0f7fa 0%, #fce4ec 100%) !important;
-        font-family: 'Noto Sans KR', sans-serif !important;
-    }
+/* 전체 앱 배경 */
+.stApp {
+    background: linear-gradient(135deg, #e0f7fa 0%, #fce4ec 100%) !important;
+    font-family: 'Noto Sans KR', sans-serif !important;
+}
 
-    /* Streamlit 메인 컨테이너 글래스모피즘 카드화 */
-    [data-testid="block-container"] {
-        background: rgba(255, 255, 255, 0.45) !important;
-        backdrop-filter: blur(25px) !important;
-        -webkit-backdrop-filter: blur(25px) !important;
-        border-radius: 32px !important;
-        border: 1px solid rgba(255, 255, 255, 0.7) !important;
-        padding: 50px 40px 40px 40px !important;
-        max-width: 460px !important;
-        margin-top: 5vh !important;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.04) !important;
-    }
+/* Streamlit 메인 컨테이너 글래스모피즘 카드화 */
+[data-testid="block-container"] {
+    background: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-radius: 32px !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    padding: 50px 40px 40px 40px !important;
+    max-width: 460px !important;
+    margin-top: 5vh !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.04) !important;
+}
 
-    /* 헤더 영역 중앙 정렬 및 애니메이션 */
-    .header-container {
-        position: relative !important;
-        text-align: center !important;
-        margin-bottom: 25px !important;
-    }
+/* 헤더 영역 중앙 정렬 및 애니메이션 */
+.header-container {
+    position: relative !important;
+    text-align: center !important;
+    margin-bottom: 25px !important;
+}
 
-    .main-mascot {
-        position: absolute !important;
-        top: -85px !important;
-        right: -10px !important;
-        width: 120px !important;
-        filter: drop-shadow(0 15px 20px rgba(0,0,0,0.12)) !important;
-        animation: floating 3.5s ease-in-out infinite !important;
-        z-index: 10 !important;
-    }
+.main-mascot {
+    position: absolute !important;
+    top: -85px !important;
+    right: -10px !important;
+    width: 120px !important;
+    filter: drop-shadow(0 15px 20px rgba(0,0,0,0.12)) !important;
+    animation: floating 3.5s ease-in-out infinite !important;
+    z-index: 10 !important;
+}
 
-    .bg-mascot {
-        position: absolute !important;
-        bottom: -20px !important;
-        left: -30px !important;
-        width: 140px !important;
-        opacity: 0.5 !important;
-        transform: rotate(-12deg) !important;
-        z-index: -1 !important;
-    }
+.bg-mascot {
+    position: absolute !important;
+    bottom: -20px !important;
+    left: -30px !important;
+    width: 140px !important;
+    opacity: 0.5 !important;
+    transform: rotate(-12deg) !important;
+    z-index: -1 !important;
+}
 
-    @keyframes floating {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        50% { transform: translateY(-18px) rotate(4deg); }
-    }
+@keyframes floating {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(4deg); }
+}
 
-    .logo-text {
-        font-family: 'Montserrat', sans-serif !important;
-        font-size: 42px !important;
-        font-weight: 800 !important;
-        letter-spacing: -1.5px !important;
-        background: linear-gradient(to right, #00838f, #d81b60) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        margin-bottom: 0px !important;
-        display: block !important;
-    }
+.logo-text {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 42px !important;
+    font-weight: 800 !important;
+    letter-spacing: -1.5px !important;
+    background: linear-gradient(to right, #00838f, #d81b60) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    margin-bottom: 0px !important;
+    display: block !important;
+}
 
-    .logo-sub {
-        font-size: 14px !important;
-        color: #455a64 !important;
-        font-weight: 500 !important;
-        letter-spacing: 2px !important;
-        text-transform: uppercase !important;
-        margin-bottom: 20px !important;
-        display: block !important;
-    }
+.logo-sub {
+    font-size: 14px !important;
+    color: #455a64 !important;
+    font-weight: 500 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    margin-bottom: 20px !important;
+    display: block !important;
+}
 
-    /* 탭 메뉴 커스텀 */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px !important;
-        justify-content: center !important;
-        background-color: rgba(255, 255, 255, 0.4) !important;
-        padding: 6px !important;
-        border-radius: 16px !important;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        font-weight: 700 !important;
-        border-radius: 10px !important;
-    }
+/* 탭 메뉴 커스텀 */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 10px !important;
+    justify-content: center !important;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    padding: 6px !important;
+    border-radius: 16px !important;
+}
 
-    /* 입력 필드 스타일링 */
-    input[type="text"], input[type="password"] {
-        background-color: white !important;
-        color: #0f172a !important;
-        border-radius: 12px !important;
-    }
+.stTabs [data-baseweb="tab"] {
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+}
 
-    /* 프리미엄 버튼 */
-    .stButton > button {
-        width: 100% !important;
-        border-radius: 14px !important;
-        height: 3.5em !important;
-        background: linear-gradient(90deg, #0097a7, #00bcd4) !important;
-        color: white !important;
-        border: none !important;
-        font-weight: 700 !important;
-        font-size: 16px !important;
-        box-shadow: 0 8px 15px rgba(0, 188, 212, 0.2) !important;
-        transition: all 0.3s ease !important;
-        margin-top: 10px !important;
-    }
-    .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 12px 20px rgba(0, 188, 212, 0.3) !important;
-    }
-    </style>
+/* 입력 필드 스타일링 */
+input[type="text"], input[type="password"] {
+    background-color: white !important;
+    color: #0f172a !important;
+    border-radius: 12px !important;
+}
+
+/* 프리미엄 버튼 */
+.stButton > button {
+    width: 100% !important;
+    border-radius: 14px !important;
+    height: 3.5em !important;
+    background: linear-gradient(90deg, #0097a7, #00bcd4) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    box-shadow: 0 8px 15px rgba(0, 188, 212, 0.2) !important;
+    transition: all 0.3s ease !important;
+    margin-top: 10px !important;
+}
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 20px rgba(0, 188, 212, 0.3) !important;
+}
+</style>
     """, unsafe_allow_html=True)
     
-    # 2. 헤더 섹션 렌더링 (이미지 변수 삽입을 위해 f-string 사용)
+    # 2. 헤더 섹션 렌더링 (인덴트 제거하여 태그 노출 방지)
     st.markdown(f"""
-    <div class="header-container">
-        {"<img src='data:image/png;base64," + mascot_base64 + "' class='main-mascot'>" if mascot_base64 else ""}
-        {"<img src='data:image/png;base64," + mascot_bg_base64 + "' class='bg-mascot'>" if mascot_bg_base64 else ""}
-        <div class="logo-text">ROBOGRAM</div>
-        <div class="logo-sub">Smart Hybrid Attendance</div>
-    </div>
+<div class="header-container">
+    {"<img src='data:image/png;base64," + mascot_base64 + "' class='main-mascot'>" if mascot_base64 else ""}
+    {"<img src='data:image/png;base64," + mascot_bg_base64 + "' class='bg-mascot'>" if mascot_bg_base64 else ""}
+    <div class="logo-text">ROBOGRAM</div>
+    <div class="logo-sub">Smart Hybrid Attendance</div>
+</div>
     """, unsafe_allow_html=True)
     
     # 3. 역할별 로그인 탭 렌더링
