@@ -27,18 +27,14 @@ def login_screen():
     mascot_base64 = get_base64_image(mascot_path)
     mascot_bg_base64 = get_base64_image(mascot_bg_path)
 
-    # 1. 프리미엄 글래스모피즘 CSS 주입 (마크다운 코드 블록 인식을 막기 위해 인덴트 제거)
+    # 1. 프리미엄 글래스모피즘 CSS 주입 (인덴트 제거하여 마크다운 코드 블록 방지)
     st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
-
-/* 전체 앱 배경 */
 .stApp {
     background: linear-gradient(135deg, #e0f7fa 0%, #fce4ec 100%) !important;
     font-family: 'Noto Sans KR', sans-serif !important;
 }
-
-/* Streamlit 메인 컨테이너 글래스모피즘 카드화 */
 [data-testid="block-container"] {
     background: rgba(255, 255, 255, 0.45) !important;
     backdrop-filter: blur(25px) !important;
@@ -50,14 +46,11 @@ def login_screen():
     margin-top: 5vh !important;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.04) !important;
 }
-
-/* 헤더 영역 중앙 정렬 및 애니메이션 */
 .header-container {
     position: relative !important;
     text-align: center !important;
     margin-bottom: 25px !important;
 }
-
 .main-mascot {
     position: absolute !important;
     top: -85px !important;
@@ -67,7 +60,6 @@ def login_screen():
     animation: floating 3.5s ease-in-out infinite !important;
     z-index: 10 !important;
 }
-
 .bg-mascot {
     position: absolute !important;
     bottom: -20px !important;
@@ -77,12 +69,10 @@ def login_screen():
     transform: rotate(-12deg) !important;
     z-index: -1 !important;
 }
-
 @keyframes floating {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-18px) rotate(4deg); }
 }
-
 .logo-text {
     font-family: 'Montserrat', sans-serif !important;
     font-size: 42px !important;
@@ -94,7 +84,6 @@ def login_screen():
     margin-bottom: 0px !important;
     display: block !important;
 }
-
 .logo-sub {
     font-size: 14px !important;
     color: #455a64 !important;
@@ -104,8 +93,6 @@ def login_screen():
     margin-bottom: 20px !important;
     display: block !important;
 }
-
-/* 탭 메뉴 커스텀 */
 .stTabs [data-baseweb="tab-list"] {
     gap: 10px !important;
     justify-content: center !important;
@@ -113,20 +100,15 @@ def login_screen():
     padding: 6px !important;
     border-radius: 16px !important;
 }
-
 .stTabs [data-baseweb="tab"] {
     font-weight: 700 !important;
     border-radius: 10px !important;
 }
-
-/* 입력 필드 스타일링 */
 input[type="text"], input[type="password"] {
     background-color: white !important;
     color: #0f172a !important;
     border-radius: 12px !important;
 }
-
-/* 프리미엄 버튼 */
 .stButton > button {
     width: 100% !important;
     border-radius: 14px !important;
@@ -145,17 +127,17 @@ input[type="text"], input[type="password"] {
     box-shadow: 0 12px 20px rgba(0, 188, 212, 0.3) !important;
 }
 </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
     
-    # 2. 헤더 섹션 렌더링 (인덴트 제거하여 태그 노출 방지)
+    # 2. 헤더 섹션 렌더링 (인덴트 제거)
     st.markdown(f"""
 <div class="header-container">
-    {"<img src='data:image/png;base64," + mascot_base64 + "' class='main-mascot'>" if mascot_base64 else ""}
-    {"<img src='data:image/png;base64," + mascot_bg_base64 + "' class='bg-mascot'>" if mascot_bg_base64 else ""}
-    <div class="logo-text">ROBOGRAM</div>
-    <div class="logo-sub">Smart Hybrid Attendance</div>
+{"<img src='data:image/png;base64," + mascot_base64 + "' class='main-mascot'>" if mascot_base64 else ""}
+{"<img src='data:image/png;base64," + mascot_bg_base64 + "' class='bg-mascot'>" if mascot_bg_base64 else ""}
+<div class="logo-text">ROBOGRAM</div>
+<div class="logo-sub">Smart Hybrid Attendance</div>
 </div>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
     
     # 3. 역할별 로그인 탭 렌더링
     role_selection = st.tabs(["🔒 시스템 관리자", "👩‍🏫 교육 담당자"])
