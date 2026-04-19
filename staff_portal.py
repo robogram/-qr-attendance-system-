@@ -43,7 +43,7 @@ def login_screen():
     border: 1px solid rgba(255, 255, 255, 0.7) !important;
     padding: 50px 40px 40px 40px !important;
     max-width: 460px !important;
-    margin-top: 5vh !important;
+    margin-top: 10vh !important;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.04) !important;
 }
 .header-container {
@@ -53,7 +53,7 @@ def login_screen():
 }
 .main-mascot {
     position: absolute !important;
-    top: -85px !important;
+    top: -60px !important;
     right: -10px !important;
     width: 120px !important;
     filter: drop-shadow(0 15px 20px rgba(0,0,0,0.12)) !important;
@@ -161,7 +161,7 @@ input[type="text"], input[type="password"] {
 
     with role_selection[1]:
         with st.container():
-            username = st.text_input("교사 이메일", placeholder="teacher@robogram.com", key="teacher_id_final")
+            username = st.text_input("선생님 아이디", placeholder="teacher_id", key="teacher_id_final")
             password = st.text_input("비밀번호", type="password", placeholder="••••••••", key="teacher_pw_final")
             st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
             if st.button("클래스 대시보드 열기", key="btn_teacher_final"):
