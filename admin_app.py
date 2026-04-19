@@ -225,13 +225,13 @@ def main():
             background: transparent !important;
         }
 
-        /* 관리자용 헤더 (프리미엄 핑크-레드 그라데이션) */
+        /* 관리자용 헤더 (프리미엄 민트-블루 그라데이션) */
         .admin-header {
-            background: linear-gradient(135deg, #f472b6 0%, #ef4444 100%);
+            background: linear-gradient(135deg, #4fd1c5 0%, #06b6d4 100%);
             padding: 40px;
             border-radius: 24px;
             margin-bottom: 35px;
-            box-shadow: 0 20px 40px rgba(239, 68, 68, 0.15);
+            box-shadow: 0 20px 40px rgba(6, 182, 212, 0.15);
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
@@ -257,14 +257,14 @@ def main():
         }
         .stat-card:hover {
             transform: translateY(-8px);
-            border-color: #f472b6;
-            box-shadow: 0 15px 35px rgba(244, 114, 182, 0.15);
+            border-color: #4fd1c5;
+            box-shadow: 0 15px 35px rgba(79, 209, 197, 0.15);
         }
         
         .stat-number {
             font-size: 52px;
             font-weight: 900;
-            background: linear-gradient(135deg, #f472b6 0%, #ef4444 100%);
+            background: linear-gradient(135deg, #4fd1c5 0%, #06b6d4 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 15px 0;
@@ -274,7 +274,7 @@ def main():
         /* 그룹 및 유저 아이템 - 화이트 테마 최적화 */
         .group-card {
             background: #ffffff;
-            border-left: 8px solid #ef4444;
+            border-left: 8px solid #06b6d4;
             border-radius: 20px;
             padding: 24px;
             margin: 15px 0;
@@ -297,8 +297,8 @@ def main():
             margin: 3px 6px;
             text-transform: uppercase;
         }
-        .badge-admin { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .badge-teacher { background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
+        .badge-admin { background: #ccfbf1; color: #115e59; border: 1px solid #99f6e4; }
+        .badge-teacher { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; }
         .badge-student { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
         /* 테이블 및 입력란 */
@@ -322,7 +322,7 @@ def main():
         /* 스크롤바 커스텀 */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f8fafc; }
-        ::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #4fd1c5; border-radius: 10px; }
 
         /* 데이터 조회 옵션 섹션 */
         .search-container {

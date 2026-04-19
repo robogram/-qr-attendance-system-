@@ -57,9 +57,9 @@ def login_screen():
             border: 1px solid #cbd5e1 !important;
         }
 
-        /* 핑크-레드 버튼 */
+        /* 민트-블루 버튼 */
         .stFormSubmitButton > button {
-            background: linear-gradient(90deg, #f472b6 0%, #ef4444 100%) !important;
+            background: linear-gradient(90deg, #4fd1c5 0%, #06b6d4 100%) !important;
             color: #ffffff !important;
             border: none !important;
             border-radius: 12px !important;
@@ -69,11 +69,11 @@ def login_screen():
             width: 100% !important;
             margin-top: 20px !important;
             transition: all 0.3s ease !important;
-            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2) !important;
+            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.2) !important;
         }
         .stFormSubmitButton > button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(239, 68, 68, 0.3) !important;
+            box-shadow: 0 15px 30px rgba(6, 182, 212, 0.3) !important;
         }
     </style>
     """, unsafe_allow_html=True)
