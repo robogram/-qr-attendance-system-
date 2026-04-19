@@ -49,16 +49,17 @@ def login_screen():
 .header-container {
     position: relative !important;
     text-align: center !important;
-    margin-bottom: 25px !important;
+    padding-top: 40px !important;    /* 여백 조정 */
+    margin-bottom: 30px !important;  /* 여백 조정 */
 }
 .main-mascot {
     position: absolute !important;
-    top: -60px !important;
-    right: -10px !important;
-    width: 120px !important;
-    filter: drop-shadow(0 15px 20px rgba(0,0,0,0.12)) !important;
-    animation: floating 3.5s ease-in-out infinite !important;
-    z-index: 10 !important;
+    top: -85px !important;           /* 위로 더 많이 돌출 */
+    right: -25px !important;         /* 오른쪽으로 살짝 나감 */
+    width: 160px !important;         /* 120px -> 160px 확대 */
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.15)) !important;
+    animation: floating 3s ease-in-out infinite !important;
+    z-index: 100 !important;         /* 다른 요소들보다 확실히 위에 */
 }
 .bg-mascot {
     position: absolute !important;
@@ -70,8 +71,8 @@ def login_screen():
     z-index: -1 !important;
 }
 @keyframes floating {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-18px) rotate(4deg); }
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
 }
 .logo-text {
     font-family: 'Montserrat', sans-serif !important;
