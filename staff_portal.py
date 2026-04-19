@@ -1,6 +1,7 @@
 import streamlit as st
 from auth import authenticate_user, get_role_display_name
 import os
+import base64
 
 # 세션 초기화
 if 'authenticated' not in st.session_state:
@@ -8,104 +9,188 @@ if 'authenticated' not in st.session_state:
 if 'user' not in st.session_state:
     st.session_state.user = None
 
-def login_screen():
-    st.set_page_config(page_title="로보그램 관리자 포털", page_icon="🛡️", layout="centered")
-    
-    # 강력한 가독성 확보를 위한 CSS (Troubleshooting Guide 패턴 적용)
-    st.markdown("""
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
-        * { font-family: 'Noto Sans KR', sans-serif !important; }
-        
-        .stApp {
-            background-color: #fcfcfc;
-            color: #0f172a;
-        }
-        
-        .main .block-container {
-            padding-top: 3rem;
-            max-width: 450px;
-        }
-        
-        /* Glassmorphism Logic Card (White Mode) */
-        div[data-testid="stForm"] {
-            background: #ffffff !important;
-            border-radius: 28px !important;
-            border: 1px solid #e2e8f0 !important;
-            padding: 40px !important;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05) !important;
-        }
-        
-        /* 입력창 가독성 강제 설정 (화이트 모드 고대비) */
-        input[type="text"], input[type="password"], [data-baseweb="input"] {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-            -webkit-text-fill-color: #0f172a !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 12px !important;
-            height: 48px !important;
-        }
-        
-        div[data-testid="stTextInput"] label {
-            color: #334155 !important;
-            font-weight: 700 !important;
-            font-size: 15px !important;
-            margin-bottom: 8px !important;
-        }
-        
-        div[data-testid="stTextInput"] div[data-baseweb="input"] {
-            border: 1px solid #cbd5e1 !important;
-        }
+# 이미지 파일을 Base64로 변환하는 함수 (허깅페이스 배포 안정성 확보)
+def get_base64_image(image_path):
+    if os.path.exists(image_path):
+        try:
+            with open(image_path, "rb") as img_file:
+                return base64.b64encode(img_file.read()).decode()
+        except Exception:
+            return None
+    return None
 
-        /* 민트-블루 버튼 */
-        .stFormSubmitButton > button {
-            background: linear-gradient(90deg, #4fd1c5 0%, #06b6d4 100%) !important;
-            color: #ffffff !important;
-            border: none !important;
-            border-radius: 12px !important;
-            height: 50px !important;
-            font-size: 17px !important;
-            font-weight: 700 !important;
-            width: 100% !important;
-            margin-top: 20px !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 10px 20px rgba(6, 182, 212, 0.2) !important;
-        }
-        .stFormSubmitButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px rgba(6, 182, 212, 0.3) !important;
-        }
+def login_screen():
+    st.set_page_config(page_title="ROBOGRAM Attendance", layout="centered")
+    
+    mascot_path = "static/mascot_small.png"
+    mascot_bg_path = "static/mascot_small1.png"
+    mascot_base64 = get_base64_image(mascot_path)
+    mascot_bg_base64 = get_base64_image(mascot_bg_path)
+
+    # 1. 프리미엄 글래스모피즘 CSS 주입
+    st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+    /* 전체 앱 배경 */
+    .stApp {{
+        background: linear-gradient(135deg, #e0f7fa 0%, #fce4ec 100%);
+        font-family: 'Noto Sans KR', sans-serif !important;
+    }}
+
+    /* Streamlit 메인 컨테이너 글래스모피즘 카드화 */
+    [data-testid="block-container"] {{
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        padding: 50px 40px 40px 40px;
+        max-width: 460px;
+        margin-top: 5vh;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.04);
+    }}
+
+    /* 헤더 영역 중앙 정렬 및 애니메이션 */
+    .header-container {{
+        position: relative;
+        text-align: center;
+        margin-bottom: 20px;
+    }}
+
+    .main-mascot {{
+        position: absolute;
+        top: -90px;
+        right: -10px;
+        width: 120px;
+        filter: drop-shadow(0 15px 20px rgba(0,0,0,0.12));
+        animation: floating 3.5s ease-in-out infinite;
+        z-index: 10;
+    }}
+
+    .bg-mascot {{
+        position: absolute;
+        bottom: -20px;
+        left: -30px;
+        width: 140px;
+        opacity: 0.5;
+        transform: rotate(-12deg);
+        z-index: -1;
+    }}
+
+    @keyframes floating {{
+        0%, 100% {{ transform: translateY(0) rotate(0deg); }}
+        50% {{ transform: translateY(-18px) rotate(4deg); }}
+    }}
+
+    .logo-text {{
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        background: linear-gradient(to right, #00838f, #d81b60);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0px;
+    }}
+
+    .logo-sub {{
+        font-size: 14px;
+        color: #455a64;
+        font-weight: 500;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+    }}
+
+    /* 탭 메뉴 커스텀 */
+    .stTabs [data-baseweb="tab-list"] {{
+        gap: 10px;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.4);
+        padding: 6px;
+        border-radius: 16px;
+    }}
+    
+    .stTabs [data-baseweb="tab"] {{
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+    }}
+
+    /* 입력 필드 스타일링 */
+    input[type="text"], input[type="password"] {{
+        background-color: white !important;
+        color: #0f172a !important;
+        border-radius: 12px !important;
+    }}
+
+    /* 프리미엄 버튼 */
+    .stButton > button {{
+        width: 100%;
+        border-radius: 14px !important;
+        height: 3.2em !important;
+        background: linear-gradient(90deg, #0097a7, #00bcd4) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        box-shadow: 0 8px 15px rgba(0, 188, 212, 0.2) !important;
+        transition: all 0.3s ease !important;
+        margin-top: 10px;
+    }}
+    .stButton > button:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px rgba(0, 188, 212, 0.3) !important;
+    }}
     </style>
     """, unsafe_allow_html=True)
     
-    st.markdown("<br>", unsafe_allow_html=True)
-    _, col2, _ = st.columns([1, 1.8, 1])
-    with col2:
-        # [핵심] st.image를 사용한 안정적인 마스코트 로딩
-        st.image("static/mascot_small.png", width=140)
-        st.markdown("""
-        <div style="text-align:center; margin-bottom:28px;">
-            <div style="font-size: 32px; font-weight: 900; color: #0f172a;">관리자 포털</div>
-            <div style="font-size: 13px; color: #64748b; letter-spacing:2px;">ADMIN & TEACHER ACCESS</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        with st.form("login_form"):
-            username = st.text_input("아이디", placeholder="아이디를 입력하세요", key="staff_login_user")
-            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요", key="staff_login_pass")
-            submit = st.form_submit_button("🔐  로그인", use_container_width=True, key="staff_login_btn")
-            
-            if submit:
+    # 2. 헤더 섹션 렌더링
+    st.markdown(f"""
+    <div class="header-container">
+        {"<img src='data:image/png;base64," + mascot_base64 + "' class='main-mascot'>" if mascot_base64 else ""}
+        {"<img src='data:image/png;base64," + mascot_bg_base64 + "' class='bg-mascot'>" if mascot_bg_base64 else ""}
+        <div class="logo-text">ROBOGRAM</div>
+        <div class="logo-sub">Smart Hybrid Attendance</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 3. 역할별 로그인 탭 렌더링
+    role_selection = st.tabs(["🔒 시스템 관리자", "👩‍🏫 교육 담당자"])
+
+    with role_selection[0]:
+        with st.container():
+            username = st.text_input("관리자 계정", placeholder="Admin ID", key="admin_id_final")
+            password = st.text_input("액세스 토큰", type="password", placeholder="Access Token", key="admin_pw_final")
+            st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+            if st.button("관리 센터 접속", key="btn_admin_final"):
                 user = authenticate_user(username, password)
-                if user and user['role'] in ['admin', 'teacher']:
+                if user and user['role'] == 'admin':
                     st.session_state.user = user
                     st.session_state.authenticated = True
-                    st.success(f"✅ 인증 완료 — {user['name']}님, 환영합니다!")
+                    st.success("✅ 관리자 권한 확인 완료!")
                     st.rerun()
                 elif user:
-                    st.error("⛔ 접근 권한 없음 — 관리자/선생님 전용 포털입니다.")
+                    st.error("⛔ 시스템 관리자만 접근 가능한 탭입니다.")
                 else:
-                    st.error("❌ 아이디 또는 비밀번호가 올바르지 않습니다.")
+                    st.error("❌ 정보가 올바르지 않습니다.")
+
+    with role_selection[1]:
+        with st.container():
+            username = st.text_input("교사 이메일", placeholder="teacher@robogram.com", key="teacher_id_final")
+            password = st.text_input("비밀번호", type="password", placeholder="••••••••", key="teacher_pw_final")
+            st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+            if st.button("클래스 대시보드 열기", key="btn_teacher_final"):
+                user = authenticate_user(username, password)
+                if user and user['role'] == 'teacher':
+                    st.session_state.user = user
+                    st.session_state.authenticated = True
+                    st.success("✅ 교육 담당자 인증 성공!")
+                    st.rerun()
+                elif user:
+                    st.error("⛔ 교육 담당자 전용 로그인입니다.")
+                else:
+                    st.error("❌ 이메일 또는 비밀번호를 확인해 주세요.")
 
 def main():
     if not st.session_state.authenticated:
