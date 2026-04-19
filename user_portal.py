@@ -20,7 +20,7 @@ def login_screen():
 
     st.set_page_config(page_title="ROBOGRAM Kids", layout="centered")
 
-    mascot_path = "static/mascot_small.png"
+    mascot_path = "static/mascot_premium.png"
     mascot_base64 = get_base64_image(mascot_path)
 
     # 3. 프리미엄 UI/UX 커스텀 CSS (Dedent 적용하여 안정성 확보)

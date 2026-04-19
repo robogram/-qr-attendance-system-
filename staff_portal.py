@@ -22,8 +22,8 @@ def get_base64_image(image_path):
 def login_screen():
     st.set_page_config(page_title="ROBOGRAM Attendance", layout="centered")
     
-    mascot_path = "static/mascot_small.png"
-    mascot_bg_path = "static/mascot_small1.png"
+    mascot_path = "static/mascot_premium.png"
+    mascot_bg_path = "static/mascot_premium.png"
     mascot_base64 = get_base64_image(mascot_path)
     mascot_bg_base64 = get_base64_image(mascot_bg_path)
 
