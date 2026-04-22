@@ -20,5 +20,12 @@ jobs:
           git lfs install
           git config --global user.email "antigravity-bot@robogram.co.kr"
           git config --global user.name "Antigravity Bot"
+          
+          # 1. 학생/학부모용 메인 스페이스 (robogram-attendance)
           git remote add hf https://hf_token:$HF_TOKEN@huggingface.co/spaces/robogram/robogram-attendance
           git push --force hf main
+          
+          # 2. 관리자/교사용 관리 스페이스 (robogram-attendance-admin)
+          # 사용자가 허깅페이스에 이 이름으로 스페이스를 생성해야 동작합니다.
+          git remote add hf-admin https://hf_token:$HF_TOKEN@huggingface.co/spaces/robogram/robogram-attendance-admin
+          git push --force hf-admin main
