@@ -983,6 +983,9 @@ def main():
             key="main_nav_radio"
         )
     
+    # 모든 탭에서 공통으로 사용할 사용자 데이터 로드
+    df_users = auth.load_users()
+
     st.markdown("---")
     
     # ==========================================
@@ -1061,7 +1064,7 @@ def main():
             """, unsafe_allow_html=True)
         
         with col4:
-            df_users = auth.load_users()
+            # df_users = auth.load_users() # 상단 공통 로드로 대체
             st.markdown(f"""
             <div class="stat-card">
                 <div class="stat-label">전체 사용자</div>
@@ -1469,7 +1472,7 @@ def main():
                         
                         # 교사 매핑 로드
                         df_teacher_groups = load_teacher_groups()
-                        df_users = auth.load_users()
+                        # df_users = auth.load_users() # 상단 공통 로드로 대체
                         teacher_map = {}
                         if not df_teacher_groups.empty and not df_users.empty:
                             for _, tg in df_teacher_groups.iterrows():
@@ -2135,7 +2138,7 @@ def main():
                     if check_permission(user['role'], 'can_manage_schedule'):
                         try:
                             # 계정 정보 불러오기
-                            df_users = auth.load_users()
+                            # df_users = auth.load_users() # 상단 공통 로드로 대체
                             teacher_df = df_users[df_users['role'].isin(['teacher', 'admin'])]
                             teacher_names = teacher_df['name'].tolist()
                         except:
@@ -3446,7 +3449,7 @@ def main():
             st.error("⚠️ 사용자 관리 권한이 없습니다.")
             st.stop()
         
-        df_users = auth.load_users()
+        # df_users = auth.load_users() # 상단 공통 로드로 대체
         
         st.subheader(f"👥 전체 사용자 ({len(df_users)}명)")
         
