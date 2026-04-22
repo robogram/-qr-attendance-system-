@@ -34,6 +34,8 @@ def login_screen():
 .stApp {
     background: linear-gradient(135deg, #e0f7fa 0%, #fce4ec 100%) !important;
     font-family: 'Noto Sans KR', sans-serif !important;
+    word-break: keep-all !important;
+    word-wrap: break-word !important;
 }
 [data-testid="block-container"] {
     background: rgba(255, 255, 255, 0.45) !important;

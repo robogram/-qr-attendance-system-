@@ -966,6 +966,13 @@ def main():
             letter-spacing: -1.5px !important;
             margin-bottom: 5px !important;
             text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
+        }
+
+        .student-header p {
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
         }
 
         /* 레벨 배지 디자인 (화이트 배경에 어울리는 골드) */
@@ -992,6 +999,8 @@ def main():
             margin-bottom: 20px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
         }
         .stat-card:hover {
             transform: translateY(-5px);
@@ -1021,6 +1030,8 @@ def main():
             margin-bottom: 20px;
             color: #1e293b;
             box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
         }
         .mission-complete { border-left: 8px solid #10b981; background: #f0fdf4; }
         .mission-progress { border-left: 8px solid #f472b6; background: #fdf2f8; }

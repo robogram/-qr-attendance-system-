@@ -220,6 +220,8 @@ def main():
             background-color: #fcfcfc;
             color: #0f172a;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
+            word-break: keep-all !important;
+            word-wrap: break-word !important;
         }
         
         [data-testid="stAppViewContainer"] {
@@ -243,6 +245,8 @@ def main():
             color: #ffffff !important;
             text-shadow: 0 2px 10px rgba(0,0,0,0.1);
             letter-spacing: -1.5px !important;
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
         }
 
         /* 통계 카드 (클린 화이트) */
@@ -255,6 +259,8 @@ def main():
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             color: #0f172a !important;
+            word-break: keep-all !important;
+            overflow-wrap: break-word !important;
         }
         .stat-card:hover {
             transform: translateY(-8px);
