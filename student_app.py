@@ -936,8 +936,8 @@ def main():
             background-color: #fcfcfc;
             color: #0f172a;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
-            word-break: keep-all;
-            word-wrap: break-word;
+            word-break: keep-all !important;
+            word-wrap: break-word !important;
         }
         
         [data-testid="stAppViewContainer"] { background: transparent !important; }
@@ -1293,12 +1293,19 @@ def main():
             qr_buf = generate_qr_code(qr_data)
             
             if qr_buf:
-                # QR 코드를 중앙에 배치하기 위해 컬럼 사용
-                col1, col2, col3 = st.columns([1.5, 2, 1.5])
-                with col2:
-                    st.markdown('<div class="qr-frame" style="text-align: center;">', unsafe_allow_html=True)
-                    st.image(qr_buf, width=210)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                # 모바일에서도 확실한 중앙 정렬을 위해 HTML/Base64 방식 사용
+                import base64
+                qr_base64 = base64.b64encode(qr_buf.getvalue()).decode()
+                st.markdown(
+                    f"""
+                    <div style="display: flex; justify-content: center; margin: 20px 0;">
+                        <div style="background: white; padding: 15px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                            <img src="data:image/png;base64,{qr_base64}" width="220" style="display: block;">
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
                 
                 st.download_button(
                     "📥 QR 코드 다운로드",
