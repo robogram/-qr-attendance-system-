@@ -2,8 +2,12 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# .env 파일에서 환경 변수 로드
-load_dotenv()
+# .env 파일 로드 (현재 파일 위치 기준)
+env_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")

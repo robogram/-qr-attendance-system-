@@ -55,8 +55,16 @@ def save_schedule_df(df):
 def get_attendance_df():
     # from admin_app perspective
     # attendance table: id, student_id, schedule_id, check_in_time, status, type, remark
-    response = supabase_mgr.client.table('attendance')\
-        .select('id, check_in_time, status, type, students!student_id(student_name, qr_code_data), schedule(class_name, start_time)').execute()
+    if not supabase_mgr.client:
+        return pd.DataFrame(columns=['id', 'date', 'session', 'student_name', 'qr_code', 'timestamp', 'status'])
+        
+    try:
+        response = supabase_mgr.client.table('attendance')\
+            .select('id, check_in_time, status, type, students!student_id(student_name, qr_code_data), schedule(class_name, start_time)').execute()
+    except Exception as e:
+        print(f"❌ Error fetching attendance: {e}")
+        return pd.DataFrame(columns=['id', 'date', 'session', 'student_name', 'qr_code', 'timestamp', 'status'])
+    
     data = []
     if response.data:
         for r in response.data:
@@ -983,6 +991,10 @@ def main():
             key="main_nav_radio"
         )
     
+    # 🆕 Supabase 연결 상태 확인 및 경고
+    if not supabase_mgr.client:
+        st.warning("⚠️ Supabase에 연결되지 않았습니다. 실시간 데이터 저장 및 조회가 제한될 수 있습니다. (.env 파일을 확인해주세요)")
+        
     # 모든 탭에서 공통으로 사용할 사용자 데이터 로드
     df_users = auth.load_users()
 
