@@ -29,8 +29,12 @@ def login_screen():
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
 
-    /* 전체 배경 */
-    .stApp {{ background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%); }}
+    /* 전체 배경 및 폰트 설정 (단어 단위 줄바꿈 적용) */
+    .stApp {{ 
+        background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+        word-break: keep-all;
+        word-wrap: break-word;
+    }}
 
     /* 중앙 컨테이너 */
     [data-testid="block-container"] {{

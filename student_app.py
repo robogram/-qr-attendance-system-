@@ -931,11 +931,13 @@ def main():
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+KR:wght@400;700;900&display=swap');
 
-        /* 글로벌 배경 및 폰트 - 화이트 & 브라이트 테마 */
+        /* 글로벌 배경 및 폰트 - 화이트 & 브라이트 테마 (단어 단위 줄바꿈 적용) */
         .stApp {
             background-color: #fcfcfc;
             color: #0f172a;
             font-family: 'Inter', 'Noto Sans KR', sans-serif !important;
+            word-break: keep-all;
+            word-wrap: break-word;
         }
         
         [data-testid="stAppViewContainer"] { background: transparent !important; }
@@ -1291,7 +1293,7 @@ def main():
             qr_buf = generate_qr_code(qr_data)
             
             if qr_buf:
-                # 모바일: QR 중앙 정렬
+                # QR 코드를 중앙에 배치하기 위해 컬럼 사용
                 col1, col2, col3 = st.columns([1.5, 2, 1.5])
                 with col2:
                     st.markdown('<div class="qr-frame" style="text-align: center;">', unsafe_allow_html=True)
