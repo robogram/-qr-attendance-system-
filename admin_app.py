@@ -467,7 +467,6 @@ def main():
     def sync_teacher_to_schedule(teacher_username, group_id):
         """배정된 선생님 정보를 schedule 테이블에 동기화"""
         try:
-            from auth import load_users
             df_users = load_users()
             teacher_row = df_users[df_users['username'] == teacher_username]
             teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
@@ -487,7 +486,6 @@ def main():
         """선생님 배정 해제 (Supabase 연동)"""
         try:
             # 삭제 전 정보 백업 (동기화용)
-            from auth import load_users
             df_users = load_users()
             teacher_row = df_users[df_users['username'] == teacher_username]
             teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
@@ -1797,7 +1795,6 @@ def main():
             st.stop()
         
         # 선생님 목록 로드
-        df_users = load_users()
         teachers = df_users[df_users['role'].isin(['teacher', 'admin'])].copy()
         
         # 수업 그룹 목록 로드
@@ -2130,7 +2127,7 @@ def main():
                 with col2:
                     if check_permission(user['role'], 'can_manage_schedule'):
                         try:
-                            from auth import load_users
+                            # 계정 정보 불러오기
                             df_users = load_users()
                             teacher_df = df_users[df_users['role'].isin(['teacher', 'admin'])]
                             teacher_names = teacher_df['name'].tolist()
