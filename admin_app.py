@@ -133,13 +133,14 @@ try:
 except st.errors.StreamlitAPIException:
     pass
 
+import auth
 from auth import (
     check_permission,
     get_role_display_name,
     create_user,
     update_user,
     delete_user,
-    load_users,
+    # load_users,  # shadowing 방지를 위해 auth.load_users() 사용
     PERMISSIONS
 )
 
@@ -467,7 +468,7 @@ def main():
     def sync_teacher_to_schedule(teacher_username, group_id):
         """배정된 선생님 정보를 schedule 테이블에 동기화"""
         try:
-            df_users = load_users()
+            df_users = auth.load_users()
             teacher_row = df_users[df_users['username'] == teacher_username]
             teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
             
@@ -486,7 +487,7 @@ def main():
         """선생님 배정 해제 (Supabase 연동)"""
         try:
             # 삭제 전 정보 백업 (동기화용)
-            df_users = load_users()
+            df_users = auth.load_users()
             teacher_row = df_users[df_users['username'] == teacher_username]
             teacher_real_name = teacher_row.iloc[0]['name'] if not teacher_row.empty else teacher_username
             
@@ -1054,7 +1055,7 @@ def main():
             """, unsafe_allow_html=True)
         
         with col4:
-            df_users = load_users()
+            df_users = auth.load_users()
             st.markdown(f"""
             <div class="stat-card">
                 <div class="stat-label">전체 사용자</div>
@@ -1462,7 +1463,7 @@ def main():
                         
                         # 교사 매핑 로드
                         df_teacher_groups = load_teacher_groups()
-                        df_users = load_users()
+                        df_users = auth.load_users()
                         teacher_map = {}
                         if not df_teacher_groups.empty and not df_users.empty:
                             for _, tg in df_teacher_groups.iterrows():
@@ -2128,7 +2129,7 @@ def main():
                     if check_permission(user['role'], 'can_manage_schedule'):
                         try:
                             # 계정 정보 불러오기
-                            df_users = load_users()
+                            df_users = auth.load_users()
                             teacher_df = df_users[df_users['role'].isin(['teacher', 'admin'])]
                             teacher_names = teacher_df['name'].tolist()
                         except:
@@ -3439,7 +3440,7 @@ def main():
             st.error("⚠️ 사용자 관리 권한이 없습니다.")
             st.stop()
         
-        df_users = load_users()
+        df_users = auth.load_users()
         
         st.subheader(f"👥 전체 사용자 ({len(df_users)}명)")
         
