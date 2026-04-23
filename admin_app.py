@@ -1491,6 +1491,7 @@ def main():
         
         # 데이터 로드 (실시간 모드 시 즉시 로드)
         df_groups = load_class_groups(force_live=is_live)
+        raw_count = len(df_groups)
         raw_db_data = df_groups.to_dict('records')
         
         # 🏁 필터링 처리
