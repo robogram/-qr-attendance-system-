@@ -9,6 +9,9 @@ if os.path.exists(env_path):
 else:
     load_dotenv()
 
+# 🆕 HTTP/2 프로토콜 오류(RemoteProtocolError) 방지를 위해 HTTP/1.1 강제 시도
+os.environ["HTTPX_HTTP2"] = "0"
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -23,18 +26,30 @@ class SupabaseManager:
     # --- Users ---
     def get_user_by_username(self, username):
         if not self.client: return None
-        response = self.client.table('users').select('*').eq('username', username).execute()
-        return response.data[0] if response.data else None
+        try:
+            response = self.client.table('users').select('*').eq('username', username).execute()
+            return response.data[0] if response.data else None
+        except Exception as e:
+            print(f"❌ Error getting user by username: {e}")
+            return None
 
     def get_user_by_id(self, user_id):
         if not self.client: return None
-        response = self.client.table('users').select('*').eq('id', user_id).execute()
-        return response.data[0] if response.data else None
+        try:
+            response = self.client.table('users').select('*').eq('id', user_id).execute()
+            return response.data[0] if response.data else None
+        except Exception as e:
+            print(f"❌ Error getting user by id: {e}")
+            return None
         
     def get_all_users(self):
         if not self.client: return []
-        response = self.client.table('users').select('*').execute()
-        return response.data
+        try:
+            response = self.client.table('users').select('*').execute()
+            return response.data
+        except Exception as e:
+            print(f"❌ Error getting all users: {e}")
+            return []
         
     def insert_user(self, user_data):
         if not self.client: return None
@@ -42,7 +57,7 @@ class SupabaseManager:
             res = self.client.table('users').insert(user_data).execute()
             return res.data[0] if res.data else None
         except Exception as e:
-            print(f"Error inserting user: {e}")
+            print(f"❌ Error inserting user: {e}")
             return None
             
     def update_user(self, user_id, user_data):
@@ -60,8 +75,20 @@ class SupabaseManager:
             self.client.table('users').delete().eq('id', user_id).execute()
             return True
         except Exception as e:
-            print(f"Error deleting user: {e}")
+            print(f"❌ Error deleting user: {e}")
             return False
+
+    def get_user_by_name_and_password(self, name, password):
+        if not self.client: return None
+        try:
+            response = self.client.table('users').select('*')\
+                .eq('name', name)\
+                .eq('password', password)\
+                .execute()
+            return response.data[0] if response.data else None
+        except Exception as e:
+            print(f"❌ Error getting user by name/pw: {e}")
+            return None
 
     # --- Students ---
     def get_all_students(self):
