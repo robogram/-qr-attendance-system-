@@ -649,8 +649,8 @@ def main():
             'weekdays': weekdays_str,
             'start_time': start_time.strftime('%H:%M'),
             'end_time': end_time.strftime('%H:%M'),
-            'start_date': start_date,
-            'end_date': end_date,
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
             'total_hours': total_hours,
             'zoom_meeting_id': zoom_meeting_id
         }])
