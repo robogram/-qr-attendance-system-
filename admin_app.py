@@ -1477,9 +1477,13 @@ def main():
         
         if hide_ended:
             try:
-                today_str = get_today_kst().isoformat()
-                df_groups = df_groups[df_groups['end_date'] >= today_str]
-            except:
+                # 🆕 더 안전한 날짜 비교 (문자열 -> 날짜 객체)
+                today = get_today_kst()
+                df_groups['temp_end_date'] = pd.to_datetime(df_groups['end_date']).dt.date
+                df_groups = df_groups[df_groups['temp_end_date'] >= today]
+                df_groups = df_groups.drop(columns=['temp_end_date'])
+            except Exception as e:
+                logger.error(f"Filter error: {e}")
                 pass
         
         if check_permission(user['role'], 'can_manage_schedule'):
@@ -1680,9 +1684,12 @@ def main():
                                 
                                 try:
                                     if batch_inserts:
-                                        supabase_mgr.client.table('schedule').insert(batch_inserts).execute()
+                                        res_sched = supabase_mgr.client.table('schedule').insert(batch_inserts).execute()
+                                        if not res_sched.data:
+                                            st.warning("⚠️ 수업 그룹은 생성되었으나, 세부 일정(Schedule) 데이터 정합성 확인이 필요합니다.")
                                 except Exception as e:
-                                    logger.error(f"Failed to batch insert schedule to Supabase: {e}")
+                                    st.error(f"❌ 세부 일정(Schedule) 저장 실패: {e}")
+                                    logger.error(f"Failed to batch insert schedule: {e}")
                             
                             st.success(f"✅ {group_name} 그룹이 생성되었습니다! (총 {len(new_schedules)}회)")
                             st.cache_data.clear() # 캐시 삭제
