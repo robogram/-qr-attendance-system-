@@ -642,8 +642,12 @@ def main():
             'zoom_meeting_id': zoom_meeting_id
         }])
         
-        df_groups = pd.concat([df_groups, new_group], ignore_index=True)
-        return new_id if save_class_groups(df_groups) else None
+        # 🆕 전체를 다시 저장하는 대신 신규 그룹만 upsert
+        res = supabase_mgr.upsert_class_group(new_group.iloc[0].to_dict())
+        if res:
+            return new_id
+        else:
+            return None
     
     def delete_class_group(group_id):
         """수업 그룹 삭제"""
@@ -1637,16 +1641,18 @@ def main():
                     elif not group_weekdays:
                         st.error("최소 1개 이상의 요일을 선택해주세요.")
                     else:
-                        new_group_id = create_class_group(
-                            group_name=group_name,
-                            weekdays=group_weekdays,
-                            start_time=group_start_time,
-                            end_time=group_end_time,
-                            start_date=group_start_date,
-                            end_date=group_end_date,
-                            total_hours=final_total_hours,
-                            zoom_meeting_id=group_zoom_id
-                        )
+                        # 생성 시도 알림
+                        with st.spinner("수업 그룹을 생성하는 중..."):
+                            new_group_id = create_class_group(
+                                group_name=group_name,
+                                weekdays=group_weekdays,
+                                start_time=group_start_time,
+                                end_time=group_end_time,
+                                start_date=group_start_date,
+                                end_date=group_end_date,
+                                total_hours=final_total_hours,
+                                zoom_meeting_id=group_zoom_id
+                            )
                         
                         if new_group_id:
                             new_schedules = generate_recurring_schedule(
@@ -1677,9 +1683,11 @@ def main():
                                     logger.error(f"Failed to batch insert schedule to Supabase: {e}")
                             
                             st.success(f"✅ {group_name} 그룹이 생성되었습니다! (총 {len(new_schedules)}회)")
-                            st.cache_data.clear() # 🆕 캐시 삭제하여 즉시 반영
+                            st.cache_data.clear() # 캐시 삭제
                             st.balloons()
                             st.rerun()
+                        else:
+                            st.error("❌ 수업 그룹 생성에 실패했습니다. DB 연결 상태나 권한을 확인해주세요.")
         
         st.markdown("---")
         st.markdown("### 📋 전체 수업 그룹")
