@@ -1493,13 +1493,18 @@ def main():
         
         if hide_ended:
             try:
-                # 🆕 더 안전한 날짜 비교 (문자열 -> 날짜 객체)
+                # 🆕 가장 확실한 날짜 비교 방식
                 today = get_today_kst()
-                df_groups['temp_end_date'] = pd.to_datetime(df_groups['end_date']).dt.date
-                df_groups = df_groups[df_groups['temp_end_date'] >= today]
-                df_groups = df_groups.drop(columns=['temp_end_date'])
+                # 날짜 형식을 YYYY-MM-DD로 통일하여 비교
+                df_groups['is_active'] = pd.to_datetime(df_groups['end_date']).dt.date >= today
+                
+                hidden_count = len(df_groups) - df_groups['is_active'].sum()
+                if hidden_count > 0:
+                    st.caption(f"ℹ️ 종료된 수업 {hidden_count}개가 숨겨져 있습니다.")
+                
+                df_groups = df_groups[df_groups['is_active']].copy()
             except Exception as e:
-                logger.error(f"Filter error: {e}")
+                logger.error(f"Filtering failed: {e}")
                 pass
         
         if check_permission(user['role'], 'can_manage_schedule'):
