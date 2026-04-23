@@ -1489,22 +1489,18 @@ def main():
         st.markdown("### 📋 그룹 목록")
         col_hide1, col_hide2 = st.columns([3, 1])
         with col_hide2:
-            hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=True, help="종료 날짜가 지난 수강 그룹을 대시보드에서 숨깁니다.", key="hide_passed_groups")
+            hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=False, help="종료 날짜가 지난 수강 그룹을 대시보드에서 숨깁니다.", key="hide_passed_groups")
+        
+        today_str = get_today_kst().isoformat() # "YYYY-MM-DD"
+        st.sidebar.caption(f"📍 현재 시스템 날짜(KST): {today_str}")
         
         if hide_ended:
             try:
-                # 🆕 가장 확실한 날짜 비교 방식
-                today = get_today_kst()
-                # 날짜 형식을 YYYY-MM-DD로 통일하여 비교
-                df_groups['is_active'] = pd.to_datetime(df_groups['end_date']).dt.date >= today
-                
-                hidden_count = len(df_groups) - df_groups['is_active'].sum()
-                if hidden_count > 0:
-                    st.caption(f"ℹ️ 종료된 수업 {hidden_count}개가 숨겨져 있습니다.")
-                
-                df_groups = df_groups[df_groups['is_active']].copy()
+                # 🆕 문자열 대 문자열로 가장 단순하고 확실하게 비교
+                # DB의 end_date가 'YYYY-MM-DD' 형식이면 안전하게 작동함
+                df_groups = df_groups[df_groups['end_date'].astype(str) >= today_str].copy()
             except Exception as e:
-                logger.error(f"Filtering failed: {e}")
+                logger.error(f"Simple filtering failed: {e}")
                 pass
         
         if check_permission(user['role'], 'can_manage_schedule'):
