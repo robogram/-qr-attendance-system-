@@ -193,8 +193,16 @@ class SupabaseManager:
         try:
             # group_id를 기준으로 upsert (conflict 시 update)
             res = self.client.table('class_groups').upsert(group_data, on_conflict='group_id').execute()
-            # 데이터가 반환되지 않더라도 에러가 없으면 성공으로 간주
-            return (group_data if not res.data else res.data[0]), None
+            
+            # 실제 데이터베이스에 변경사항이 생겼는지 확인
+            if hasattr(res, 'data') and res.data:
+                return res.data[0], None
+            else:
+                # 데이터가 안 돌아오면 실제 DB를 다시 조회해서 확인 (안전장치)
+                check = self.client.table('class_groups').select('*').eq('group_id', group_data['group_id']).execute()
+                if check.data:
+                    return check.data[0], None
+                return None, "데이터베이스 저장 실패 (응답 데이터 없음)"
         except Exception as e:
             error_msg = str(e)
             print(f"❌ Error upserting class group: {error_msg}")

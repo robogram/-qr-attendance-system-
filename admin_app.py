@@ -377,15 +377,20 @@ def main():
         if not data:
             return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours', 'zoom_meeting_id'])
         df = pd.DataFrame(data)
+        # group_id를 문자열로 통일
+        df['group_id'] = df['group_id'].astype(str)
         if 'total_hours' not in df.columns: df['total_hours'] = 1.0
         if 'zoom_meeting_id' not in df.columns: df['zoom_meeting_id'] = ""
+        logger.info(f"Loaded {len(df)} class groups.")
         return df
     
     def save_class_groups(df):
         """수업 그룹 저장 (Supabase)"""
         success = True
         for _, row in df.iterrows():
-            _, error = supabase_mgr.upsert_class_group(row.to_dict())
+            group_data = row.to_dict()
+            group_data['group_id'] = str(group_data['group_id'])
+            _, error = supabase_mgr.upsert_class_group(group_data)
             if error:
                 st.error(f"저장 실패 ({row['group_name']}): {error}")
                 success = False
@@ -644,8 +649,12 @@ def main():
             'zoom_meeting_id': zoom_meeting_id
         }])
         
-        # 🆕 전체를 다시 저장하는 대신 신규 그룹만 upsert
-        res, error_msg = supabase_mgr.upsert_class_group(new_group.iloc[0].to_dict())
+        # 🆕 타입 안정성을 위해 group_id를 문자열이 아닌 정수형으로 확실히 고정 (DB 스키마 확인 필요)
+        group_dict = new_group.iloc[0].to_dict()
+        group_dict['group_id'] = int(group_dict['group_id'])
+        
+        # 신규 그룹만 upsert
+        res, error_msg = supabase_mgr.upsert_class_group(group_dict)
         if res:
             return new_id, None
         else:
