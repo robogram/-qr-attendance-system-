@@ -372,17 +372,14 @@ def main():
     # 🆕 Supabase 연동 정보 로드 함수들
     from supabase_client import supabase_mgr
     
-    def load_class_groups():
+    def load_class_groups(force_live=False):
         """수업 그룹 정보 로드 (Supabase)"""
+        # 세션이나 캐시를 무시하고 싶을 때 force_live 사용
         data = supabase_mgr.get_all_class_groups()
         if not data:
             return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours', 'zoom_meeting_id'])
         df = pd.DataFrame(data)
-        # group_id를 문자열로 통일
         df['group_id'] = df['group_id'].astype(str)
-        if 'total_hours' not in df.columns: df['total_hours'] = 1.0
-        if 'zoom_meeting_id' not in df.columns: df['zoom_meeting_id'] = ""
-        logger.info(f"Loaded {len(df)} class groups.")
         return df
     
     def save_class_groups(df):
@@ -1485,22 +1482,29 @@ def main():
     elif tab == "🎓 수업 그룹":
         st.header("🎓 수업 그룹(반) 관리")
         
-        # 🆕 캐시 강제 삭제 버튼 (진단용)
-        if st.sidebar.button("🧹 시스템 캐시 강제 초기화", use_container_width=True):
-            st.cache_data.clear()
-            st.success("캐시가 초기화되었습니다. 페이지를 새로고침합니다.")
-            st.rerun()
-            
-        df_groups = load_class_groups()
+        # 🚀 실시간 장애 진단 도구
+        with st.sidebar.expander("🛠️ 긴급 진단 도구", expanded=True):
+            is_live = st.checkbox("🚀 실시간 DB 모드 (모든 캐시 무시)", value=False)
+            if st.button("🧹 전역 캐시 비우기"):
+                st.cache_data.clear()
+                st.rerun()
         
-        # 🏁 UI 아카이빙 필터 (종료된 수업 숨기기)
-        st.markdown("### 📋 그룹 목록")
-        col_hide1, col_hide2 = st.columns([3, 1])
-        with col_hide2:
-            hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=False, help="종료 날짜가 지난 수강 그룹을 대시보드에서 숨깁니다.", key="hide_passed_groups")
+        # 데이터 로드 (실시간 모드 시 즉시 로드)
+        df_groups = load_class_groups(force_live=is_live)
+        raw_db_data = df_groups.to_dict('records')
         
-        today_str = get_today_kst().isoformat() # "YYYY-MM-DD"
-        st.sidebar.caption(f"📍 현재 시스템 날짜(KST): {today_str}")
+        # 🏁 필터링 처리
+        if is_live:
+            st.warning("⚠️ **실시간 진단 모드 활성화:** 필터가 해제된 전체 데이터입니다.")
+            hide_ended = False
+        else:
+            col_hide1, col_hide2 = st.columns([3, 1])
+            with col_hide2:
+                hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=False, key="hide_passed_groups")
+        
+        # 필터링 결과 요약
+        st.sidebar.metric("DB 그룹 개수", f"{raw_count}개")
+        st.sidebar.metric("현재 표시 개수", f"{len(df_groups)}개")
         
         if hide_ended:
             try:
@@ -1867,13 +1871,14 @@ def main():
                             st.error(f"파일 처리 오류: {e}")
                 
                 st.markdown("###")
-        else:
-            st.info("등록된 수업 그룹이 없습니다. 새로운 그룹을 생성해주세요.")
-        
-        # 🆕 디버그용: DB 원본 데이터 확인 (관리자 전용)
-        with st.expander("🛠️ 데이터베이스 원본 데이터 확인 (디버그)", expanded=False):
-            st.write("데이터베이스에서 불러온 원본 레코드입니다. 필터링 전 상태를 확인하세요.")
-            st.dataframe(load_class_groups(), use_container_width=True)
+        # 🆕 초정밀 디버그 도구
+        with st.expander("🛠️ 데이터베이스 원본 상세 분석 (Raw JSON)", expanded=False):
+            st.markdown(f"**현재 DB 레코드 총 개수:** `{len(df_groups)}개`")
+            st.write("아래 JSON 데이터를 복사해서 주시면 정확한 분석이 가능합니다.")
+            st.json(raw_db_data)
+            
+            if st.button("🔄 즉시 강제 새로고침 (DB 재조회)"):
+                st.rerun()
     # ==========================================
     # 👨‍🏫 선생님 배정
     # ==========================================
