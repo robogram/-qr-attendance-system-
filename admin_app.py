@@ -1677,6 +1677,7 @@ def main():
                                     logger.error(f"Failed to batch insert schedule to Supabase: {e}")
                             
                             st.success(f"✅ {group_name} 그룹이 생성되었습니다! (총 {len(new_schedules)}회)")
+                            st.cache_data.clear() # 🆕 캐시 삭제하여 즉시 반영
                             st.balloons()
                             st.rerun()
         

@@ -193,7 +193,8 @@ class SupabaseManager:
         try:
             # group_id를 기준으로 upsert (conflict 시 update)
             res = self.client.table('class_groups').upsert(group_data, on_conflict='group_id').execute()
-            return res.data[0] if res.data else None
+            # 데이터가 반환되지 않더라도 에러가 없으면 성공으로 간주
+            return group_data if not res.data else res.data[0]
         except Exception as e:
             print(f"❌ Error upserting class group: {e}")
             return None
