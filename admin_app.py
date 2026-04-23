@@ -996,7 +996,11 @@ def main():
         st.warning("⚠️ Supabase에 연결되지 않았습니다. 실시간 데이터 저장 및 조회가 제한될 수 있습니다. (.env 파일을 확인해주세요)")
         
     # 모든 탭에서 공통으로 사용할 사용자 데이터 로드
-    df_users = auth.load_users()
+    try:
+        df_users = auth.load_users()
+    except Exception as e:
+        st.error(f"데이터 로드 오류: {e}")
+        df_users = pd.DataFrame() # 빈 데이터프레임으로 대체하여 크래시 방지
 
     st.markdown("---")
     

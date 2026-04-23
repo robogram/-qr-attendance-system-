@@ -114,8 +114,12 @@ class SupabaseManager:
     # --- Schedule ---
     def get_all_schedules(self):
         if not self.client: return []
-        response = self.client.table('schedule').select('*').execute()
-        return response.data
+        try:
+            response = self.client.table('schedule').select('*').execute()
+            return response.data
+        except Exception as e:
+            print(f"❌ Error getting all schedules: {e}")
+            return []
     def get_schedule_for_date(self, target_date_str):
         """해당 날짜(YYYY-MM-DD)에 해당하는 수업 목록 반환 (KST 기준 필터)"""
         if not self.client: return []
@@ -136,17 +140,25 @@ class SupabaseManager:
 
     def get_schedule_by_id(self, schedule_id):
         if not self.client: return None
-        response = self.client.table('schedule').select('*').eq('id', schedule_id).execute()
-        return response.data[0] if response.data else None
+        try:
+            response = self.client.table('schedule').select('*').eq('id', schedule_id).execute()
+            return response.data[0] if response.data else None
+        except Exception as e:
+            print(f"❌ Error getting schedule by id: {e}")
+            return None
 
     # --- Attendance ---
     def check_already_attended(self, student_id, schedule_id):
         """특정 학생이 특정 수업에 이미 출석했는지 확인"""
         if not self.client: return False
-        response = self.client.table('attendance').select('id')\
-            .eq('student_id', student_id)\
-            .eq('schedule_id', schedule_id).execute()
-        return len(response.data) > 0
+        try:
+            response = self.client.table('attendance').select('id')\
+                .eq('student_id', student_id)\
+                .eq('schedule_id', schedule_id).execute()
+            return len(response.data) > 0
+        except Exception as e:
+            print(f"❌ Error checking attendance: {e}")
+            return False
 
     def insert_attendance(self, student_id, schedule_id, check_in_time, status, type_str='오프라인', remark=''):
         """새로운 출석 기록 추가"""
@@ -169,8 +181,12 @@ class SupabaseManager:
     # --- Class Groups ---
     def get_all_class_groups(self):
         if not self.client: return []
-        response = self.client.table('class_groups').select('*').execute()
-        return response.data
+        try:
+            response = self.client.table('class_groups').select('*').execute()
+            return response.data
+        except Exception as e:
+            print(f"❌ Error getting class groups: {e}")
+            return []
 
     def upsert_class_group(self, group_data):
         if not self.client: return None
@@ -179,7 +195,7 @@ class SupabaseManager:
             res = self.client.table('class_groups').upsert(group_data, on_conflict='group_id').execute()
             return res.data[0] if res.data else None
         except Exception as e:
-            print(f"Error upserting class group: {e}")
+            print(f"❌ Error upserting class group: {e}")
             return None
 
     def delete_class_group(self, group_id):
