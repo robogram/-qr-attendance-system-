@@ -1477,6 +1477,12 @@ def main():
     elif tab == "🎓 수업 그룹":
         st.header("🎓 수업 그룹(반) 관리")
         
+        # 🆕 캐시 강제 삭제 버튼 (진단용)
+        if st.sidebar.button("🧹 시스템 캐시 강제 초기화", use_container_width=True):
+            st.cache_data.clear()
+            st.success("캐시가 초기화되었습니다. 페이지를 새로고침합니다.")
+            st.rerun()
+            
         df_groups = load_class_groups()
         
         # 🏁 UI 아카이빙 필터 (종료된 수업 숨기기)
@@ -1845,6 +1851,11 @@ def main():
                 st.markdown("###")
         else:
             st.info("등록된 수업 그룹이 없습니다. 새로운 그룹을 생성해주세요.")
+        
+        # 🆕 디버그용: DB 원본 데이터 확인 (관리자 전용)
+        with st.expander("🛠️ 데이터베이스 원본 데이터 확인 (디버그)", expanded=False):
+            st.write("데이터베이스에서 불러온 원본 레코드입니다. 필터링 전 상태를 확인하세요.")
+            st.dataframe(load_class_groups(), use_container_width=True)
     # ==========================================
     # 👨‍🏫 선생님 배정
     # ==========================================
