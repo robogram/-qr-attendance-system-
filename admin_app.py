@@ -616,7 +616,15 @@ def main():
             new_id = 1
         else:
             try:
-                new_id = int(pd.to_numeric(df_groups['group_id'], errors='coerce').max()) + 1
+                # 🆕 더 안전한 ID 생성 로직
+                try:
+                    if df_groups.empty:
+                        new_id = 1
+                    else:
+                        max_id = pd.to_numeric(df_groups['group_id'], errors='coerce').max()
+                        new_id = 1 if pd.isna(max_id) else int(max_id) + 1
+                except:
+                    new_id = int(time.time()) # 최후의 수단: 타임스탬프 활용
             except:
                 new_id = len(df_groups) + 1
     
@@ -1714,7 +1722,16 @@ def main():
                             st.rerun()
                         else:
                             st.error(f"❌ 수업 그룹 생성에 실패했습니다: {error_info}")
-                            st.info("💡 팁: 그룹 ID가 충돌하거나 데이터베이스 권한(RLS) 문제일 수 있습니다.")
+                            with st.expander("🛠️ 상세 에러 진단 정보", expanded=True):
+                                st.warning("데이터베이스 저장 시도 중 오류가 발생했습니다.")
+                                st.write("실제로 전송된 데이터:")
+                                st.json({
+                                    'group_name': group_name,
+                                    'start_date': group_start_date.isoformat(),
+                                    'end_date': group_end_date.isoformat(),
+                                    'weekdays': group_weekdays
+                                })
+                                st.info("💡 팁: 동일한 수업 정보가 이미 있거나, 데이터베이스 권한(RLS) 문제일 수 있습니다.")
         
         st.markdown("---")
         st.markdown("### 📋 전체 수업 그룹")
