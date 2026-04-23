@@ -10,7 +10,7 @@ import requests
 import streamlit.components.v1 as components
 import zipfile
 import json
-import time as _time
+import time as sys_time
 from functools import lru_cache
 
 # admin_app.py 상단 (수정 후)
@@ -2240,7 +2240,7 @@ def main():
                             try:
                                 supabase_mgr.client.table('schedule').delete().eq('id', row['id']).execute()
                                 st.success("일정이 취소되었습니다.")
-                                _time.sleep(0.5)
+                                sys_time.sleep(0.5)
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"취소 오류: {e}")
@@ -3312,7 +3312,7 @@ def main():
                                 logger.info(f"Attendance added: {add_student} - {add_status}")
                                 st.balloons()
                                 import time as _time
-                                _time.sleep(1)
+                                sys_time.sleep(1)
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"추가 실패: {e}")
@@ -3396,8 +3396,7 @@ def main():
                                 st.success(f"✅ {len(missing_students)}명의 학생이 결석 처리되었습니다!")
                                 logger.info(f"Bulk absence processed: {len(missing_students)} students")
                                 st.balloons()
-                                import time as _time
-                                _time.sleep(2)
+                                sys_time.sleep(2)
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"일괄 처리 실패: {e}")
