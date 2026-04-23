@@ -1679,7 +1679,7 @@ def main():
                     else:
                         # 생성 시도 알림
                         with st.spinner("수업 그룹을 생성하는 중..."):
-                            new_group_id = create_class_group(
+                            new_group_id, error_info = create_class_group(
                                 group_name=group_name,
                                 weekdays=group_weekdays,
                                 start_time=group_start_time,
