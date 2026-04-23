@@ -19,6 +19,7 @@ import pandas as pd
 # -- Supabase Proxy Helpers --
 from supabase_client import supabase_mgr
 
+@st.cache_data(ttl=600)
 def get_schedule_df():
     schedules = supabase_mgr.get_all_schedules()
     if not schedules:
@@ -52,6 +53,7 @@ def save_schedule_df(df):
         # For full robust sync, it's better to pass ID. 
         pass
         
+@st.cache_data(ttl=300) # 5분간 데이터 캐싱
 def get_attendance_df():
     # from admin_app perspective
     # attendance table: id, student_id, schedule_id, check_in_time, status, type, remark
@@ -59,12 +61,16 @@ def get_attendance_df():
         return pd.DataFrame(columns=['id', 'date', 'session', 'student_name', 'qr_code', 'timestamp', 'status'])
         
     try:
+        # 🆕 필요한 필드만 최적화하여 조회
         response = supabase_mgr.client.table('attendance')\
             .select('id, check_in_time, status, type, students!student_id(student_name, qr_code_data), schedule(class_name, start_time)').execute()
     except Exception as e:
         print(f"❌ Error fetching attendance: {e}")
         return pd.DataFrame(columns=['id', 'date', 'session', 'student_name', 'qr_code', 'timestamp', 'status'])
     
+    if not response.data:
+        return pd.DataFrame(columns=['id', 'date', 'session', 'student_name', 'qr_code', 'timestamp', 'status'])
+
     data = []
     if response.data:
         for r in response.data:

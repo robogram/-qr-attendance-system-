@@ -68,6 +68,9 @@ def normalize_text(text):
     if text is None: return ""
     return unicodedata.normalize('NFC', str(text)).strip()
 
+import streamlit as st
+
+@st.cache_data(ttl=300)
 def load_users():
     """사용자 목록 로드 (Supabase 기반)"""
     users_data = supabase_mgr.get_all_users()
