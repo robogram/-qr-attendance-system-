@@ -10,7 +10,7 @@ import requests
 import streamlit.components.v1 as components
 import zipfile
 import json
-import time
+import time as _time
 from functools import lru_cache
 
 # admin_app.py 상단 (수정 후)
@@ -2229,7 +2229,7 @@ def main():
                             try:
                                 supabase_mgr.client.table('schedule').delete().eq('id', row['id']).execute()
                                 st.success("일정이 취소되었습니다.")
-                                time.sleep(0.5)
+                                _time.sleep(0.5)
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"취소 오류: {e}")
