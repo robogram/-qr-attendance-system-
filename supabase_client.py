@@ -189,15 +189,16 @@ class SupabaseManager:
             return []
 
     def upsert_class_group(self, group_data):
-        if not self.client: return None
+        if not self.client: return None, "Supabase 클라이언트가 초기화되지 않았습니다."
         try:
             # group_id를 기준으로 upsert (conflict 시 update)
             res = self.client.table('class_groups').upsert(group_data, on_conflict='group_id').execute()
             # 데이터가 반환되지 않더라도 에러가 없으면 성공으로 간주
-            return group_data if not res.data else res.data[0]
+            return (group_data if not res.data else res.data[0]), None
         except Exception as e:
-            print(f"❌ Error upserting class group: {e}")
-            return None
+            error_msg = str(e)
+            print(f"❌ Error upserting class group: {error_msg}")
+            return None, error_msg
 
     def delete_class_group(self, group_id):
         if not self.client: return False

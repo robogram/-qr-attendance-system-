@@ -385,8 +385,10 @@ def main():
         """수업 그룹 저장 (Supabase)"""
         success = True
         for _, row in df.iterrows():
-            res = supabase_mgr.upsert_class_group(row.to_dict())
-            if res is None: success = False
+            _, error = supabase_mgr.upsert_class_group(row.to_dict())
+            if error:
+                st.error(f"저장 실패 ({row['group_name']}): {error}")
+                success = False
         return success
     
     def load_student_groups():
@@ -643,11 +645,11 @@ def main():
         }])
         
         # 🆕 전체를 다시 저장하는 대신 신규 그룹만 upsert
-        res = supabase_mgr.upsert_class_group(new_group.iloc[0].to_dict())
+        res, error_msg = supabase_mgr.upsert_class_group(new_group.iloc[0].to_dict())
         if res:
-            return new_id
+            return new_id, None
         else:
-            return None
+            return None, error_msg
     
     def delete_class_group(group_id):
         """수업 그룹 삭제"""
@@ -1687,7 +1689,8 @@ def main():
                             st.balloons()
                             st.rerun()
                         else:
-                            st.error("❌ 수업 그룹 생성에 실패했습니다. DB 연결 상태나 권한을 확인해주세요.")
+                            st.error(f"❌ 수업 그룹 생성에 실패했습니다: {error_info}")
+                            st.info("💡 팁: 그룹 ID가 충돌하거나 데이터베이스 권한(RLS) 문제일 수 있습니다.")
         
         st.markdown("---")
         st.markdown("### 📋 전체 수업 그룹")
