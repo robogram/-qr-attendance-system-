@@ -372,9 +372,9 @@ def main():
     # 🆕 Supabase 연동 정보 로드 함수들
     from supabase_client import supabase_mgr
     
-    def load_class_groups(force_live=False):
+    @st.cache_data(ttl=600)
+    def load_class_groups():
         """수업 그룹 정보 로드 (Supabase)"""
-        # 세션이나 캐시를 무시하고 싶을 때 force_live 사용
         data = supabase_mgr.get_all_class_groups()
         if not data:
             return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours', 'zoom_meeting_id'])
@@ -1480,32 +1480,19 @@ def main():
     # 🎓 수업 그룹
     # ==========================================
     elif tab == "🎓 수업 그룹":
-        st.header("🎓 수업 그룹(반) 관리")
+        st.header("🎓 수업 그룹 관리")
         
-        # 🚀 실시간 장애 진단 도구
-        with st.sidebar.expander("🛠️ 긴급 진단 도구", expanded=True):
-            is_live = st.checkbox("🚀 실시간 DB 모드 (모든 캐시 무시)", value=False)
-            if st.button("🧹 전역 캐시 비우기"):
-                st.cache_data.clear()
-                st.rerun()
-        
-        # 데이터 로드 (실시간 모드 시 즉시 로드)
-        df_groups = load_class_groups(force_live=is_live)
+        # 🆕 캐시 기반 로드
+        df_groups = load_class_groups()
         raw_count = len(df_groups)
-        raw_db_data = df_groups.to_dict('records')
         
-        # 🏁 필터링 처리
-        if is_live:
-            st.warning("⚠️ **실시간 진단 모드 활성화:** 필터가 해제된 전체 데이터입니다.")
-            hide_ended = False
-        else:
-            col_hide1, col_hide2 = st.columns([3, 1])
-            with col_hide2:
-                hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=False, key="hide_passed_groups")
+        col_hide1, col_hide2 = st.columns([3, 1])
+        with col_hide2:
+            hide_ended = st.checkbox("🏁 종료된 수업 숨기기", value=False, key="hide_passed_groups")
         
-        # 필터링 결과 요약
-        st.sidebar.metric("DB 그룹 개수", f"{raw_count}개")
-        st.sidebar.metric("현재 표시 개수", f"{len(df_groups)}개")
+        # 요약 정보 표시
+        st.sidebar.metric("전체 그룹", f"{raw_count}개")
+        st.sidebar.metric("표시 중", f"{len(df_groups)}개")
         
         if hide_ended:
             try:
@@ -1872,14 +1859,6 @@ def main():
                             st.error(f"파일 처리 오류: {e}")
                 
                 st.markdown("###")
-        # 🆕 초정밀 디버그 도구
-        with st.expander("🛠️ 데이터베이스 원본 상세 분석 (Raw JSON)", expanded=False):
-            st.markdown(f"**현재 DB 레코드 총 개수:** `{len(df_groups)}개`")
-            st.write("아래 JSON 데이터를 복사해서 주시면 정확한 분석이 가능합니다.")
-            st.json(raw_db_data)
-            
-            if st.button("🔄 즉시 강제 새로고침 (DB 재조회)"):
-                st.rerun()
     # ==========================================
     # 👨‍🏫 선생님 배정
     # ==========================================
@@ -2161,115 +2140,107 @@ def main():
     # 📅 일정 관리
     # ==========================================
     elif tab == "📅 일정 관리":
-        st.header("📅 일정 보기")
+        st.header("📅 일정 목록 및 관리")
         
         df_sched = get_schedule_df()
-        df_sched['date'] = pd.to_datetime(df_sched['date']).dt.date
         
+        # 수정 모드 관리를 위한 세션 상태 초기화
+        if 'editing_sched_id' not in st.session_state:
+            st.session_state.editing_sched_id = None
+
         if not df_sched.empty:
-            min_date = df_sched['date'].min()
-            max_date = df_sched['date'].max()
-            total_classes = len(df_sched)
-            
-            st.success(f"""
-            📚 **전체 일정:** {total_classes}회  
-            📆 **기간:** {min_date} ~ {max_date}
-            """)
-        
-        st.info("💡 **일정은 '수업 그룹' 탭에서 생성됩니다.**")
-        
-        if not df_sched.empty:
+            df_sched['date_dt'] = pd.to_datetime(df_sched['date']).dt.date
             df_sched_sorted = df_sched.sort_values('date', ascending=False)
             
-            st.markdown("### 📋 전체 일정")
+            min_date = df_sched['date_dt'].min()
+            max_date = df_sched['date_dt'].max()
             
-            for idx, row in df_sched_sorted.iterrows():
-                is_today = row['date'] == get_today_kst()
+            st.success(f"📚 **전체 일정:** {len(df_sched)}회 | 📆 **기간:** {min_date} ~ {max_date}")
+            
+            st.markdown("---")
+            
+            for _, row in df_sched_sorted.iterrows():
+                sched_id = row['id']
+                is_editing = st.session_state.editing_sched_id == sched_id
                 
-                col1, col2, col3 = st.columns([4, 4, 1])
-                
-                # db query to get current record details
-                current_teacher = ""
-                current_zoom_id = ""
-                current_class_name = row['session']
-                current_date = row['date']
-                current_start = row['start']
-                current_end = row['end']
-                
-                try:
-                    s_data = supabase_mgr.client.table('schedule').select('*').eq('id', row['id']).execute().data
-                    if s_data:
-                        current_record = s_data[0]
-                        current_teacher = current_record.get('teacher_name') or ""
-                        current_zoom_id = current_record.get('zoom_meeting_id') or ""
-                        current_class_name = current_record.get('class_name') or row['session']
-                        # Supabase에서 가져온 원본 시간 (ISO format)
-                        raw_start = current_record.get('start_time')
-                        raw_end = current_record.get('end_time')
-                except: pass
-    
-                with col1:
-                    # 📝 수업 정보 수정 (이름, 날짜, 시간)
-                    new_class_name = st.text_input("수업명", value=current_class_name, key=f"name_{row['id']}", label_visibility="collapsed")
-                    c1_a, c1_b = st.columns(2)
-                    with c1_a:
-                        new_date = st.date_input("날짜", value=current_date, key=f"date_{row['id']}", label_visibility="collapsed")
-                    with c1_b:
-                        st.caption(f"현재: {current_start}~{current_end}")
-                    
-                    new_start_t = st.text_input("시작 (HH:MM)", value=current_start, key=f"start_{row['id']}", label_visibility="collapsed")
-                    new_end_t = st.text_input("종료 (HH:MM)", value=current_end, key=f"end_{row['id']}", label_visibility="collapsed")
-    
-                with col2:
-                    if check_permission(user['role'], 'can_manage_schedule'):
-                        try:
-                            # 계정 정보 불러오기
-                            # df_users = auth.load_users() # 상단 공통 로드로 대체
-                            teacher_df = df_users[df_users['role'].isin(['teacher', 'admin'])]
-                            teacher_names = teacher_df['name'].tolist()
-                        except:
-                            teacher_names = []
+                # 카드 스타일 컨테이너
+                with st.container():
+                    # 한 줄 요약 뷰
+                    c1, c2, c3, c4 = st.columns([3, 2, 2, 1])
+                    with c1:
+                        st.markdown(f"**{row['session']}**")
+                    with c2:
+                        st.markdown(f"📆 {row['date']}")
+                    with c3:
+                        st.markdown(f"⏰ {row['start']} ~ {row['end']}")
+                    with c4:
+                        sub_c1, sub_c2 = st.columns(2)
+                        with sub_c1:
+                            if st.button("✏️", key=f"edit_btn_{sched_id}", help="수정"):
+                                st.session_state.editing_sched_id = sched_id if not is_editing else None
+                                st.rerun()
+                        with sub_c2:
+                            if st.button("🗑️", key=f"del_btn_{sched_id}", help="즉시 삭제"):
+                                try:
+                                    supabase_mgr.client.table('schedule').delete().eq('id', sched_id).execute()
+                                    st.cache_data.clear() # 캐시 즉시 갱신
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"삭제 오류: {e}")
+
+                    # 수정 모드 본문 (항상 노출되는 게 아니라 선택 시에만)
+                    if is_editing:
+                        with st.expander("📝 일정 상세 수정", expanded=True):
+                            # 상세 조회 (담당강사, Zoom 등)
+                            try:
+                                s_res = supabase_mgr.client.table('schedule').select('*').eq('id', sched_id).execute().data
+                                current_data = s_res[0] if s_res else {}
+                                edit_teacher = current_data.get('teacher_name') or "미배정"
+                                edit_zoom = current_data.get('zoom_meeting_id') or ""
+                            except:
+                                current_data = {}
+                                edit_teacher = "미배정"
+                                edit_zoom = ""
+
+                            ec1, ec2 = st.columns(2)
+                            with ec1:
+                                new_name = st.text_input("수업명", value=row['session'], key=f"edit_name_{sched_id}")
+                                new_date = st.date_input("날짜", value=row['date_dt'], key=f"edit_date_{sched_id}")
+                            with ec2:
+                                t_options = ['미배정'] + df_users[df_users['role'].isin(['teacher', 'admin'])]['name'].tolist()
+                                t_idx = t_options.index(edit_teacher) if edit_teacher in t_options else 0
+                                new_t = st.selectbox("담당 강사", t_options, index=t_idx, key=f"edit_t_{sched_id}")
+                                new_z = st.text_input("Zoom ID", value=edit_zoom, key=f"edit_z_{sched_id}")
                             
-                        options = ['미배정'] + teacher_names
-                        start_idx = options.index(current_teacher) if current_teacher in options else 0
-                        
-                        new_teacher = st.selectbox("👨‍🏫 담당", options, index=start_idx, key=f"sel_t_{row['id']}", label_visibility="collapsed")
-                        new_zoom = st.text_input("🌐 Zoom ID", value=current_zoom_id, key=f"zoom_t_{row['id']}", label_visibility="collapsed", placeholder="Zoom ID 입력")
-                        
-                        if st.button("저장", key=f"btn_t_{row['id']}", use_container_width=True, type="primary"):
-                            try:
-                                # 시간 조합 (KST)
-                                st_dt_str = f"{new_date.isoformat()}T{new_start_t}:00+09:00"
-                                en_dt_str = f"{new_date.isoformat()}T{new_end_t}:00+09:00"
-                                
-                                t_val = None if new_teacher == "미배정" else new_teacher
-                                z_val = None if not new_zoom.strip() else new_zoom.strip()
-                                
-                                supabase_mgr.client.table('schedule').update({
-                                    'class_name': new_class_name,
-                                    'start_time': st_dt_str,
-                                    'end_time': en_dt_str,
-                                    'teacher_name': t_val,
-                                    'zoom_meeting_id': z_val
-                                }).eq('id', row['id']).execute()
-                                st.success("✅ 일정이 업데이트되었습니다!")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"저장 오류: {e}")
-    
-                with col3:
-                    if check_permission(user['role'], 'can_manage_schedule'):
-                        # ❌ 버튼을 '취소' 의미로 변경 및 경고 추가
-                        if st.button("❌", key=f"del_sched_{row['id']}", help="이 일정만 취소(삭제)합니다", use_container_width=True):
-                            try:
-                                supabase_mgr.client.table('schedule').delete().eq('id', row['id']).execute()
-                                st.success("일정이 취소되었습니다.")
-                                sys_time.sleep(0.5)
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"취소 오류: {e}")
+                            tc1, tc2 = st.columns(2)
+                            with tc1:
+                                new_s = st.text_input("시작 (HH:MM)", value=row['start'], key=f"edit_start_{sched_id}")
+                            with tc2:
+                                new_e = st.text_input("종료 (HH:MM)", value=row['end'], key=f"edit_end_{sched_id}")
+
+                            if st.button("✅ 변경사항 저장", key=f"save_btn_{sched_id}", type="primary", use_container_width=True):
+                                try:
+                                    st_dt_str = f"{new_date.isoformat()}T{new_s}:00+09:00"
+                                    en_dt_str = f"{new_date.isoformat()}T{new_e}:00+09:00"
+                                    
+                                    supabase_mgr.client.table('schedule').update({
+                                        'class_name': new_name,
+                                        'start_time': st_dt_str,
+                                        'end_time': en_dt_str,
+                                        'teacher_name': None if new_t == "미배정" else new_t,
+                                        'zoom_meeting_id': new_z.strip() if new_z.strip() else None
+                                    }).eq('id', sched_id).execute()
+                                    
+                                    st.success("업데이트 완료!")
+                                    st.session_state.editing_sched_id = None
+                                    st.cache_data.clear()
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"저장 중 오류: {e}")
+                    
+                    st.markdown('<hr style="margin: 0.5rem 0; opacity: 0.2;">', unsafe_allow_html=True)
         else:
-            st.info("등록된 일정이 없습니다.")
+            st.info("등록된 일정이 없습니다. '수업 그룹' 탭에서 수업을 생성해 주세요.")
     
     # ==========================================
     # 👨‍👩‍👧 보호자 관리
