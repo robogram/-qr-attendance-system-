@@ -830,12 +830,32 @@ def generate_certificate(student_name, school_name, course_name, start_date, end
         draw.rectangle([20, 20, width-20, height-20], outline=border_color, width=10)
         draw.rectangle([30, 30, width-30, height-30], outline=border_color, width=3)
         
-        # 폰트 설정
-        try:
-            title_font = ImageFont.truetype("malgun.ttf", 60)
-            subtitle_font = ImageFont.truetype("malgun.ttf", 30)
-            body_font = ImageFont.truetype("malgun.ttf", 24)
-        except:
+        # 폰트 설정 (환경별 다각도 탐색)
+        font_paths = [
+            "malgun.ttf",                               # Windows
+            "C:/Windows/Fonts/malgun.ttf",              # Windows Full Path
+            "/usr/share/fonts/truetype/nanum/NanumGothic.ttf",  # Linux (Hugging Face)
+            "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc", # Linux Noto
+            "/usr/share/fonts/nanum/NanumGothic.ttf",   # Linux alternative
+            "NanumGothic.ttf"                           # Bundled (if exists)
+        ]
+        
+        title_font = None
+        subtitle_font = None
+        body_font = None
+        
+        for p in font_paths:
+            try:
+                title_font = ImageFont.truetype(p, 60)
+                subtitle_font = ImageFont.truetype(p, 30)
+                body_font = ImageFont.truetype(p, 24)
+                logger.info(f"Loaded font: {p}")
+                break
+            except:
+                continue
+        
+        if title_font is None:
+            logger.warning("No Hangul font found. Falling back to default (text may be corrupted)")
             try:
                 title_font = ImageFont.truetype("Arial.ttf", 60)
                 subtitle_font = ImageFont.truetype("Arial.ttf", 30)
@@ -844,7 +864,6 @@ def generate_certificate(student_name, school_name, course_name, start_date, end
                 title_font = ImageFont.load_default()
                 subtitle_font = ImageFont.load_default()
                 body_font = ImageFont.load_default()
-        
         # 제목
         title = "수 료 증"
         title_bbox = draw.textbbox((0, 0), title, font=title_font)
