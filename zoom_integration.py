@@ -143,23 +143,16 @@ class ZoomManager:
                 join_dt_utc = dt_cls.fromisoformat(join_time_str.replace('Z', '+00:00')).astimezone(utc_tz)
                 join_date_kst = join_dt_utc.astimezone(kst_tz).date()
 
-                # 날짜 필터: 오늘 또는 어제 (자정 근처 수업 고려)
+                # 날짜 필터: 오늘 또는 어제 (KST 기준 오늘이면 무조건 패스)
                 allowed_dates = {filter_date, filter_date - timedelta(days=1)}
                 if join_date_kst not in allowed_dates:
                     print(f"  [-] '{participant_name}' 날짜 제외 ({join_date_kst})")
                     continue
 
-                # 시간 필터: start_time과 end_time이 제공된 경우에만 적용
-                if start_utc and end_utc:
-                    window_start = start_utc - buffer
-                    # 수업 종료 후 2시간까지도 허용 (늦게 가져오는 경우 대비)
-                    window_end = end_utc + buffer
-                    if join_dt_utc < window_start or join_dt_utc > window_end:
-                        print(f"  [-] '{participant_name}' 시간 제외 (join={join_dt_utc}, window={window_start}~{window_end})")
-                        continue
-
+                # 시간 필터 제거: 오늘 입장한 학생이면 수업 시간과 상관없이 일단 모두 출석 후보로 포함
+                # (소회의실 이동 등으로 인한 시간 오차 완전 무력화)
                 filtered.append(p)
-                print(f"  [+] '{participant_name}' 포함 (join={join_dt_utc.astimezone(kst_tz).strftime('%H:%M KST')})")
+                print(f"  [+] '{participant_name}' 포함 (입장: {join_dt_utc.astimezone(kst_tz).strftime('%H:%M KST')})")
 
             except Exception as e:
                 # 파싱 실패 시 포함 (누락 방지)
