@@ -1138,7 +1138,8 @@ def main():
                 end_dt = pd.to_datetime(end_date).date()
                 end_time_str = group.get('end_time', '23:59')
                 
-                # 종료 일시 계산
+                # 종료 일시 계산 (HH:MM:SS 등에서 파싱 에러를 방지하기 위해 앞 5자리 HH:MM만 추출)
+                end_time_str = end_time_str[:5]
                 end_time = datetime.strptime(end_time_str, '%H:%M').time()
                 end_datetime = datetime.combine(end_dt, end_time)
                 now = get_now_kst()
