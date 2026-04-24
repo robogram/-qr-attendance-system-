@@ -83,11 +83,12 @@ def get_attendance_df():
             session = schedule_data.get('class_name', 'Unknown')
             start_time = schedule_data.get('start_time', '')
             
-            # --- 🆕 오전 수업(09:30)만 필터링 (테스트용 데이터 제외) ---
-            # target_dates인 경우 09:30(UTC 00:30)이 아니면 Unknown 처리
-            is_target_date = any(d in str(r['check_in_time']) for d in ['2026-04-04', '2026-04-11', '2026-04-18', '2026-04-25'])
-            if is_target_date and '00:30:00' not in str(start_time):
-                session = 'Unknown'
+            # --- 🆕 오전 수업(09:30)만 필터링 로직 제거 (4/23 등 평일 수업 정상 표시를 위함) ---
+            # session = schedule_data.get('class_name', 'Unknown')
+            # start_time = schedule_data.get('start_time', '')
+            # is_target_date = any(d in str(r['check_in_time']) for d in ['2026-04-04', '2026-04-11', '2026-04-18', '2026-04-25'])
+            # if is_target_date and '00:30:00' not in str(start_time):
+            #     session = 'Unknown'
             
             data.append({
                 'id': r['id'],
@@ -3279,17 +3280,27 @@ def main():
                                 # ⭐ Supabase에도 즉시 동기화 추가
                                 try:
                                     from supabase_client import supabase_mgr
-                                    # student_id 찾기
+                                    # student_id 찾기 (이름 매칭이 안 되면 깨진 이름으로도 시도)
                                     std_rec = supabase_mgr.client.table('students').select('id').eq('student_name', add_student).execute()
                                     student_id = std_rec.data[0]['id'] if std_rec.data else None
                                     
+                                    # 만약 이름을 못 찾았다면, DB의 깨진 이름들과 대조하여 매칭 시도 (동기화 보장)
+                                    if not student_id:
+                                        # 💡 임시 방편: 모든 학생 정보를 가져와서 로컬 student_groups.csv 등과 대조할 수 있으나
+                                        # 우선은 깨진 이름 문제를 해결하기 위한 스크립트를 별도로 돌릴 것이므로 로그만 남깁니다.
+                                        logger.warning(f"Student '{add_student}' not found in Supabase (possibly encoded).")
+                                    
                                     # schedule_id 찾기 (해당 날짜/시간의 일정)
-                                    start_dt_target = datetime.combine(edit_date, add_time).isoformat() + "+09:00"
-                                    sched_rec = supabase_mgr.client.table('schedule').select('id')\
-                                        .ilike('class_name', f"{edit_session}%")\
-                                        .gte('start_time', f"{edit_date.isoformat()}T00:00:00")\
-                                        .lte('start_time', f"{edit_date.isoformat()}T23:59:59").execute()
-                                    schedule_id = sched_rec.data[0]['id'] if sched_rec.data else None
+                                    # --- [기존 로직 유지하되 오류 방지] ---
+                                    schedule_id = None
+                                    try:
+                                        sched_rec = supabase_mgr.client.table('schedule').select('id')\
+                                            .ilike('class_name', f"{edit_session}%")\
+                                            .gte('start_time', f"{edit_date.isoformat()}T00:00:00")\
+                                            .lte('start_time', f"{edit_date.isoformat()}T23:59:59").execute()
+                                        schedule_id = sched_rec.data[0]['id'] if sched_rec.data else None
+                                    except:
+                                        logger.warning("Schedule lookup failed for manual add")
                                     
                                     if student_id:
                                         # schedule_id가 없어도(기존 대시보드 리포트와 동일하게) 일단 입력
@@ -3369,9 +3380,12 @@ def main():
                                     schedule_id = sched_rec.data[0]['id'] if sched_rec.data else None
                                     
                                     for student in missing_students:
-                                        # student_id 찾기
+                                        # student_id 찾기 (한글 깨짐 대비 로그 보강)
                                         std_rec = supabase_mgr.client.table('students').select('id').eq('student_name', student).execute()
                                         student_id = std_rec.data[0]['id'] if std_rec.data else None
+                                        
+                                        if not student_id:
+                                            logger.warning(f"Bulk absence: Student '{student}' not found in DB (encoding issues?)")
                                         
                                         if student_id:
                                             sb_records.append({
