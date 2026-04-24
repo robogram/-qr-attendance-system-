@@ -97,9 +97,22 @@ class SupabaseManager:
         return response.data
         
     def get_students_by_group(self, group_id):
+        """student_groups 매핑 테이블을 통해 그룹에 속한 학생 목록 반환"""
         if not self.client: return []
-        response = self.client.table('students').select('*').eq('class_group_id', group_id).execute()
-        return response.data
+        try:
+            # 1단계: student_groups 테이블에서 해당 그룹의 학생 이름 목록 조회
+            sg_response = self.client.table('student_groups').select('student_name').eq('group_id', str(group_id)).execute()
+            student_names = [r['student_name'] for r in sg_response.data if r.get('student_name')]
+            
+            if not student_names:
+                return []
+            
+            # 2단계: students 테이블에서 해당 이름의 학생 정보 조회
+            all_students = self.client.table('students').select('*').execute().data
+            return [s for s in all_students if s.get('student_name') in student_names]
+        except Exception as e:
+            print(f"get_students_by_group error: {e}")
+            return []
     def load_valid_codes(self):
         """유효한 학생 QR 코드 목록(data) 반환"""
         if not self.client: return set()
