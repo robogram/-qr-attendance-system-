@@ -7,9 +7,10 @@ load_dotenv()
 
 class ZoomManager:
     def __init__(self):
-        self.client_id = os.getenv("ZOOM_CLIENT_ID")
-        self.client_secret = os.getenv("ZOOM_CLIENT_SECRET")
-        self.account_id = os.getenv("ZOOM_ACCOUNT_ID")
+        # 환경 변수 가져오기 + 혹시 모를 공백 제거 (.strip())
+        self.client_id = (os.getenv("ZOOM_CLIENT_ID") or "").strip()
+        self.client_secret = (os.getenv("ZOOM_CLIENT_SECRET") or "").strip()
+        self.account_id = (os.getenv("ZOOM_ACCOUNT_ID") or "").strip()
         self.access_token = None
         self.token_expiry = 0
         self.last_error = None
