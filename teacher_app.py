@@ -1261,8 +1261,14 @@ def main():
                             # 🧪 참여자를 못 찾았을 때 더 자세한 디버깅 정보 제공
                             raw_participants = zoom_mgr.get_raw_participants(zoom_id)
                             st.warning(f"⚠️ 필터링 후 출석 인정 대상이 없습니다. (현재 회의 ID: {zoom_id})")
-                            with st.expander("🔍 기술 디버그 정보 (클릭하여 확인)"):
+                            with st.expander("🔍 기술 디버그 정보 (Hugging Face 설정 확인용)"):
                                 st.write(f"- Zoom 원본 참여자 수: {len(raw_participants)}명")
+                                
+                                # 환경 변수 로드 상태 확인 (보안을 위해 앞 4자리만 출력)
+                                cid = os.getenv('ZOOM_CLIENT_ID', 'MISSING')
+                                aid = os.getenv('ZOOM_ACCOUNT_ID', 'MISSING')
+                                st.write(f"- ID 설정 상태: `ClientID: {cid[:4]}***`, `AccountID: {aid[:4]}***`")
+                                
                                 if raw_participants:
                                     st.write("- 발견된 모든 이름:")
                                     for rp in raw_participants:
@@ -1270,7 +1276,8 @@ def main():
                                         p_time = rp.get('join_time', 'N/A')
                                         st.write(f"  • {p_name} (입장: {p_time})")
                                 else:
-                                    st.error("🚨 Zoom 서버로부터 단 한 명의 참여자 정보도 받지 못했습니다. (API 인증 또는 회의 활성화 문제)")
+                                    st.error("🚨 Zoom 서버 응답이 없습니다. Hugging Face [Settings > Secrets] 설정을 확인해주세요.")
+                                    st.info("💡 만약 위 ID 설정 상태가 MISSING으로 뜬다면, Hugging Face 설정에 변수가 입력되지 않은 것입니다.")
                         else:
                             st.info(f"🔍 Zoom에서 {len(participants)}명의 오늘 참가자를 확인했습니다. 명단 대조를 시작합니다...")
                             # ⭐ 수업에 해당하는 학생 명단만 가져오기 
