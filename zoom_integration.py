@@ -170,4 +170,9 @@ class ZoomManager:
         print(f"[Zoom] Final: {len(filtered)}명")
         return filtered
 
+    def get_raw_participants(self, meeting_id):
+        """필터링을 거치지 않은 원본 참여자 데이터 조회"""
+        # 임시로 필터 없이 가져오기 위해 시간을 None으로 전달
+        return self.get_meeting_participants(meeting_id, start_time=None, end_time=None)
+
 zoom_mgr = ZoomManager()

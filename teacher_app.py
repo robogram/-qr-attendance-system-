@@ -1258,7 +1258,19 @@ def main():
                         )
                         
                         if not participants:
-                            st.warning(f"⚠️ Zoom 응답은 성공했으나, 현재 수업 시간 필터(전후 1시간)에 맞는 대상을 찾지 못했습니다. (ID: {zoom_id})")
+                            # 🧪 참여자를 못 찾았을 때 더 자세한 디버깅 정보 제공
+                            raw_participants = zoom_mgr.get_raw_participants(zoom_id)
+                            st.warning(f"⚠️ 필터링 후 출석 인정 대상이 없습니다. (현재 회의 ID: {zoom_id})")
+                            with st.expander("🔍 기술 디버그 정보 (클릭하여 확인)"):
+                                st.write(f"- Zoom 원본 참여자 수: {len(raw_participants)}명")
+                                if raw_participants:
+                                    st.write("- 발견된 모든 이름:")
+                                    for rp in raw_participants:
+                                        p_name = rp.get('name') or rp.get('user_name') or 'Unknown'
+                                        p_time = rp.get('join_time', 'N/A')
+                                        st.write(f"  • {p_name} (입장: {p_time})")
+                                else:
+                                    st.error("🚨 Zoom 서버로부터 단 한 명의 참여자 정보도 받지 못했습니다. (API 인증 또는 회의 활성화 문제)")
                         else:
                             st.info(f"🔍 Zoom에서 {len(participants)}명의 오늘 참가자를 확인했습니다. 명단 대조를 시작합니다...")
                             # ⭐ 수업에 해당하는 학생 명단만 가져오기 
