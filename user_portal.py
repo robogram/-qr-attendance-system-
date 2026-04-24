@@ -185,7 +185,12 @@ def main():
         login_screen()
         return
 
-    user = st.session_state.user
+    user = st.session_state.get('user')
+    if not user:
+        st.session_state.authenticated = False
+        st.rerun()
+        return
+
     role = user.get('role')
     
     st.markdown("""
