@@ -385,47 +385,65 @@ def check_flask_connection():
     return False
 
 def get_students_for_schedule(schedule_info):
-    """스케줄 정보에 맞는 학생 목록(dict 리스트) 반환"""
+    """스케줄 정보에 맞는 학생 목록(dict 리스트) 반환 (강력한 폴백 로직 포함)"""
     from supabase_client import supabase_mgr
     import pandas as pd
     
-    # 1. 명시적인 group_id 가 있는 경우 (Supabase에서 가져옴)
+    # 1. 명시적인 group_id 가 있는 경우 (최우선)
     if schedule_info.get('group_id'):
         students = supabase_mgr.get_students_by_group(schedule_info['group_id'])
         if students: return students
         
-    # 2. group_id 가 없는 경우 (과거에 생성된 일정 등) - CSV 폴백
-    session_name = schedule_info.get('session', '')
-    if not session_name:
-        session_name = schedule_info.get('group_name', '')
+    # 2. session_name 결정 (범용 필드 우선 -> 수업명 폴백)
+    session_name = schedule_info.get('session') or schedule_info.get('group_name') or schedule_info.get('class_name') or ""
     
+    # 3. DB에서 직접 그룹 검색 (Zoom ID가 같다면 해당 그룹 학생들도 포함)
+    target_zoom_id = str(schedule_info.get('zoom_meeting_id', '')).replace(" ", "")
+    all_related_students = []
+    seen_student_ids = set()
+
+    # Zoom ID 기반으로 그룹들 찾기
+    all_groups = supabase_mgr.client.table('class_groups').select('*').execute().data
+    matched_group_ids = []
+    
+    if all_groups:
+        for grp in all_groups:
+            g_id = str(grp.get('group_id'))
+            g_name = str(grp.get('group_name', ''))
+            g_zoom = str(grp.get('zoom_meeting_id', '')).replace(" ", "")
+            
+            # 매칭 조건: 1.수업 이름이 그룹 이름에 포함됨 2.Zoom ID가 같음
+            if (session_name and (session_name in g_name or g_name in session_name)) or (target_zoom_id and g_zoom == target_zoom_id):
+                matched_group_ids.append(g_id)
+        
+        # 찾은 매칭 그룹들의 학생들 합산
+        for gid in set(matched_group_ids):
+            group_st = supabase_mgr.get_students_by_group(gid)
+            for s in group_st:
+                if s['id'] not in seen_student_ids:
+                    all_related_students.append(s)
+                    seen_student_ids.add(s['id'])
+
+    if all_related_students:
+        return all_related_students
+
+    # 4. (Legacy) CSV 폴백 (과거 코드 호환용)
     df_classes = load_class_groups()
     df_std_groups = load_student_groups()
-    
-    valid_student_names = set()
-    
     if not df_classes.empty and not df_std_groups.empty and session_name:
         matched_group_id = None
         for _, grp in df_classes.iterrows():
             g_name = str(grp['group_name']).strip()
-            # session_name(예: "C-4") 와 group_name(예: "A", "B", "C") 매칭
-            # 공백이나 특수기호 없이 첫 글자로 매칭하거나 정확히 포함되는지 확인
-            if pd.notna(g_name) and g_name and g_name in session_name.split('-')[0]:
+            if pd.notna(g_name) and g_name and g_name in session_name:
                 matched_group_id = grp['group_id']
                 break
-                
         if pd.notna(matched_group_id):
             group_students_df = df_std_groups[df_std_groups['group_id'] == matched_group_id]
-            valid_student_names = set(group_students_df['student_name'].dropna().tolist())
+            valid_names = set(group_students_df['student_name'].dropna().tolist())
+            all_db_students = supabase_mgr.get_all_students()
+            return [s for s in all_db_students if s['student_name'] in valid_names]
 
-    all_db_students = supabase_mgr.get_all_students()
-    
-    if valid_student_names:
-        return [s for s in all_db_students if s['student_name'] in valid_student_names]
-    else:
-        # 그룹을 식별할 수 없는 경우, 모든 학생을 반환하면 타반 학생이 출석되는 대참사 발생!
-        # 따라서 안전하게 빈 배열을 리턴하도록 처리합니다.
-        return []
+    return []
 
 def get_today_attendance():
     """⭐ (Supabase) 선택된 수업의 출석현황만 표시 (해당 반 학생만 필터링)"""
