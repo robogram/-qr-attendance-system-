@@ -1249,30 +1249,30 @@ def main():
                                 st.warning("⚠️ 이 수업(C-4 등)에 연결된 학생 명단을 찾을 수 없어 보호 조치로 동기화를 중단합니다. (전체 학생이 출석 처리되는 것을 방지합니다)")
                             else:
                                 student_map = {s['student_name']: s['id'] for s in all_students}
-                                
                                 sync_count = 0
-                            for p in participants:
-                                # 🔍 Zoom API 버전에 따라 'name' 또는 'user_name' 사용
-                                zoom_name = p.get('name') or p.get('user_name') or ""
-                                if not zoom_name: continue
                                 
-                                # ⭐ 유연한 이름 매칭 (공백 제거 후 비교)
-                                matched_student_id = None
-                                zoom_name_clean = zoom_name.replace(" ", "")
-                                for system_name, student_id in student_map.items():
-                                    system_name_clean = system_name.replace(" ", "")
-                                    # ⭐ 유연한 매칭 로직: 1.완전일치 2.시작함 3.포함됨(2자이상)
-                                    if (system_name_clean == zoom_name_clean or 
-                                        zoom_name_clean.startswith(system_name_clean) or
-                                        (len(system_name_clean) >= 2 and system_name_clean in zoom_name_clean)):
-                                        matched_student_id = student_id
-                                        matched_student_name = system_name
-                                        break # 첫 번째 일치하는 학생으로 처리
-                                
-                                if not matched_student_id:
-                                    print(f"Zoom matching failed for: {zoom_name}")
-                                
-                                if matched_student_id:
+                                for p in participants:
+                                    # 🔍 Zoom API 버전에 따라 'name' 또는 'user_name' 사용
+                                    zoom_name = p.get('name') or p.get('user_name') or ""
+                                    if not zoom_name: continue
+                                    
+                                    # ⭐ 유연한 이름 매칭 (공백 제거 후 비교)
+                                    matched_student_id = None
+                                    zoom_name_clean = zoom_name.replace(" ", "")
+                                    for system_name, student_id in student_map.items():
+                                        system_name_clean = system_name.replace(" ", "")
+                                        # ⭐ 유연한 매칭 로직: 1.완전일치 2.시작함 3.포함됨(2자이상)
+                                        if (system_name_clean == zoom_name_clean or 
+                                            zoom_name_clean.startswith(system_name_clean) or
+                                            (len(system_name_clean) >= 2 and system_name_clean in zoom_name_clean)):
+                                            matched_student_id = student_id
+                                            matched_student_name = system_name
+                                            break # 첫 번째 일치하는 학생으로 처리
+                                    
+                                    if not matched_student_id:
+                                        print(f"Zoom matching failed for: {zoom_name}")
+                                        continue
+                                    
                                     if not supabase_mgr.check_already_attended(matched_student_id, selected_schedule['id']):
                                         now_str = get_now_kst().isoformat()
                                         if supabase_mgr.insert_attendance(
@@ -1284,10 +1284,11 @@ def main():
                                             remark=f'Zoom 자동 출석 ({zoom_name})'
                                         ):
                                             sync_count += 1
+                                            
                                 if sync_count > 0:
                                     st.success(f"✅ 명단 확인 완료! 해당 반의 {sync_count}명을 '온라인 출석'으로 성공적으로 기록했습니다.")
                                 else:
-                                    st.info("새로 추가할 온라인 출석자가 없습니다. (이미 출석 처리되었거나 해당 반(예: C-4) 소속이 아닙니다.)")
+                                    st.info("새로 추가할 온라인 출석자가 없습니다. (이미 출석 처리되었거나 해당 반 소속이 아닙니다.)")
                     except Exception as e:
                         st.error(f"Zoom 연동 중 오류 발생: {e}")
         else:
