@@ -208,73 +208,6 @@ MAX_IMAGE_SIZE_MB = 5
 MAX_IMAGE_DIMENSIONS = (1200, 1600)
 IMAGE_QUALITY = 85
 
-# 페이지 설정
-st.set_page_config(
-    page_title="학생 앱 - 온라인아카데미",
-    page_icon="🎮",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
-
-# 세션 초기화
-if 'authenticated' not in st.session_state:
-    st.session_state.authenticated = False
-if 'user' not in st.session_state:
-    st.session_state.user = None
-if 'selected_group_id' not in st.session_state:
-    st.session_state.selected_group_id = None
-
-# 로그인 체크
-if not st.session_state.authenticated or st.session_state.user is None:
-    st.error("🔒 로그인이 필요합니다.")
-    with st.form("quick_login"):
-        st.markdown("### 🎮 학생 로그인")
-        username = st.text_input("아이디", key="student_auto_232")
-        password = st.text_input("비밀번호", type="password", key="student_auto_233")
-        
-        if st.form_submit_button("로그인", use_container_width=True, key="student_auto_235"):
-            from auth import authenticate_user
-            user = authenticate_user(username, password)
-            
-            if user:
-                st.session_state.user = user
-                st.session_state.authenticated = True
-                st.success("로그인 성공!")
-                st.balloons()
-                st.rerun()
-            else:
-                st.error("아이디 또는 비밀번호가 올바르지 않습니다.")
-    st.stop()
-
-user = st.session_state.get('user')
-
-# 세션 복구 및 안전장치
-if user is None:
-    st.warning("⚠️ 세션이 만료되었습니다. 다시 로그인해 주세요.")
-    st.session_state.authenticated = False
-    st.rerun()
-    st.stop()
-
-# 역할 확인
-if user.get('role') != 'student':
-    st.error("⚠️ 학생만 접근 가능한 페이지입니다.")
-    st.info(f"현재 로그인: {user.get('name', '알 수 없음')} ({user.get('role', '권한 없음')})")
-    if st.button("🚪 로그아웃", use_container_width=True, key="logout_role_check_student"):
-        st.session_state.authenticated = False
-        st.session_state.user = None
-        st.rerun()
-    st.stop()
-
-# --- 🆕 사이드바 새로고침 버튼 ---
-if st.sidebar.button("🔄 데이터 새로고침", use_container_width=True, key="student_auto_250"):
-    st.cache_data.clear()
-    st.success("데이터를 새로 불러옵니다.")
-    st.rerun()
-
-
-
-
-
 # ==================== 캐싱된 데이터 로드 함수 ====================
 @st.cache_data(ttl=60)
 def load_class_groups_cached():
@@ -1130,8 +1063,16 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
+    # 🆕 세션 변수 안전 초기화 (AttributeError 방지)
+    if 'selected_group_id' not in st.session_state:
+        st.session_state['selected_group_id'] = None
+    if 'authenticated' not in st.session_state:
+        st.session_state['authenticated'] = False
+    if 'user' not in st.session_state:
+        st.session_state['user'] = None
+        
     # 🆕 세션 동기화 (모듈 캐싱 방지)
-    user = st.session_state.user
+    user = st.session_state.get('user')
     if not user:
         st.error("🔒 로그인이 필요합니다.")
         st.stop()
