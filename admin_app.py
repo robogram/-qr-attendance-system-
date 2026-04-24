@@ -687,6 +687,18 @@ def main():
                         .gte('start_time', now_str)\
                         .execute()
                     logger.info(f"Deleted future schedules for group '{group_name}'")
+                    # 🆕 핵심 누락 수정: Supabase에서 연결된 학생/교사 매핑 삭제 (FK 제약 조건 오류 방지)
+                    try:
+                        supabase_mgr.client.table('student_groups').delete().eq('group_id', group_id).execute()
+                        supabase_mgr.client.table('teacher_groups').delete().eq('group_id', group_id).execute()
+                        logger.info(f"Deleted student/teacher groups mappings for group {group_id}")
+                    except Exception as sub_e:
+                        logger.error(f"Failed to delete group mappings in Supabase: {sub_e}")
+
+                    # 🆕 핵심 누락 수정: 실제 수업 그룹 데이터베이스 레코드 삭제
+                    if not supabase_mgr.delete_class_group(group_id):
+                        logger.warning(f"Failed to delete class group {group_id} from Supabase. It might not exist.")
+
                 except Exception as e:
                     logger.error(f"Failed to delete future supabase schedules: {e}")
                     
@@ -1756,6 +1768,7 @@ def main():
                         if st.button("🗑️ 삭제", key=f"delete_group_{group['group_id']}", use_container_width=True):
                             if delete_class_group(group['group_id']):
                                 st.success(f"{group['group_name']} 그룹이 삭제되었습니다.")
+                                st.cache_data.clear()  # 🆕 추가: 삭제 즉시 캐시 초기화 진행
                                 st.rerun()
                 
                 with st.expander(f"⚙️ {group['group_name']} 상세 관리 (학생/Zoom 연동)"):
