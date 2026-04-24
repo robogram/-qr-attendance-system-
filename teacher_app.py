@@ -1258,8 +1258,9 @@ def main():
                         )
                         
                         if not participants:
-                            st.warning("Zoom 회의 참가자를 찾을 수 없거나 회의가 아직 시작되지 않았습니다.")
+                            st.warning(f"⚠️ Zoom 응답은 성공했으나, 현재 수업 시간 필터(전후 1시간)에 맞는 대상을 찾지 못했습니다. (ID: {zoom_id})")
                         else:
+                            st.info(f"🔍 Zoom에서 {len(participants)}명의 오늘 참가자를 확인했습니다. 명단 대조를 시작합니다...")
                             # ⭐ 수업에 해당하는 학생 명단만 가져오기 
                             all_students = get_students_for_schedule(selected_schedule)
                             
