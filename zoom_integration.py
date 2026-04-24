@@ -12,6 +12,7 @@ class ZoomManager:
         self.account_id = os.getenv("ZOOM_ACCOUNT_ID")
         self.access_token = None
         self.token_expiry = 0
+        self.last_error = None
 
     def get_access_token(self):
         """Server-to-Server OAuth 토큰 획득 (재시도 로직 포함)"""
@@ -21,6 +22,7 @@ class ZoomManager:
         url = f"https://zoom.us/oauth/token?grant_type=account_credentials&account_id={self.account_id}"
         auth = (self.client_id, self.client_secret)
         
+        self.last_error = None
         for i in range(3):
             try:
                 response = requests.post(url, auth=auth, timeout=10)
@@ -30,9 +32,11 @@ class ZoomManager:
                     self.token_expiry = time.time() + data['expires_in'] - 60
                     return self.access_token
                 else:
+                    self.last_error = f"Auth Error: {response.status_code} - {response.text}"
                     print(f"Zoom Auth Error ({response.status_code}): {response.text}")
                     break
             except Exception as e:
+                self.last_error = f"Auth Connection Error: {str(e)}"
                 print(f"Zoom Auth Retry {i+1}/3: {e}")
                 time.sleep(1)
         return None
@@ -90,13 +94,16 @@ class ZoomManager:
         end_utc   = to_utc_aware(end_time)
         buffer    = timedelta(hours=2)  # 수업 시작 2시간 전부터 허용
 
-        # ── 1. 실시간 Metrics API (live) ──────────────────────────────────
+        # ── 1. Metrics API (실시간 데이터) ───────────────────────────
         live_participants = []
         try:
-            url_live = f"https://api.zoom.us/v2/metrics/meetings/{meeting_id}/participants?type=live"
-            resp = requests.get(url_live, headers=headers, timeout=10)
+            url_metrics = f"https://api.zoom.us/v2/metrics/meetings/{meeting_id}/participants?type=live"
+            resp = requests.get(url_metrics, headers=headers, timeout=10)
             if resp.status_code == 200:
                 live_participants = resp.json().get('participants', [])
+            else:
+                self.last_error = f"Metrics Error: {resp.status_code} - {resp.text}"
+                print(f"[Zoom Error] Metrics: {resp.status_code} {resp.text}")
         except Exception as e:
             print(f"Metrics API skip: {e}")
 
@@ -107,6 +114,9 @@ class ZoomManager:
             resp = requests.get(url_report, headers=headers, timeout=10)
             if resp.status_code == 200:
                 report_participants = resp.json().get('participants', [])
+            else:
+                self.last_error = f"Report Error: {resp.status_code} - {resp.text}"
+                print(f"[Zoom Error] Report: {resp.status_code} {resp.text}")
         except Exception as e:
             print(f"Report API skip: {e}")
 

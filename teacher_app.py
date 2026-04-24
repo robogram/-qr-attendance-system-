@@ -1277,6 +1277,8 @@ def main():
                                         st.write(f"  • {p_name} (입장: {p_time})")
                                 else:
                                     st.error("🚨 Zoom 서버 응답이 없습니다. Hugging Face [Settings > Secrets] 설정을 확인해주세요.")
+                                    if hasattr(zoom_mgr, 'last_error') and zoom_mgr.last_error:
+                                        st.code(f"Zoom Error Message: {zoom_mgr.last_error}")
                                     st.info("💡 만약 위 ID 설정 상태가 MISSING으로 뜬다면, Hugging Face 설정에 변수가 입력되지 않은 것입니다.")
                         else:
                             st.info(f"🔍 Zoom에서 {len(participants)}명의 오늘 참가자를 확인했습니다. 명단 대조를 시작합니다...")
