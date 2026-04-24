@@ -278,28 +278,29 @@ if st.sidebar.button("🔄 데이터 새로고침", use_container_width=True, ke
 # ==================== 캐싱된 데이터 로드 함수 ====================
 @st.cache_data(ttl=60)
 def load_class_groups_cached():
-    """수업 그룹 정보 로드 (캐싱)"""
-    if not os.path.exists(CLASS_GROUPS_CSV):
-        return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours'])
+    """수업 그룹 정보 로드 (Supabase 기반 캐싱)"""
     try:
-        df = pd.read_csv(CLASS_GROUPS_CSV, encoding='utf-8-sig')
+        data = supabase_mgr.get_all_class_groups()
+        if not data:
+            return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours'])
+        df = pd.DataFrame(data)
         if 'total_hours' not in df.columns:
             df['total_hours'] = 1.0
         return df
     except Exception as e:
-        logger.error(f"Error loading class groups: {e}")
+        logger.error(f"Error loading class groups from Supabase: {e}")
         return pd.DataFrame(columns=['group_id', 'group_name', 'weekdays', 'start_time', 'end_time', 'start_date', 'end_date', 'total_hours'])
 
 @st.cache_data(ttl=60)
 def load_student_groups_cached():
-    """학생-그룹 매핑 로드 (캐싱)"""
-    if not os.path.exists(STUDENT_GROUPS_CSV):
-        return pd.DataFrame(columns=['student_name', 'group_id'])
+    """학생-그룹 매핑 로드 (Supabase 기반 캐싱)"""
     try:
-        df = pd.read_csv(STUDENT_GROUPS_CSV, encoding='utf-8-sig')
-        return df
+        data = supabase_mgr.get_all_student_groups()
+        if not data:
+            return pd.DataFrame(columns=['student_name', 'group_id'])
+        return pd.DataFrame(data)
     except Exception as e:
-        logger.error(f"Error loading student groups: {e}")
+        logger.error(f"Error loading student groups from Supabase: {e}")
         return pd.DataFrame(columns=['student_name', 'group_id'])
 
 @st.cache_data(ttl=30)
