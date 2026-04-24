@@ -120,7 +120,10 @@ def login_screen():
     </style>
     """, unsafe_allow_html=True)
 
-    if st.session_state.login_success:
+    if st.session_state.get('login_success', False):
+        # 🆕 진입 즉시 플래그 해제 (무한 루프 방지 핵심)
+        st.session_state['login_success'] = False
+        
         # --- [성공 시 보여줄 화면] ---
         st.balloons()
         st.markdown(f"""
@@ -131,8 +134,7 @@ def login_screen():
         </div>
         """, unsafe_allow_html=True)
         
-        # UI가 렌더링될 시간을 벌기 위해 st.empty와 sleep 사용
-        time.sleep(2)
+        time.sleep(1.5) # 대기 시간 소폭 단축
         st.session_state.authenticated = True
         st.rerun()
 
@@ -181,7 +183,7 @@ def main():
     if "user" not in st.session_state:
         st.session_state.user = None
 
-    if not st.session_state.authenticated:
+    if not st.session_state.get('authenticated', False):
         login_screen()
         return
 
@@ -208,9 +210,7 @@ def main():
     st.sidebar.caption(f"v1.2.2-UI-Fix")
 
     if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="user_logout_btn"):
-        for key in ["authenticated", "user", "login_success", "login_error"]:
-            if key in st.session_state:
-                del st.session_state[key]
+        st.session_state.clear()
         st.rerun()
 
     try:

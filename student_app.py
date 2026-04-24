@@ -811,13 +811,28 @@ def generate_certificate(student_name, school_name, course_name, start_date, end
         # 사진 추가
         if photo_buffer:
             try:
+                # 🆕 버퍼 포인터 초기화 (이미 읽혔을 가능성 대비)
+                if hasattr(photo_buffer, 'seek'):
+                    photo_buffer.seek(0)
+                
                 photo_img = Image.open(photo_buffer)
-                photo_img.thumbnail((150, 200), Image.Resampling.LANCZOS)
-                photo_x = width - 200
-                photo_y = 250
+                
+                # RGB 변환 (합성 시 오류 방지)
+                if photo_img.mode != 'RGB':
+                    photo_img = photo_img.convert('RGB')
+                
+                # 크기 최적화 (조금 더 크게 조정)
+                photo_img.thumbnail((180, 240), Image.Resampling.LANCZOS)
+                
+                # 위치 계산 (성적표 우측 상단)
+                photo_x = width - 230
+                photo_y = 220
                 certificate.paste(photo_img, (photo_x, photo_y))
+                logger.info("Photo successfully pasted to certificate")
             except Exception as e:
-                logger.warning(f"Failed to add photo to certificate: {e}")
+                logger.error(f"Failed to add photo to certificate: {e}")
+                # 🆕 실패 시 오류 문구 (디버깅용)
+                draw.text((width - 250, 250), "[사진 로드 실패]", fill='red', font=body_font)
         
         # 내용
         y_pos = 300
@@ -1216,8 +1231,7 @@ def main():
         col1, col2, col3 = st.columns([1, 1, 1])
         with col2:
             if st.button("🚪 로그아웃", use_container_width=True, key="student_logout"):
-                st.session_state.authenticated = False
-                st.session_state.user = None
+                st.session_state.clear()
                 st.rerun()
         
         st.stop()
@@ -1693,9 +1707,7 @@ def main():
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         if st.button("🚪 로그아웃", use_container_width=True, key="student_auto_1617"):
-            st.session_state.authenticated = False
-            st.session_state.user = None
-            st.session_state.selected_group_id = None
+            st.session_state.clear()
             st.rerun()
 
 

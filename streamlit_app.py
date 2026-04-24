@@ -235,8 +235,7 @@ def show_logout_section():
     """)
     
     if st.sidebar.button("🚪 로그아웃", use_container_width=True, key="sidebar_logout_btn"):
-        st.session_state.authenticated = False
-        st.session_state.user = None
+        st.session_state.clear()
         st.rerun()
 
 
