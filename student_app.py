@@ -1144,20 +1144,24 @@ def main():
                 now = get_now_kst()
                 
                 # 상태 결정
-                if end_datetime < now:
+                # 🆕 KST 시간을 offset-naive하게 변환하여 TypeError (offset-naive vs offset-aware) 방지
+                now_naive = get_now_kst().replace(tzinfo=None)
+                today_date = get_today_kst()
+                
+                if end_datetime < now_naive:
                     # 종료 시간이 현재보다 과거
                     status = "🔴 종료"
-                elif end_dt == get_today_kst():
+                elif end_dt == today_date:
                     # 오늘 수업 (아직 끝나지 않음)
                     status = "🟡 오늘 수업"
-                elif end_dt < get_today_kst():
-                    # 과거 날짜
+                elif end_dt < today_date:
+                    # 과거 날짜 여부 재확인
                     status = "🔴 종료"
                 else:
                     # 미래 날짜
                     status = "🟢 진행중"
             except Exception as e:
-                logger.warning(f"Error determining group status: {e}")
+                logger.warning(f"Error determining group status for {group_name}: {e}")
                 status = "🟢 진행중"
             
             group_display = f"{group_name} ({group['start_time']}~{group['end_time']}) {status}"
