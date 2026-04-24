@@ -21,7 +21,7 @@ class ZoomManager:
         url = f"https://zoom.us/oauth/token?grant_type=account_credentials&account_id={self.account_id}"
         auth = (self.client_id, self.client_secret)
         
-        for i in range(3): # 최대 3번 재시도
+        for i in range(3):
             try:
                 response = requests.post(url, auth=auth, timeout=10)
                 if response.status_code == 200:
@@ -30,114 +30,143 @@ class ZoomManager:
                     self.token_expiry = time.time() + data['expires_in'] - 60
                     return self.access_token
                 else:
-                    print(f"❌ Zoom Auth Error ({response.status_code}): {response.text}")
+                    print(f"Zoom Auth Error ({response.status_code}): {response.text}")
                     break
             except Exception as e:
-                print(f"⚠️ Zoom Auth Retry {i+1}/3: {e}")
+                print(f"Zoom Auth Retry {i+1}/3: {e}")
                 time.sleep(1)
         return None
 
     def get_meeting_participants(self, meeting_id, target_date=None, start_time=None, end_time=None):
         """
-        실시간(Metrics) 또는 과거(Report) 회의 참가자 명단 조회
-        
-        ⭐ target_date 및 start_time/end_time으로 필터링하여
-        다른 세션의 참가자가 누적되는 문제를 방지합니다.
-        
+        실시간(Metrics) + 과거(Report) 회의 참가자 명단 조합 후 날짜 필터링 반환
+
         Args:
             meeting_id: Zoom 회의 ID
             target_date: 필터링할 날짜 (YYYY-MM-DD 문자열 또는 date 객체, None이면 오늘)
-            start_time: 수업 시작 시간 (datetime 객체, KST 기준 권장)
-            end_time: 수업 종료 시간 (datetime 객체, KST 기준 권장)
+            start_time: 수업 시작 시간 (datetime 객체, 시간 필터링에 사용)
+            end_time: 수업 종료 시간 (datetime 객체, 시간 필터링에 사용)
         """
-        from datetime import date as date_cls, datetime as dt_cls
+        from datetime import date as date_cls, datetime as dt_cls, timezone, timedelta
         
         token = self.get_access_token()
-        if not token: return []
+        if not token:
+            return []
 
         meeting_id = str(meeting_id).replace(" ", "")
-        participants = []
         headers = {"Authorization": f"Bearer {token}"}
-        
-        # 필터링할 날짜 결정
+
+        # ── 필터링 기준 날짜 결정 ──────────────────────────────────────────
         if target_date is None:
-            filter_date = date_cls.today()
+            from utils import get_today_kst
+            filter_date = get_today_kst()
         elif isinstance(target_date, str):
             filter_date = dt_cls.strptime(target_date, '%Y-%m-%d').date()
         else:
             filter_date = target_date
 
-        # 1. 먼저 실시간 회의(Metrics) 시도
+        # ── start_time / end_time 을 offset-aware UTC datetime으로 정규화 ──
+        kst_tz = timezone(timedelta(hours=9))
+        utc_tz = timezone.utc
+
+        def to_utc_aware(dt):
+            """어떤 datetime이 와도 UTC-aware datetime으로 변환"""
+            if dt is None:
+                return None
+            # pandas Timestamp 처리
+            try:
+                import pandas as pd
+                if isinstance(dt, pd.Timestamp):
+                    dt = dt.to_pydatetime()
+            except ImportError:
+                pass
+            if hasattr(dt, 'tzinfo') and dt.tzinfo is not None:
+                return dt.astimezone(utc_tz)
+            else:
+                # naive → KST 로 가정 후 UTC 변환
+                return dt.replace(tzinfo=kst_tz).astimezone(utc_tz)
+
+        start_utc = to_utc_aware(start_time)
+        end_utc   = to_utc_aware(end_time)
+        buffer    = timedelta(hours=2)  # 수업 시작 2시간 전부터 허용
+
+        # ── 1. 실시간 Metrics API (live) ──────────────────────────────────
+        live_participants = []
         try:
             url_live = f"https://api.zoom.us/v2/metrics/meetings/{meeting_id}/participants?type=live"
             resp = requests.get(url_live, headers=headers, timeout=10)
             if resp.status_code == 200:
-                data = resp.json()
-                participants.extend(data.get('participants', []))
+                live_participants = resp.json().get('participants', [])
         except Exception as e:
-            print(f"⚠️ Metrics API Skip: {e}")
+            print(f"Metrics API skip: {e}")
 
-        # 2. 실시간 데이터가 없거나 실패한 경우 과거 기록(Report) 시도
-        if not participants:
-            for i in range(2): # 재시도 포함
-                try:
-                    url_past = f"https://api.zoom.us/v2/report/meetings/{meeting_id}/participants"
-                    resp = requests.get(url_past, headers=headers, timeout=10)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        participants.extend(data.get('participants', []))
-                        break
-                    else:
-                        print(f"❌ Zoom Report API Error: {resp.status_code}")
-                except Exception as e:
-                    print(f"⚠️ Report API Retry {i+1}/2: {e}")
-                    time.sleep(1)
+        # ── 2. Report API (과거 기록, 항상 시도) ─────────────────────────
+        report_participants = []
+        try:
+            url_report = f"https://api.zoom.us/v2/report/meetings/{meeting_id}/participants"
+            resp = requests.get(url_report, headers=headers, timeout=10)
+            if resp.status_code == 200:
+                report_participants = resp.json().get('participants', [])
+        except Exception as e:
+            print(f"Report API skip: {e}")
 
-        # ⭐ 3. 오늘 날짜의 참가자만 필터링 (이전 세션 누적 방지)
+        # ── 3. 두 목록 합치기 (이름 기준 중복 제거, Report 우선) ─────────
+        # Report에는 join_time이 있어서 필터링에 유리 → 우선 처리
+        combined = {}
+        for p in report_participants:
+            name_key = (p.get('name') or p.get('user_name') or '').strip().lower()
+            if name_key:
+                combined[name_key] = p
+
+        # Metrics 결과는 Report에 없는 이름만 추가 (live 중인 참가자)
+        for p in live_participants:
+            name_key = (p.get('name') or p.get('user_name') or '').strip().lower()
+            if name_key and name_key not in combined:
+                combined[name_key] = p
+
+        all_participants = list(combined.values())
+        print(f"[Zoom] Raw: live={len(live_participants)}, report={len(report_participants)}, merged={len(all_participants)}")
+
+        # ── 4. 날짜 + 시간 필터링 ─────────────────────────────────────────
         filtered = []
-        seen_names = set()  # 동일 참가자 중복 제거
-        
-        for p in participants:
-            join_time_str = p.get('join_time', '')
+        for p in all_participants:
             participant_name = p.get('name') or p.get('user_name') or ''
-            
-            if join_time_str:
-                try:
-                    # Zoom은 UTC(ISO 8601) 형식: "2026-04-04T11:30:00Z"
-                    join_dt = dt_cls.fromisoformat(join_time_str.replace('Z', '+00:00'))
-                    
-                    # UTC → KST (한국시간 +9시간)으로 변환하여 날짜 비교
-                    from datetime import timezone, timedelta
-                    kst = timezone(timedelta(hours=9))
-                    join_kst = join_dt.astimezone(kst)
-                    join_date = join_kst.date()
-                    
-                    # 1. 날짜 필터링
-                    allowed_dates = [filter_date, filter_date - timedelta(days=1)]
-                    if join_date not in allowed_dates:
-                        # print(f"⏭️ [Zoom] '{participant_name}' 건너뜀 (날짜 불일치: {join_date})")
+            join_time_str = p.get('join_time', '')
+
+            if not join_time_str:
+                # join_time이 없는 경우(주로 Metrics live)는 날짜 필터 없이 포함
+                filtered.append(p)
+                print(f"  [+] '{participant_name}' (no join_time, included)")
+                continue
+
+            try:
+                join_dt_utc = dt_cls.fromisoformat(join_time_str.replace('Z', '+00:00')).astimezone(utc_tz)
+                join_date_kst = join_dt_utc.astimezone(kst_tz).date()
+
+                # 날짜 필터: 오늘 또는 어제 (자정 근처 수업 고려)
+                allowed_dates = {filter_date, filter_date - timedelta(days=1)}
+                if join_date_kst not in allowed_dates:
+                    print(f"  [-] '{participant_name}' 날짜 제외 ({join_date_kst})")
+                    continue
+
+                # 시간 필터: start_time과 end_time이 제공된 경우에만 적용
+                if start_utc and end_utc:
+                    window_start = start_utc - buffer
+                    # 수업 종료 후 2시간까지도 허용 (늦게 가져오는 경우 대비)
+                    window_end = end_utc + buffer
+                    if join_dt_utc < window_start or join_dt_utc > window_end:
+                        print(f"  [-] '{participant_name}' 시간 제외 (join={join_dt_utc}, window={window_start}~{window_end})")
                         continue
 
-                    # 2. 수업 시간 필터링 (새로 추가)
-                    if start_time and end_time:
-                        buffer_before = timedelta(minutes=60)
-                        # print(f"DEBUG: Comparing '{participant_name}' | Join: {join_kst} | Window: {start_time-buffer_before} ~ {end_time}")
-                        if join_kst < (start_time - buffer_before) or join_kst > end_time:
-                            print(f"[SKIP] Zoom participant '{participant_name}' (Out of session: {join_kst})")
-                            continue
-                except Exception as e:
-                    print(f"[WARNING] join_time parsing failed ({join_time_str}): {e}")
-            
-            # 동일 이름 중복 제거 (같은 사람이 여러 번 입퇴장한 경우)
-            name_key = participant_name.strip().lower()
-            if name_key and name_key in seen_names:
-                continue
-            if name_key:
-                seen_names.add(name_key)
-            
-            filtered.append(p)
-        
-        print(f"[Zoom] Participants: Total {len(participants)} -> Today({filter_date}) {len(filtered)}")
+                filtered.append(p)
+                print(f"  [+] '{participant_name}' 포함 (join={join_dt_utc.astimezone(kst_tz).strftime('%H:%M KST')})")
+
+            except Exception as e:
+                # 파싱 실패 시 포함 (누락 방지)
+                print(f"  [?] '{participant_name}' join_time 파싱 실패 - 포함 처리 ({e})")
+                filtered.append(p)
+
+        print(f"[Zoom] Final: {len(filtered)}명")
         return filtered
 
 zoom_mgr = ZoomManager()
