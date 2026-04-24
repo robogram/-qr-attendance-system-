@@ -1510,7 +1510,7 @@ def main():
         if hide_ended:
             try:
                 # 🆕 변수 누락 버그 해결 (KST 기준 오늘 날짜 강제 주입)
-                from utils import get_today_kst
+                # UnboundLocalError 방지를 위해 로컬 import 제거
                 today_str = get_today_kst().isoformat()
                 
                 # 🆕 문자열 대 문자열로 가장 단순하고 확실하게 비교
