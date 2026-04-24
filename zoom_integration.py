@@ -149,11 +149,11 @@ class ZoomManager:
                     print(f"  [-] '{participant_name}' 날짜 제외 ({join_date_kst})")
                     continue
 
-                # ⭐ 시간 필터 복구: 수업 시간 전후 30분 버퍼 적용
+                # ⭐ 시간 필터 복구: 수업 시간 전후 1시간 버퍼 적용
                 if start_utc and end_utc:
-                    # '정해진 시간'에 대한 정의: 수업 시작 30분 전 ~ 수업 종료 시점(또는 약간의 퇴실 여유)
-                    buffer_start = timedelta(minutes=30)
-                    buffer_end   = timedelta(minutes=30)
+                    # '정해진 시간'에 대한 정의: 수업 시작 60분 전 ~ 수업 종료 후 60분
+                    buffer_start = timedelta(minutes=60)
+                    buffer_end   = timedelta(minutes=60)
                     
                     window_start = start_utc - buffer_start
                     window_end   = end_utc + buffer_end
