@@ -149,21 +149,18 @@ class ZoomManager:
                     print(f"  [-] '{participant_name}' 날짜 제외 ({join_date_kst})")
                     continue
 
-                # ⭐ 시간 필터 복구: 수업 시간 전후 1시간 버퍼 적용
+                # ⭐ 시간 필터: 1시간 여유를 둔 타임스탬프 직접 비교 (오차 제로)
                 if start_utc and end_utc:
-                    # '정해진 시간'에 대한 정의: 수업 시작 60분 전 ~ 수업 종료 후 60분
-                    buffer_start = timedelta(minutes=60)
-                    buffer_end   = timedelta(minutes=60)
+                    ts_join = join_dt_utc.timestamp()
+                    ts_start = (start_utc - timedelta(minutes=60)).timestamp()
+                    ts_end = (end_utc + timedelta(minutes=60)).timestamp()
                     
-                    window_start = start_utc - buffer_start
-                    window_end   = end_utc + buffer_end
-                    
-                    if join_dt_utc < window_start or join_dt_utc > window_end:
-                        print(f"  [-] '{participant_name}' 시간 외 입장 제외 (입장: {join_dt_utc.astimezone(kst_tz).strftime('%H:%M')}, 수업: {start_utc.astimezone(kst_tz).strftime('%H:%M')}~{end_utc.astimezone(kst_tz).strftime('%H:%M')})")
+                    if ts_join < ts_start or ts_join > ts_end:
+                        print(f"  [-] '{participant_name}' 시간 외 제외")
                         continue
 
                 filtered.append(p)
-                print(f"  [+] '{participant_name}' 포함 (입장: {join_dt_utc.astimezone(kst_tz).strftime('%H:%M KST')})")
+                print(f"  [+] '{participant_name}' (OK)")
 
             except Exception as e:
                 # 파싱 실패 시 포함 (누락 방지)
