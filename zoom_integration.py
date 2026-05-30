@@ -111,7 +111,7 @@ class ZoomManager:
         # ── 2. Report API (과거 기록, 항상 시도) ─────────────────────────
         report_participants = []
         try:
-            url_report = f"https://api.zoom.us/v2/report/meetings/{meeting_id}/participants"
+            url_report = f"https://api.zoom.us/v2/report/meetings/{meeting_id}/participants?page_size=300"
             resp = requests.get(url_report, headers=headers, timeout=10)
             if resp.status_code == 200:
                 report_participants = resp.json().get('participants', [])
@@ -126,14 +126,38 @@ class ZoomManager:
         combined = {}
         for p in report_participants:
             name_key = (p.get('name') or p.get('user_name') or '').strip().lower()
-            if name_key:
-                combined[name_key] = p
+            if not name_key: continue
+            
+            if name_key in combined:
+                # 이미 있는 이름의 경우, 데이터 합산 및 최초/최종 시간 업데이트
+                existing = combined[name_key]
+                existing_dur = existing.get('duration', 0) or 0
+                new_dur = p.get('duration', 0) or 0
+                existing['duration'] = existing_dur + new_dur
+                
+                # 최초 입장 시간(earliest)
+                e_join = existing.get('join_time')
+                p_join = p.get('join_time')
+                if e_join and p_join:
+                    existing['join_time'] = min(e_join, p_join)
+                elif p_join:
+                    existing['join_time'] = p_join
+                    
+                # 최종 퇴장 시간(latest)
+                e_leave = existing.get('leave_time')
+                p_leave = p.get('leave_time')
+                if e_leave and p_leave:
+                    existing['leave_time'] = max(e_leave, p_leave)
+                elif p_leave:
+                    existing['leave_time'] = p_leave
+            else:
+                combined[name_key] = dict(p)
 
         # Metrics 결과는 Report에 없는 이름만 추가 (live 중인 참가자)
         for p in live_participants:
             name_key = (p.get('name') or p.get('user_name') or '').strip().lower()
             if name_key and name_key not in combined:
-                combined[name_key] = p
+                combined[name_key] = dict(p)
 
         all_participants = list(combined.values())
         print(f"[Zoom] Raw: live={len(live_participants)}, report={len(report_participants)}, merged={len(all_participants)}")

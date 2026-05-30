@@ -561,8 +561,21 @@ def get_child_attendance_data_all_groups(student_name):
                             'check_time': pd.to_datetime(r['timestamp'], errors='coerce')
                         })
                 else:
-                    # 기록 미발견 시 상태 결정
-                    if sch_date < today_date:
+                    # 기록 미발견 시 상태 결정 (오늘 날짜 기준으로 과거면 결석, 오늘인데 수업 종료 시간이 지났으면 결석, 그 외에는 예정)
+                    is_past = sch_date < today_date
+                    is_today_ended = False
+                    if sch_date == today_date:
+                        try:
+                            # 수업 종료 시간 파싱 (sch['start']가 '09:30'이면 11:30으로 종료시간 추정)
+                            end_time_str = '11:30'
+                            end_t = datetime.strptime(end_time_str, '%H:%M').time()
+                            now_t = get_now_kst().time()
+                            if now_t > end_t:
+                                is_today_ended = True
+                        except Exception as e:
+                            logger.error(f"Error parsing class end time: {e}")
+                            
+                    if is_past or is_today_ended:
                         status_label = ATTENDANCE_STATUS_ABSENT
                     else:
                         status_label = "수업 예정"

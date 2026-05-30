@@ -385,47 +385,49 @@ def check_flask_connection():
     return False
 
 def get_students_for_schedule(schedule_info):
-    """스케줄 정보에 맞는 학생 목록(dict 리스트) 반환 (강력한 폴백 로직 포함)"""
+    """스케줄 정보에 맞는 학생 목록(dict 리스트) 반환
+    
+    ⚠️ 중요: Zoom ID가 같은 다른 그룹 학생은 절대 합산하지 않습니다.
+    (소회의실 환경에서 같은 Zoom ID를 공유해도 반별 학생 명단은 분리됩니다)
+    """
     from supabase_client import supabase_mgr
     import pandas as pd
     
     # 1. 명시적인 group_id 가 있는 경우 (최우선)
     if schedule_info.get('group_id'):
         students = supabase_mgr.get_students_by_group(schedule_info['group_id'])
-        if students: return students
+        if students:
+            return students
         
     # 2. session_name 결정 (범용 필드 우선 -> 수업명 폴백)
     session_name = schedule_info.get('session') or schedule_info.get('group_name') or schedule_info.get('class_name') or ""
     
-    # 3. DB에서 직접 그룹 검색 (Zoom ID가 같다면 해당 그룹 학생들도 포함)
-    target_zoom_id = str(schedule_info.get('zoom_meeting_id', '')).replace(" ", "")
-    all_related_students = []
-    seen_student_ids = set()
-
-    # Zoom ID 기반으로 그룹들 찾기
+    # 3. DB에서 그룹 검색: 수업 이름 기준으로만 매칭
+    #    ⚠️ Zoom ID가 같더라도 다른 반 학생은 포함하지 않음 (소회의실 대응)
     all_groups = supabase_mgr.client.table('class_groups').select('*').execute().data
-    matched_group_ids = []
     
-    if all_groups:
+    if all_groups and session_name:
+        # 수업 이름이 완전 일치하는 그룹만 찾음 (Zoom ID 기반 병합 제거)
+        matched_group_ids = []
         for grp in all_groups:
             g_id = str(grp.get('group_id'))
             g_name = str(grp.get('group_name', ''))
-            g_zoom = str(grp.get('zoom_meeting_id', '')).replace(" ", "")
-            
-            # 매칭 조건: 1.수업 이름이 그룹 이름에 포함됨 2.Zoom ID가 같음
-            if (session_name and (session_name in g_name or g_name in session_name)) or (target_zoom_id and g_zoom == target_zoom_id):
+            # 수업명 기준 매칭만 사용 (Zoom ID 기준 병합 제거)
+            if session_name and (session_name == g_name or session_name in g_name or g_name in session_name):
                 matched_group_ids.append(g_id)
         
-        # 찾은 매칭 그룹들의 학생들 합산
-        for gid in set(matched_group_ids):
-            group_st = supabase_mgr.get_students_by_group(gid)
-            for s in group_st:
-                if s['id'] not in seen_student_ids:
-                    all_related_students.append(s)
-                    seen_student_ids.add(s['id'])
-
-    if all_related_students:
-        return all_related_students
+        # 매칭된 그룹의 학생들 조합 (단, 이름이 매칭된 그룹만)
+        if matched_group_ids:
+            all_related_students = []
+            seen_student_ids = set()
+            for gid in set(matched_group_ids):
+                group_st = supabase_mgr.get_students_by_group(gid)
+                for s in group_st:
+                    if s['id'] not in seen_student_ids:
+                        all_related_students.append(s)
+                        seen_student_ids.add(s['id'])
+            if all_related_students:
+                return all_related_students
 
     # 4. (Legacy) CSV 폴백 (과거 코드 호환용)
     df_classes = load_class_groups()
@@ -1282,23 +1284,43 @@ def main():
                                     st.info("💡 만약 위 ID 설정 상태가 MISSING으로 뜬다면, Hugging Face 설정에 변수가 입력되지 않은 것입니다.")
                         else:
                             st.info(f"🔍 Zoom에서 {len(participants)}명의 오늘 참가자를 확인했습니다. 명단 대조를 시작합니다...")
-                            # ⭐ 수업에 해당하는 학생 명단만 가져오기 
+                            # ⭐ 현재 수업(반)에 소속된 학생 명단만 가져오기
+                            # ⚠️ Zoom ID가 같은 다른 반 학생은 절대 포함되지 않음 (소회의실 대응)
                             all_students = get_students_for_schedule(selected_schedule)
                             
                             if not all_students:
-                                st.warning("⚠️ 이 수업(C-4 등)에 연결된 학생 명단을 찾을 수 없어 보호 조치로 동기화를 중단합니다. (전체 학생이 출석 처리되는 것을 방지합니다)")
+                                st.warning("⚠️ 이 수업에 연결된 학생 명단을 찾을 수 없어 보호 조치로 동기화를 중단합니다.")
                             else:
+                                # 해당 반 소속 학생 이름 목록 (디버그용 표시)
+                                class_name_display = selected_schedule.get('session') or selected_schedule.get('class_name') or '선택된 수업'
+                                st.caption(f"📋 대조 명단: **{class_name_display}** 소속 학생 {len(all_students)}명")
+                                
                                 student_map = {s['student_name']: s['id'] for s in all_students}
                                 sync_count = 0
+                                unmatched_names = []  # 매칭 실패한 줌 참가자 목록
                                 
                                 for p in participants:
                                     # 🔍 Zoom API 버전에 따라 'name' 또는 'user_name' 사용
                                     zoom_name = p.get('name') or p.get('user_name') or ""
                                     if not zoom_name: continue
                                     
+                                    # ⭐ 기수 불일치 강제 방어 필터링
+                                    zoom_name_clean = zoom_name.replace(" ", "")
+                                    class_name_display = selected_schedule.get('session') or selected_schedule.get('class_name') or ""
+                                    
+                                    # 기수 불일치 거름 (예: '5기' 닉네임인데 현재 '6기' 수업인 경우 및 그 반대)
+                                    if '5기' in zoom_name_clean and '6기' in class_name_display:
+                                        print(f"[Zoom 동기화 방어] 기수 불일치로 거름: {zoom_name} (수업: {class_name_display})")
+                                        unmatched_names.append(zoom_name)
+                                        continue
+                                    if '6기' in zoom_name_clean and '5기' in class_name_display:
+                                        print(f"[Zoom 동기화 방어] 기수 불일치로 거름: {zoom_name} (수업: {class_name_display})")
+                                        unmatched_names.append(zoom_name)
+                                        continue
+                                    
                                     # ⭐ 유연한 이름 매칭 (공백 제거 후 비교)
                                     matched_student_id = None
-                                    zoom_name_clean = zoom_name.replace(" ", "")
+                                    matched_student_name = None
                                     for system_name, student_id in student_map.items():
                                         system_name_clean = system_name.replace(" ", "")
                                         # ⭐ 유연한 매칭 로직: 1.완전일치 2.시작함 3.포함됨(2자이상)
@@ -1310,7 +1332,9 @@ def main():
                                             break # 첫 번째 일치하는 학생으로 처리
                                     
                                     if not matched_student_id:
-                                        print(f"Zoom matching failed for: {zoom_name}")
+                                        # 다른 반 소속이거나 미등록 참가자 → 무시 (교차 등록 방지)
+                                        unmatched_names.append(zoom_name)
+                                        print(f"[Zoom 동기화] '{zoom_name}' - 이 반 소속 아님 또는 미등록 (건너뜀)")
                                         continue
                                     
                                     if not supabase_mgr.check_already_attended(matched_student_id, selected_schedule['id']):
@@ -1329,6 +1353,13 @@ def main():
                                     st.success(f"✅ 명단 확인 완료! 해당 반의 {sync_count}명을 '온라인 출석'으로 성공적으로 기록했습니다.")
                                 else:
                                     st.info("새로 추가할 온라인 출석자가 없습니다. (이미 출석 처리되었거나 해당 반 소속이 아닙니다.)")
+                                
+                                # 매칭 실패 참가자 안내 (다른 반 소속으로 정상 제외)
+                                if unmatched_names:
+                                    with st.expander(f"ℹ️ 이 반 소속이 아닌 참가자 {len(unmatched_names)}명 (정상 제외)"):
+                                        st.caption("아래 참가자들은 이 반 학생 명단에 없어 출석 처리되지 않았습니다. (다른 반 소속이거나 운영진 등)")
+                                        for nm in unmatched_names:
+                                            st.write(f"  • {nm}")
                     except Exception as e:
                         st.error(f"Zoom 연동 중 오류 발생: {e}")
         else:

@@ -392,9 +392,20 @@ def get_student_attendance_for_group(student_name, group_id):
                     for _, r in date_records.drop_duplicates(subset=['timestamp', 'status']).iterrows():
                         full_history.append(r.to_dict())
                 else:
-                    # 출석 기록이 없는 경우 -> '결석' 또는 '수업 예정' 처리
-                    # 🆕 오늘 날짜 기준으로 과거면 결석, 오늘이거나 미래면 예정
-                    if sch_date < today_date:
+                    # 오늘 날짜 기준으로 과거면 결석, 오늘인데 수업 종료 시간이 지났으면 결석, 그 외에는 예정
+                    is_past = sch_date < today_date
+                    is_today_ended = False
+                    if sch_date == today_date:
+                        try:
+                            end_time_str = sch.get('end', '11:30')
+                            end_t = datetime.strptime(end_time_str, '%H:%M').time()
+                            now_t = get_now_kst().time()
+                            if now_t > end_t:
+                                is_today_ended = True
+                        except Exception as e:
+                            logger.error(f"Error parsing class end time: {e}")
+                            
+                    if is_past or is_today_ended:
                         status_label = "❌ 결석 (미출석)"
                     else:
                         status_label = "⏳ 수업 예정"
@@ -1478,8 +1489,8 @@ def main():
 
         if not attendance_df.empty:
             records_df = attendance_df.copy()
-            # 🆕 다양한 시간 형식을 안전하게 처리 (ISO8601 및 일반 형식 혼합 대응)
-            records_df['dt'] = pd.to_datetime(records_df['timestamp'], errors='coerce', utc=True).dt.tz_convert('Asia/Seoul')
+            # 🆕 다양한 시간 형식을 안전하게 처리 (ISO8601 및 일반 형식 혼합 대응, 소수점 초 혼합 버그 해결)
+            records_df['dt'] = records_df['timestamp'].apply(lambda x: pd.to_datetime(x, errors='coerce', utc=True)).dt.tz_convert('Asia/Seoul')
             records_df['날짜'] = records_df['dt'].dt.strftime('%Y-%m-%d')
             records_df['시간'] = records_df['dt'].dt.strftime('%H:%M')
             
