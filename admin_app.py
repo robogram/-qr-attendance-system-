@@ -1814,12 +1814,12 @@ def main():
                     
                     if students_in_group:
                         st.markdown("##### 현재 등록된 학생")
-                        for student in students_in_group:
+                        for idx_student, student in enumerate(students_in_group):
                             col_a, col_b = st.columns([4, 1])
                             with col_a:
                                 st.text(f"👤 {student}")
                             with col_b:
-                                if st.button("제거", key=f"remove_{group['group_id']}_{student}"):
+                                if st.button("제거", key=f"remove_{group['group_id']}_{student}_{idx_student}"):
                                     if remove_student_from_group(student, group['group_id']):
                                         st.success(f"{student} 제거됨")
                                         st.rerun()

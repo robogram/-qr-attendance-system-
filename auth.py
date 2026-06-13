@@ -92,16 +92,20 @@ def load_users():
 
 def authenticate_user(username, password):
     """
-    사용자 인증 (Supabase 기반)
+    사용자 인증 (Supabase 기반, 연결 실패 시 기본 계정 fallback)
     """
-    user = supabase_mgr.get_user_by_username(username)
-    if user and user.get('password') == password:
-        user['user_id'] = user.get('id')  # 호환성
-        if 'name' in user:
-            user['name'] = normalize_text(user['name'])
-        return user
+    # 1. Supabase에서 먼저 조회 시도 (예외 발생 시 fallback으로 넘어감)
+    try:
+        user = supabase_mgr.get_user_by_username(username)
+        if user and user.get('password') == password:
+            user['user_id'] = user.get('id')  # 호환성
+            if 'name' in user:
+                user['name'] = normalize_text(user['name'])
+            return user
+    except Exception as e:
+        print(f"[WARN] Supabase auth failed, falling back to default accounts: {e}")
         
-    # Supabase에 없으면 기본 계정에서 찾기 (fallback)
+    # 2. Supabase에 없거나 연결 실패 시 기본 계정에서 찾기 (fallback)
     for account in DEFAULT_ACCOUNTS:
         if account['username'] == username and account['password'] == password:
             return account

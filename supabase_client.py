@@ -30,7 +30,7 @@ class SupabaseManager:
             response = self.client.table('users').select('*').eq('username', username).execute()
             return response.data[0] if response.data else None
         except Exception as e:
-            print(f"❌ Error getting user by username: {e}")
+            print(f"[ERROR] Error getting user by username: {e}")
             return None
 
     def get_user_by_id(self, user_id):
@@ -39,7 +39,7 @@ class SupabaseManager:
             response = self.client.table('users').select('*').eq('id', user_id).execute()
             return response.data[0] if response.data else None
         except Exception as e:
-            print(f"❌ Error getting user by id: {e}")
+            print(f"[ERROR] Error getting user by id: {e}")
             return None
         
     def get_all_users(self):
@@ -48,7 +48,7 @@ class SupabaseManager:
             response = self.client.table('users').select('*').execute()
             return response.data
         except Exception as e:
-            print(f"❌ Error getting all users: {e}")
+            print(f"[ERROR] Error getting all users: {e}")
             return []
         
     def insert_user(self, user_data):
@@ -57,7 +57,7 @@ class SupabaseManager:
             res = self.client.table('users').insert(user_data).execute()
             return res.data[0] if res.data else None
         except Exception as e:
-            print(f"❌ Error inserting user: {e}")
+            print(f"[ERROR] Error inserting user: {e}")
             return None
             
     def update_user(self, user_id, user_data):
@@ -75,7 +75,7 @@ class SupabaseManager:
             self.client.table('users').delete().eq('id', user_id).execute()
             return True
         except Exception as e:
-            print(f"❌ Error deleting user: {e}")
+            print(f"[ERROR] Error deleting user: {e}")
             return False
 
     def get_user_by_name_and_password(self, name, password):
@@ -87,7 +87,7 @@ class SupabaseManager:
                 .execute()
             return response.data[0] if response.data else None
         except Exception as e:
-            print(f"❌ Error getting user by name/pw: {e}")
+            print(f"[ERROR] Error getting user by name/pw: {e}")
             return None
 
     # --- Students ---
