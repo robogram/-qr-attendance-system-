@@ -1612,13 +1612,22 @@ def main():
     
     # 탭 4: 학생 목록
     with tab4:
-        st.markdown("## 📋 전체 학생 목록")
+        st.markdown("## 📋 담당 학급 학생 목록")
         
-        df_students = load_csv_safe(STUDENTS_CSV, ['name', 'qr_code', 'phone'])
+        # 전체 학생 목록 로드가 아닌 선택된 수업의 학생들 목록만 로드
+        selected_schedule = st.session_state.get('selected_schedule')
+        if selected_schedule:
+            df_students_list = get_students_for_schedule(selected_schedule)
+            df_students = pd.DataFrame(df_students_list)
+            if not df_students.empty:
+                df_students = df_students.rename(columns={'student_name': 'name'})
+        else:
+            df_students = pd.DataFrame()
+            
         attendance = get_today_attendance()
         
         if not df_students.empty:
-            st.info(f"📚 전체 학생: {len(df_students)}명")
+            st.info(f"📚 학급 학생: {len(df_students)}명")
             
             if attendance and attendance['records']:
                 attended = {r['학생']: r['status'] for r in attendance['records']}
