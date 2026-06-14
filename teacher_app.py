@@ -1611,6 +1611,7 @@ def main():
         st.markdown("## 📋 담당 학급 학생 목록")
         
         # 전체 학생 목록 로드가 아닌 선택된 수업의 학생들 목록만 로드
+        import pandas as pd
         selected_schedule = st.session_state.get('selected_schedule')
         if selected_schedule:
             df_students_list = get_students_for_schedule(selected_schedule)
