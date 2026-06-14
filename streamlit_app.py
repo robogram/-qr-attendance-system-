@@ -125,7 +125,8 @@ def show_login_page():
         st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         with st.form("login_form"):
             username = st.text_input("아이디", placeholder="아이디를 입력하세요")
-            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요")
+            password = st.text_input("비밀번호", type="password", placeholder="비밀번호를 입력하세요 (학생은 010 제외 전화번호)")
+            st.caption("💡 **학생 로그인:** 아이디는 '이름', 비밀번호는 '전화번호(010 제외 숫자만)'를 입력하세요.")
             submit = st.form_submit_button("🚀 로그인", use_container_width=True)
             
             if submit:

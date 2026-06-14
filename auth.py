@@ -93,8 +93,12 @@ def load_users():
 def authenticate_user(username, password):
     """
     사용자 인증 (Supabase 기반, 연결 실패 시 기본 계정 fallback)
+    학생의 경우 이름과 전화번호(010 제외)로 인증 연동 지원
     """
-    # 1. Supabase에서 먼저 조회 시도 (예외 발생 시 fallback으로 넘어감)
+    username_clean = normalize_text(username)
+    password_clean = str(password).strip().replace("-", "").replace(" ", "")
+    
+    # 1. Supabase에서 먼저 조회 시도 (일반 사용자 계정 조회)
     try:
         user = supabase_mgr.get_user_by_username(username)
         if user and user.get('password') == password:
@@ -109,6 +113,35 @@ def authenticate_user(username, password):
     for account in DEFAULT_ACCOUNTS:
         if account['username'] == username and account['password'] == password:
             return account
+            
+    # 3. 🆕 학생 전용 동적 인증 처리 (이름 + 전화번호 010 제외 매칭)
+    try:
+        all_students = supabase_mgr.get_all_students()
+        if all_students:
+            for s in all_students:
+                s_name = normalize_text(s.get('student_name', ''))
+                # 입력된 이름이 학생명과 같거나 포함되는지 대조 (예: '김도현'이 '김도현(상촌)'에 포함됨)
+                if username_clean and (username_clean == s_name or username_clean in s_name):
+                    contact = str(s.get('parent_contact') or '').replace("-", "").replace(" ", "")
+                    # 010 / 10 프리픽스 제거
+                    if contact.startswith('010') and len(contact) > 3:
+                        contact_sub = contact[3:]
+                    elif contact.startswith('10') and len(contact) > 2:
+                        contact_sub = contact[2:]
+                    else:
+                        contact_sub = contact
+                    
+                    if password_clean and contact_sub == password_clean:
+                        return {
+                            'id': s['id'],
+                            'user_id': s['id'],
+                            'username': s_name,
+                            'name': s_name,
+                            'role': 'student',
+                            'phone': s.get('parent_contact', '')
+                        }
+    except Exception as e:
+        print(f"[ERROR] Student dynamic auth failed: {e}")
     
     return None
 
