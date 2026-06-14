@@ -2,7 +2,7 @@ import streamlit as st
 import base64
 import os
 import time
-from auth import authenticate_by_name_and_birth, get_role_display_name
+from auth import authenticate_user, authenticate_by_name_and_birth, get_role_display_name
 
 # 1. 페이지 설정 (반드시 모든 Streamlit 명령 중 최상단에 위치)
 st.set_page_config(page_title="ROBOGRAM Kids", layout="centered")
@@ -149,7 +149,7 @@ def login_screen():
         """, unsafe_allow_html=True)
 
         student_name = st.text_input("나의 이름", placeholder="이름을 적어주세요", key="user_login_name")
-        access_code = st.text_input("비밀번호 (생년월일 6자리)", type="password", placeholder="예: 150305", key="user_login_code")
+        access_code = st.text_input("비밀번호 (전화번호 010 제외)", type="password", placeholder="예: 12345678 (010 제외한 숫자만)", key="user_login_code")
         
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
@@ -157,14 +157,14 @@ def login_screen():
         if st.session_state.login_error:
             st.markdown("""
             <div class="error-box">
-                <div class="error-text">앗! 이름이나 생년월일이 틀린 것 같아.<br>다시 한번 확인해 볼래? 😢</div>
+                <div class="error-text">앗! 이름이나 비밀번호가 틀린 것 같아.<br>다시 한번 확인해 볼래? 😢</div>
             </div>
             """, unsafe_allow_html=True)
 
         if st.button("수업 입장하기", key="user_login_submit", use_container_width=True):
             if student_name and access_code:
                 with st.spinner("로보미가 확인 중... 🤖"):
-                    user = authenticate_by_name_and_birth(student_name, access_code)
+                    user = authenticate_user(student_name, access_code)
                     if user and user['role'] in ['parent', 'student']:
                         st.session_state.login_success = True
                         st.session_state.login_error = False
