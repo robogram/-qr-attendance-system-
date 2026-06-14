@@ -465,20 +465,26 @@ def calculate_group_statistics(attendance_df, group_info):
         
         # 🆕 출석 통계 (실제 출석/지각만 집계)
         if not attendance_df.empty:
-            # 출석 인정 범위: '출석' 또는 '지각'만 인정 (수업 예정이나 결석 제외)
-            is_present_mask = attendance_df['status'].isin([
-                ATTENDANCE_STATUS_PRESENT, "출석", 
-                ATTENDANCE_STATUS_LATE, "지각"
-            ])
-            stats['total_attendance'] = is_present_mask.sum()
+            # 중복 날짜 제거하여 통계 계산의 왜곡 방지
+            unique_att_df = attendance_df.drop_duplicates(subset=['date']).copy()
             
-            stats['present'] = len(attendance_df[attendance_df['status'].isin([ATTENDANCE_STATUS_PRESENT, "출석"])])
-            stats['late'] = len(attendance_df[attendance_df['status'].isin([ATTENDANCE_STATUS_LATE, "지각"])])
+            # 실제 출석 상태 필터링 (수업 예정 등 제외)
+            is_present_mask = unique_att_df['status'].isin([
+                ATTENDANCE_STATUS_PRESENT, "출석"
+            ]) | unique_att_df['status'].str.contains("출석", na=False)
+            
+            is_late_mask = unique_att_df['status'].isin([
+                ATTENDANCE_STATUS_LATE, "지각"
+            ]) | unique_att_df['status'].str.contains("지각", na=False)
+            
+            stats['present'] = is_present_mask.sum()
+            stats['late'] = is_late_mask.sum()
+            stats['total_attendance'] = stats['present'] + stats['late']
             
             # 🆕 결석 수 = 실제 결석 기록 + 기록 없는 지난 수업
             # 결석 판정은 '수업 예정'이 아닌 것 중 '출석/지각'이 아닌 것
-            is_absent_mask = attendance_df['status'].isin([ATTENDANCE_STATUS_ABSENT, "결석"]) | \
-                             attendance_df['status'].str.contains("결석", na=False)
+            is_absent_mask = unique_att_df['status'].isin([ATTENDANCE_STATUS_ABSENT, "결석"]) | \
+                             unique_att_df['status'].str.contains("결석", na=False)
             stats['absent'] = is_absent_mask.sum()
             
             # 🆕 출석률 계산 (출석 + 지각만 / 전체 수업)
@@ -487,8 +493,8 @@ def calculate_group_statistics(attendance_df, group_info):
             
             # 레벨, 연속 출석 계산
             stats['level'] = calculate_level(stats['total_attendance'])
-            stats['consecutive_classes'] = calculate_consecutive_classes(attendance_df)
-            stats['streak'] = calculate_streak(attendance_df)
+            stats['consecutive_classes'] = calculate_consecutive_classes(unique_att_df)
+            stats['streak'] = calculate_streak(unique_att_df)
         else:
             # 🆕 attendance_df가 비어있으면 = 모든 수업 결석
             if stats['total_classes'] > 0:
