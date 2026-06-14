@@ -1112,8 +1112,32 @@ def main():
             st.rerun()
         st.stop()
 
-    # 🆕 로그인 사용자 이름 정규화
-    student_name = normalize_text(user.get('name', '학생'))
+    # 🆕 로그인 사용자 이름 정규화 및 동명이인 멀티 프로필 매칭
+    login_name = normalize_text(user.get('name', '학생'))
+    df_all_std = get_students_df()
+    matched_std = df_all_std[df_all_std['name'].str.contains(login_name, na=False)] if not df_all_std.empty else pd.DataFrame()
+    
+    if matched_std.empty:
+        student_name = login_name
+    else:
+        matched_student_rows = matched_std.to_dict('records')
+        if len(matched_student_rows) > 1:
+            st.warning(f"💡 시스템에 **'{login_name}'** 이름을 가진 학생이 **{len(matched_student_rows)}명** 존재합니다. 본인의 정보(연락처/구분)를 선택해 주세요.")
+            def get_option_label(row):
+                phone = row.get('phone', '')
+                phone_masked = phone[:-4] + "****" if len(phone) >= 4 else phone
+                return f"👤 {row['name']} (연락처: {phone_masked})"
+            options = [get_option_label(r) for r in matched_student_rows]
+            selected_idx = st.selectbox(
+                "본인의 이름을 선택하세요",
+                range(len(matched_student_rows)),
+                format_func=lambda i: options[i],
+                key="student_multi_name_selector"
+            )
+            student_name = matched_student_rows[selected_idx]['name']
+        else:
+            student_name = matched_student_rows[0]['name']
+            
     now_kst = get_now_kst()
     
     # ========== 0. 시스템 진단 (디버그 모드) ==========
