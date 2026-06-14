@@ -1534,6 +1534,13 @@ def main():
             if matched_group_id is not None:
                 # 선택된 그룹만 표시
                 df_groups = df_groups[df_groups['group_id'] == matched_group_id]
+            else:
+                # 오늘 담당 수업이 없을 경우, 이 선생님이 담당하는 전체 그룹 목록만 표시
+                teacher_groups = get_teacher_groups(user['username'])
+                if teacher_groups:
+                    df_groups = df_groups[df_groups['group_id'].isin(teacher_groups)]
+                else:
+                    df_groups = df_groups.iloc[0:0] # 아무 그룹도 표시하지 않음 (담당 그룹이 없는 경우)
             
             for _, group in df_groups.iterrows():
                 group_name = group['group_name']
