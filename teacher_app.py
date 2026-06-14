@@ -1527,11 +1527,11 @@ def main():
                     matched_group_id = selected_schedule['group_id']
                 else:
                     # group_id가 누락된 경우 session_name에서 유추
-                    session_name = selected_schedule.get('session', '') or selected_schedule.get('group_name', '')
+                    session_name = str(selected_schedule.get('session', '') or selected_schedule.get('group_name', '')).strip()
                     import pandas as pd
                     for _, grp in df_groups.iterrows():
                         g_name = str(grp['group_name']).strip()
-                        if pd.notna(g_name) and g_name and g_name in session_name.split('-')[0]:
+                        if pd.notna(g_name) and g_name and (g_name in session_name or session_name in g_name):
                             matched_group_id = grp['group_id']
                             break
             
