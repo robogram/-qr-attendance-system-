@@ -201,9 +201,6 @@ def main():
             .student-list-item { flex-direction: column !important; align-items: flex-start !important; }
             .schedule-card div { font-size: 14px !important; }
         }
-    </style>
-          letter-spacing: -1px;
-        }
 
         /* 탭 및 기타 컴포넌트 */
         .stTabs [data-baseweb="tab-list"] { gap: 10px; }
@@ -214,8 +211,7 @@ def main():
         .stat-card-large {
             padding: 20px !important;
         }
-    }
-</style>
+    </style>
 """, unsafe_allow_html=True)
 
 def load_class_groups():
