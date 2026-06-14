@@ -381,15 +381,15 @@ def get_student_attendance_for_group(student_name, group_id):
                 sch_id = sch['id']
                 sch_date = pd.to_datetime(sch['date']).date()
                 
-                # 해당 일정에 맞는 출석 기록 찾기 (ID 또는 날짜/세션으로 대조)
-                date_records = group_attendance[
-                    (group_attendance['schedule_id'] == sch_id) | 
-                    (group_attendance['date'] == sch_date)
-                ]
+                # 해당 일정에 맞는 출석 기록 찾기 (우선순위: schedule_id 매칭, 없으면 날짜/세션으로 대조)
+                date_records = group_attendance[group_attendance['schedule_id'] == sch_id]
+                if date_records.empty:
+                    # schedule_id로 안 찾아지는 과거 데이터나 예외 처리를 위해 날짜 매칭 지원
+                    date_records = group_attendance[group_attendance['date'] == sch_date]
                 
                 if not date_records.empty:
-                    # 출석 기록이 있는 경우 (중복 제거 후 추가)
-                    for _, r in date_records.drop_duplicates(subset=['timestamp', 'status']).iterrows():
+                    # 출석 기록이 있는 경우 (날짜 기준으로 중복 제거하여 하루 1회만 추가)
+                    for _, r in date_records.drop_duplicates(subset=['date']).iterrows():
                         full_history.append(r.to_dict())
                 else:
                     # 오늘 날짜 기준으로 과거면 결석, 오늘인데 수업 종료 시간이 지났으면 결석, 그 외에는 예정
