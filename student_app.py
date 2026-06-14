@@ -1524,6 +1524,7 @@ def main():
             records_df['상태'] = records_df.apply(get_display_status, axis=1)
             
             display_df = records_df[['날짜', '시간', '상태']].sort_values('날짜', ascending=False)
+            display_df = display_df.drop_duplicates(subset=['날짜'])
             
             st.dataframe(display_df, use_container_width=True, hide_index=True)
             
