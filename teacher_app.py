@@ -1000,8 +1000,22 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # ⭐ 선생님의 담당 수업만 표시 (대타 포함)
-    schedules = get_teacher_schedule(user['username'])
+    # 📅 조회 날짜 선택 추가
+    col_date_sel1, col_date_sel2 = st.columns([2, 1])
+    with col_date_sel1:
+        selected_date = st.date_input(
+            "📅 조회 기준일",
+            value=get_today_kst(),
+            key="teacher_main_date_selector"
+        )
+    with col_date_sel2:
+        st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
+        if st.button("🔄 오늘로 이동", use_container_width=True):
+            st.session_state['teacher_main_date_selector'] = get_today_kst()
+            st.rerun()
+
+    # ⭐ 선생님의 담당 수업만 표시 (대타 포함) - 선택된 날짜 기준
+    schedules = get_teacher_schedule(user['username'], check_date=selected_date)
     
     if schedules:
         st.markdown("### 📅 내 담당 수업")
