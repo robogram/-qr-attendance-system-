@@ -51,7 +51,19 @@ def get_students_df():
     df = pd.DataFrame(students)
     if not df.empty:
         df = df.rename(columns={'student_name': 'name', 'qr_code_data': 'qr_code', 'parent_contact': 'phone'})
-    return df if not df.empty else pd.DataFrame(columns=['name', 'qr_code', 'phone'])
+        
+        # students.csv 파일이 있으면 학교(school) 정보 연동
+        import os
+        if os.path.exists("students.csv"):
+            try:
+                df_csv = pd.read_csv("students.csv")
+                if not df_csv.empty and 'name' in df_csv.columns and 'school' in df_csv.columns:
+                    df_csv_school = df_csv[['name', 'school']].drop_duplicates(subset=['name'])
+                    df = pd.merge(df, df_csv_school, on='name', how='left')
+            except Exception as csv_err:
+                logger.error(f"Error reading students.csv: {csv_err}")
+                
+    return df if not df.empty else pd.DataFrame(columns=['name', 'qr_code', 'phone', 'school'])
 
 def get_schedule_df():
     try:
