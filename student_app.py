@@ -161,6 +161,13 @@ def robust_match(target, candidate):
     candidate = normalize_text(candidate).upper()
     if target == candidate: return True
     
+    # 기수 번호 불일치 매칭 방지 (예: 7기 vs 4기)
+    target_digits = re.findall(r'\d+', target)
+    candidate_digits = re.findall(r'\d+', candidate)
+    if target_digits and candidate_digits:
+        if set(target_digits) != set(candidate_digits):
+            return False
+            
     # 2. 포함 관계 확인 (유연한 매칭)
     if target in candidate or candidate in target: return True
     

@@ -39,6 +39,14 @@ def robust_match(target, candidate):
     target = normalize_text(target).upper()
     candidate = normalize_text(candidate).upper()
     if target == candidate: return True
+    
+    # 기수 번호 불일치 매칭 방지 (예: 7기 vs 4기)
+    target_digits = re.findall(r'\d+', target)
+    candidate_digits = re.findall(r'\d+', candidate)
+    if target_digits and candidate_digits:
+        if set(target_digits) != set(candidate_digits):
+            return False
+            
     if target in candidate or candidate in target: return True
     t_letter = re.sub(r'[^A-Z0-9가-힣]', '', target)
     c_letter = re.sub(r'[^A-Z0-9가-힣]', '', candidate)
