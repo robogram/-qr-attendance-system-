@@ -488,9 +488,9 @@ def calculate_group_statistics(attendance_df, group_info):
             unique_att_df = attendance_df.drop_duplicates(subset=['date']).copy()
             
             # 실제 출석 상태 필터링 (수업 예정 등 제외)
-            is_present_mask = unique_att_df['status'].isin([
+            is_present_mask = (unique_att_df['status'].isin([
                 ATTENDANCE_STATUS_PRESENT, "출석"
-            ]) | unique_att_df['status'].str.contains("출석", na=False)
+            ]) | unique_att_df['status'].str.contains("출석", na=False)) & ~unique_att_df['status'].str.contains("미출석", na=False)
             
             is_late_mask = unique_att_df['status'].isin([
                 ATTENDANCE_STATUS_LATE, "지각"
