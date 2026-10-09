@@ -1544,13 +1544,16 @@ def main():
                             for _, tg in df_teacher_groups.iterrows():
                                 u_row = df_users[df_users['username'] == tg['teacher_username']]
                                 if not u_row.empty:
-                                    teacher_map[int(tg['group_id'])] = u_row.iloc[0]['name']
+                                    teacher_map[str(tg['group_id'])] = u_row.iloc[0]['name']
     
                         batch_inserts = []
                         for _, group in df_groups.iterrows():
-                            g_id = int(group['group_id'])
+                            g_id = str(group['group_id'])
                             t_name = teacher_map.get(g_id, None)
-                            weekdays = [int(w) for w in str(group['weekdays']).split(',')]
+                            try:
+                                weekdays = [int(w.strip()) for w in str(group.get('weekdays', '')).split(',') if w.strip().isdigit()]
+                            except Exception:
+                                weekdays = []
                             z_id = group.get('zoom_meeting_id', '')
                             
                             # Generate all expected sessions for this group
@@ -1747,9 +1750,17 @@ def main():
         
         if not df_groups.empty:
             for idx, group in df_groups.iterrows():
-                weekdays_list = [int(x) for x in str(group['weekdays']).split(',')]
+                try:
+                    weekdays_raw = str(group.get('weekdays', ''))
+                    weekdays_list = [int(x.strip()) for x in weekdays_raw.split(',') if x.strip().isdigit()]
+                except Exception:
+                    weekdays_list = []
+                
                 weekday_names_kr = ["월", "화", "수", "목", "금", "토", "일"]
-                weekdays_display = ', '.join([weekday_names_kr[d] for d in weekdays_list])
+                if weekdays_list:
+                    weekdays_display = ', '.join([weekday_names_kr[d] for d in weekdays_list if 0 <= d < len(weekday_names_kr)])
+                else:
+                    weekdays_display = "일정 미지정"
                 
                 students_in_group = get_students_in_group(group['group_id'])
                 total_hours = group.get('total_hours', 1.0)

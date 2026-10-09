@@ -307,7 +307,10 @@ def calculate_total_education_hours(student_name, group_id=None):
                 end_dt = datetime.combine(get_today_kst(), end_time)
                 duration_hours = (end_dt - start_dt).total_seconds() / 3600
                 
-                weekdays = [int(x) for x in str(group['weekdays']).split(',')]
+                try:
+                    weekdays = [int(x.strip()) for x in str(group.get('weekdays', '')).split(',') if x.strip().isdigit()]
+                except Exception:
+                    weekdays = []
                 start_date = pd.to_datetime(group['start_date']).date()
                 end_date = pd.to_datetime(group['end_date']).date()
                 
