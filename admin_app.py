@@ -1296,27 +1296,53 @@ def main():
         
         st.markdown("###")
         
-        # 학생 목록 (수정 기능 포함)
-        st.subheader(f"📋 전체 학생 ({len(st.session_state.attendees)}명)")
+        # 학생 목록 (검색 및 수정 기능 포함)
+        df_groups_all = load_class_groups()
+        group_choices = ["전체 반/그룹"] + (df_groups_all['group_name'].tolist() if not df_groups_all.empty else [])
         
+        col_s_head, col_s_search, col_s_grp = st.columns([2, 3, 2])
+        with col_s_head:
+            st.subheader(f"📋 학생 목록 ({len(st.session_state.attendees)}명)")
+        with col_s_search:
+            search_kw = st.text_input("🔍 학생 검색", placeholder="이름, 학교, 전화번호...", key="student_search_kw", label_visibility="collapsed")
+        with col_s_grp:
+            selected_grp_filter = st.selectbox("소속 반 필터", group_choices, key="student_grp_filter", label_visibility="collapsed")
+        
+        filtered_attendees = []
         if st.session_state.attendees:
+            for name in st.session_state.attendees:
+                phone = st.session_state.phones.get(name, '')
+                school = st.session_state.schools.get(name, '')
+                s_groups = get_student_groups(name)
+                s_group_names = []
+                if s_groups and not df_groups_all.empty:
+                    for gid in s_groups:
+                        g_match = df_groups_all[df_groups_all['group_id'] == gid]
+                        if not g_match.empty:
+                            s_group_names.append(g_match.iloc[0]['group_name'])
+                
+                # 검색어 필터
+                if search_kw:
+                    kw = search_kw.strip().lower()
+                    match_found = (kw in name.lower() or kw in phone.lower() or kw in school.lower() or any(kw in gn.lower() for gn in s_group_names))
+                    if not match_found:
+                        continue
+                
+                # 반/그룹 필터
+                if selected_grp_filter != "전체 반/그룹":
+                    if selected_grp_filter not in s_group_names:
+                        continue
+                
+                filtered_attendees.append((name, phone, school, s_group_names))
+        
+        if search_kw or selected_grp_filter != "전체 반/그룹":
+            st.caption(f"🔎 검색 결과: **{len(filtered_attendees)}명** 표시 중 (전체 {len(st.session_state.attendees)}명 중)")
+        
+        if filtered_attendees:
             if 'editing_student' not in st.session_state:
                 st.session_state.editing_student = None
             
-            for idx, name in enumerate(st.session_state.attendees):
-                phone = st.session_state.phones.get(name, '')
-                school = st.session_state.schools.get(name, '')
-                
-                student_groups = get_student_groups(name)
-                df_groups = load_class_groups()
-                
-                group_names = []
-                if student_groups:
-                    for gid in student_groups:
-                        group_info = df_groups[df_groups['group_id'] == gid]
-                        if not group_info.empty:
-                            group_names.append(group_info.iloc[0]['group_name'])
-                
+            for idx, (name, phone, school, group_names) in enumerate(filtered_attendees):
                 # 편집 모드
                 if st.session_state.editing_student == name:
                     st.markdown(f"""
@@ -3549,9 +3575,35 @@ def main():
         
         # df_users = auth.load_users() # 상단 공통 로드로 대체
         
-        st.subheader(f"👥 전체 사용자 ({len(df_users)}명)")
+        col_u_head, col_u_search, col_u_role = st.columns([2, 3, 2])
+        with col_u_head:
+            st.subheader(f"👥 전체 사용자 ({len(df_users)}명)")
+        with col_u_search:
+            u_search_kw = st.text_input("🔍 사용자 검색", placeholder="이름, 아이디, 전화번호...", key="admin_user_search_kw", label_visibility="collapsed")
+        with col_u_role:
+            role_options = ["전체 역할", "👨‍🏫 선생님 (teacher)", "👨‍👩‍👧 학부모 (parent)", "🎓 학생 (student)", "👑 관리자 (admin)"]
+            selected_role_filter = st.selectbox("역할 필터", role_options, key="admin_user_role_filter", label_visibility="collapsed")
+            
+        # 필터링 적용
+        filtered_users = df_users.copy()
+        if not filtered_users.empty:
+            if u_search_kw:
+                ukw = u_search_kw.strip().lower()
+                filtered_users = filtered_users[
+                    filtered_users['name'].astype(str).str.lower().str.contains(ukw, na=False) |
+                    filtered_users['username'].astype(str).str.lower().str.contains(ukw, na=False) |
+                    filtered_users['phone'].astype(str).str.lower().str.contains(ukw, na=False) |
+                    filtered_users.get('student_id', pd.Series()).astype(str).str.lower().str.contains(ukw, na=False)
+                ]
+            
+            if selected_role_filter != "전체 역할":
+                target_role = "teacher" if "teacher" in selected_role_filter else ("parent" if "parent" in selected_role_filter else ("student" if "student" in selected_role_filter else "admin"))
+                filtered_users = filtered_users[filtered_users['role'] == target_role]
+                
+        if u_search_kw or selected_role_filter != "전체 역할":
+            st.caption(f"🔎 검색 결과: **{len(filtered_users)}명** 표시 중 (전체 {len(df_users)}명 중)")
         
-        for idx, row in df_users.iterrows():
+        for idx, row in filtered_users.iterrows():
             role = row['role']
             badge_class = f"badge-{role}"
             
