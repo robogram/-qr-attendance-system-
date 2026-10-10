@@ -55,6 +55,53 @@ def load_csv_safe(path, columns, dtype=None):
             return df
         
         df = pd.read_csv(path, dtype=dtype, encoding='utf-8-sig')
+        
+        # 🆕 호환성 자동 매핑 (students 테이블과 레거시 CSV 간의 완벽 호환)
+        if 'student_name' in df.columns and 'name' not in df.columns:
+            df['name'] = df['student_name']
+        elif 'name' in df.columns and 'student_name' not in df.columns:
+            df['student_name'] = df['name']
+            
+        if 'qr_code_data' in df.columns and 'qr_code' not in df.columns:
+            df['qr_code'] = df['qr_code_data']
+        elif 'qr_code' in df.columns and 'qr_code_data' not in df.columns:
+            df['qr_code_data'] = df['qr_code']
+            
+        if 'parent_contact' in df.columns and 'phone' not in df.columns:
+            df['phone'] = df['parent_contact']
+        elif 'phone' in df.columns and 'parent_contact' not in df.columns:
+            df['parent_contact'] = df['phone']
+            
+        # 🆕 호환성 자동 매핑 (schedule 테이블과 레거시 CSV 간의 완벽 호환)
+        if 'class_name' in df.columns and 'session' not in df.columns:
+            df['session'] = df['class_name']
+        elif 'session' in df.columns and 'class_name' not in df.columns:
+            df['class_name'] = df['session']
+            
+        if 'start_time' in df.columns:
+            try:
+                st_dt = pd.to_datetime(df['start_time'])
+                if 'date' not in df.columns:
+                    df['date'] = st_dt.dt.date.astype(str)
+                if 'start' not in df.columns:
+                    df['start'] = st_dt.dt.strftime('%H:%M')
+            except Exception:
+                pass
+                
+        if 'end_time' in df.columns:
+            try:
+                en_dt = pd.to_datetime(df['end_time'])
+                if 'end' not in df.columns:
+                    df['end'] = en_dt.dt.strftime('%H:%M')
+            except Exception:
+                pass
+                
+        # 요청된 컬럼 중 여전히 누락된 컬럼이 있다면 빈 값으로 기본 생성 (KeyError 원천 차단)
+        if columns:
+            for col in columns:
+                if col not in df.columns:
+                    df[col] = ""
+                    
         logger.info(f"Loaded CSV file: {path} ({len(df)} rows)")
         return df
     
