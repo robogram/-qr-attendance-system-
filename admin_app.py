@@ -830,9 +830,20 @@ def main():
             from supabase_client import supabase_mgr
             students = supabase_mgr.get_all_students()
             
+            # 학교 정보 로드 (students.csv 참조)
+            school_map = {}
+            if os.path.exists(STUDENTS_CSV):
+                try:
+                    df_csv_st = pd.read_csv(STUDENTS_CSV, encoding='utf-8-sig')
+                    col_nm = 'student_name' if 'student_name' in df_csv_st.columns else 'name'
+                    if col_nm in df_csv_st.columns and 'school' in df_csv_st.columns:
+                        school_map = dict(zip(df_csv_st[col_nm].astype(str), df_csv_st['school'].fillna('').astype(str)))
+                except Exception:
+                    pass
+
             st.session_state.attendees = [s['student_name'] for s in students]
             st.session_state.phones = {s['student_name']: str(s.get('parent_contact') or '') for s in students}
-            st.session_state.schools = {s['student_name']: '' for s in students} # Supabase 스키마에 학교가 없으므로 빈 문자열 처리
+            st.session_state.schools = {s['student_name']: school_map.get(s['student_name'], '') for s in students}
             # Supabase ID 저장용 객체
             st.session_state.student_db_records = {s['student_name']: s for s in students}
         except Exception as e:
@@ -1296,7 +1307,9 @@ def main():
         
         st.markdown("###")
         
-        # 학생 목록 (검색 및 수정 기능 포함)
+        # 🆕 실시간 학생 데이터 최신 동기화 (9기 등 신규 등록 학생 즉각 반영)
+        load_students_to_session()
+        
         df_groups_all = load_class_groups()
         group_choices = ["전체 반/그룹"] + (df_groups_all['group_name'].tolist() if not df_groups_all.empty else [])
         
@@ -1304,27 +1317,43 @@ def main():
         with col_s_head:
             st.subheader(f"📋 학생 목록 ({len(st.session_state.attendees)}명)")
         with col_s_search:
-            search_kw = st.text_input("🔍 학생 검색", placeholder="이름, 학교, 전화번호...", key="student_search_kw", label_visibility="collapsed")
+            search_kw = st.text_input("🔍 학생 검색", placeholder="학생 이름, 전화번호, 학교...", key="student_search_kw")
         with col_s_grp:
-            selected_grp_filter = st.selectbox("소속 반 필터", group_choices, key="student_grp_filter", label_visibility="collapsed")
+            selected_grp_filter = st.selectbox("소속 반 필터", group_choices, key="student_grp_filter")
         
+        # 소속 그룹 사전 매핑 캐싱 (반복 쿼리 제거 및 초고속 필터링)
+        df_sg_all = load_student_groups()
+        student_to_groups = {}
+        if not df_sg_all.empty and not df_groups_all.empty:
+            for _, r_sg in df_sg_all.iterrows():
+                sname = str(r_sg['student_name'])
+                gid = str(r_sg['group_id'])
+                g_match = df_groups_all[df_groups_all['group_id'] == gid]
+                gname = g_match.iloc[0]['group_name'] if not g_match.empty else gid
+                student_to_groups.setdefault(sname, []).append(gname)
+        
+        import unicodedata
+        def norm_txt(t):
+            if not t: return ""
+            return unicodedata.normalize('NFC', str(t)).replace(" ", "").lower().replace("-", "")
+
+        kw_clean = norm_txt(search_kw)
         filtered_attendees = []
+        
         if st.session_state.attendees:
             for name in st.session_state.attendees:
                 phone = st.session_state.phones.get(name, '')
                 school = st.session_state.schools.get(name, '')
-                s_groups = get_student_groups(name)
-                s_group_names = []
-                if s_groups and not df_groups_all.empty:
-                    for gid in s_groups:
-                        g_match = df_groups_all[df_groups_all['group_id'] == gid]
-                        if not g_match.empty:
-                            s_group_names.append(g_match.iloc[0]['group_name'])
+                s_group_names = student_to_groups.get(name, [])
                 
-                # 검색어 필터
-                if search_kw:
-                    kw = search_kw.strip().lower()
-                    match_found = (kw in name.lower() or kw in phone.lower() or kw in school.lower() or any(kw in gn.lower() for gn in s_group_names))
+                # 정밀 검색 필터 (이름, 전화번호, 학교, 소속 반)
+                if kw_clean:
+                    name_clean = norm_txt(name)
+                    phone_clean = norm_txt(phone)
+                    school_clean = norm_txt(school)
+                    groups_clean = "".join([norm_txt(gn) for gn in s_group_names])
+                    
+                    match_found = (kw_clean in name_clean or kw_clean in phone_clean or kw_clean in school_clean or kw_clean in groups_clean)
                     if not match_found:
                         continue
                 
@@ -1336,7 +1365,9 @@ def main():
                 filtered_attendees.append((name, phone, school, s_group_names))
         
         if search_kw or selected_grp_filter != "전체 반/그룹":
-            st.caption(f"🔎 검색 결과: **{len(filtered_attendees)}명** 표시 중 (전체 {len(st.session_state.attendees)}명 중)")
+            st.info(f"🔎 검색 결과: **{len(filtered_attendees)}명** (전체 {len(st.session_state.attendees)}명 중)")
+            if not filtered_attendees:
+                st.warning(f"⚠️ '{search_kw}'에 일치하는 학생이 없습니다. 철자를 확인해주세요.")
         
         if filtered_attendees:
             if 'editing_student' not in st.session_state:
