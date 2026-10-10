@@ -153,40 +153,40 @@ def get_attendance_df():
         return pd.DataFrame(columns=['id', 'student_id', 'schedule_id', 'date', 'session', 'student_name', 'qr_code', 'timestamp', 'status', 'type'])
 
 def robust_match(target, candidate):
-    """유연한 문자열 매칭 (정규화, 공백 무시, 대소문자 무시, 정규식 기반 클래스 문자 추출)"""
+    """유연한 문자열 매칭 (정규화, 공백 무시, 대소문자 무시, 기수/회차 스마트 구분)"""
     if not target or not candidate: return False
     
-    # 1. 완전 일치 (NFC 정규화 후 대소문자 무관)
-    target = normalize_text(target).upper()
-    candidate = normalize_text(candidate).upper()
-    if target == candidate: return True
+    target_norm = normalize_text(target).upper()
+    cand_norm = normalize_text(candidate).upper()
+    if target_norm == cand_norm: return True
     
-    # 기수 번호 불일치 매칭 방지 (예: 7기 vs 4기)
-    target_digits = re.findall(r'\d+', target)
-    candidate_digits = re.findall(r'\d+', candidate)
-    if target_digits and candidate_digits:
-        if set(target_digits) != set(candidate_digits):
+    # 1. '기수' 번호 불일치 방지 (예: 7기 vs 4기)
+    # 단, '회차'(1회, 1회차 등)의 번호와 혼동하지 않도록 '기' 앞의 숫자만 우선 비교
+    target_gis = re.findall(r'(\d+)\s*기', target_norm)
+    candidate_gis = re.findall(r'(\d+)\s*기', cand_norm)
+    if target_gis and candidate_gis:
+        if set(target_gis) != set(candidate_gis):
             return False
             
-    # 2. 포함 관계 확인 (유연한 매칭)
-    if target in candidate or candidate in target: return True
-    
-    # 3. 특수 문자 제거 후 숫자/영문/한글 핵심 단어 비교
-    t_letter = re.sub(r'[^A-Z0-9가-힣]', '', target)
-    c_letter = re.sub(r'[^A-Z0-9가-힣]', '', candidate)
-    
+    # 2. 기수 표기가 없는 경우: 회차(1회차, 1회, 1차, 1주차 등) 숫자를 제외한 본문 숫자 비교
+    t_no_session = re.sub(r'\d+\s*(?:회차|회|차|주차|주|교시|일차|일)', '', target_norm)
+    c_no_session = re.sub(r'\d+\s*(?:회차|회|차|주차|주|교시|일차|일)', '', cand_norm)
+    t_digits = re.findall(r'\d+', t_no_session)
+    c_digits = re.findall(r'\d+', c_no_session)
+    if t_digits and c_digits:
+        if set(t_digits) != set(c_digits):
+            return False
+            
+    # 3. 포함 관계 확인 (유연한 매칭)
+    if target_norm in cand_norm or cand_norm in target_norm:
+        return True
+        
+    # 4. 공백 및 특수기호 제거 후 포함 관계 확인
+    t_letter = re.sub(r'[^A-Z0-9가-힣]', '', target_norm)
+    c_letter = re.sub(r'[^A-Z0-9가-힣]', '', cand_norm)
     if t_letter and c_letter and (t_letter in c_letter or c_letter in t_letter):
         return True
-    
-    # 4. Super-Fuzzy: 맨 앞 한 글자만 같아도 매칭 (A, B, C 등 식별자 위주)
-    if len(target) > 0 and len(candidate) > 0:
-        if target[0] == candidate[0]: return True
-
-    # 5. '반' 글자 제외 비교
-    t_clean = target.replace("반", "").strip()
-    c_clean = candidate.replace("반", "").strip()
-    if t_clean == c_clean and t_clean != "": return True
-    
+        
     return False
 # ----------------------------
 
@@ -380,8 +380,9 @@ def get_student_attendance_for_group(student_name, group_id):
         else:
             # 🆕 [하이브리드 매칭] 관리자 앱과 동일한 수준의 데이터 확보
             # 방법 A: 정확한 ID 기반 매칭 (Supabase 관계형)
-            match_id = (df_attendance_all['student_id'] == db_student_id) & \
-                        (df_attendance_all['schedule_id'].isin(target_schedule_ids))
+            target_sch_ids_str = [str(sid) for sid in target_schedule_ids]
+            match_id = (df_attendance_all['student_id'].astype(str) == str(db_student_id)) & \
+                        (df_attendance_all['schedule_id'].astype(str).isin(target_sch_ids_str))
             
             # 방법 B: 이름 + 세션 + 날짜 기반 매칭 (ID 링크가 없거나 유실된 과거 데이터 복구용)
             # 관리자 앱 리포트가 사용하는 방식과 동일함
@@ -401,13 +402,14 @@ def get_student_attendance_for_group(student_name, group_id):
             
             for _, sch in group_schedules.iterrows():
                 sch_id = sch['id']
+                sch_id_str = str(sch_id)
                 sch_date = pd.to_datetime(sch['date']).date()
                 
                 # 해당 일정에 맞는 출석 기록 찾기 (우선순위: schedule_id 매칭, 없으면 날짜/세션으로 대조)
-                date_records = group_attendance[group_attendance['schedule_id'] == sch_id]
+                date_records = group_attendance[group_attendance['schedule_id'].astype(str) == sch_id_str]
                 if date_records.empty:
                     # schedule_id로 안 찾아지는 과거 데이터나 예외 처리를 위해 날짜 매칭 지원
-                    date_records = group_attendance[group_attendance['date'] == sch_date]
+                    date_records = group_attendance[pd.to_datetime(group_attendance['date']).dt.date == sch_date]
                 
                 if not date_records.empty:
                     # 출석 기록이 있는 경우 (날짜 기준으로 중복 제거하여 하루 1회만 추가)

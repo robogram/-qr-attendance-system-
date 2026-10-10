@@ -34,24 +34,39 @@ def normalize_text(text):
     return unicodedata.normalize('NFC', str(text)).strip()
 
 def robust_match(target, candidate):
-    """유연한 문자열 매칭 (정규화, 공백 무시, 대소문자 무시)"""
+    """유연한 문자열 매칭 (정규화, 공백 무시, 대소문자 무시, 기수/회차 스마트 구분)"""
     if not target or not candidate: return False
-    target = normalize_text(target).upper()
-    candidate = normalize_text(candidate).upper()
-    if target == candidate: return True
+    target_norm = normalize_text(target).upper()
+    cand_norm = normalize_text(candidate).upper()
+    if target_norm == cand_norm: return True
     
-    # 기수 번호 불일치 매칭 방지 (예: 7기 vs 4기)
-    target_digits = re.findall(r'\d+', target)
-    candidate_digits = re.findall(r'\d+', candidate)
-    if target_digits and candidate_digits:
-        if set(target_digits) != set(candidate_digits):
+    # 1. '기수' 번호 불일치 방지 (예: 7기 vs 4기)
+    # 단, '회차'(1회, 1회차 등)의 번호와 혼동하지 않도록 '기' 앞의 숫자만 우선 비교
+    target_gis = re.findall(r'(\d+)\s*기', target_norm)
+    candidate_gis = re.findall(r'(\d+)\s*기', cand_norm)
+    if target_gis and candidate_gis:
+        if set(target_gis) != set(candidate_gis):
             return False
             
-    if target in candidate or candidate in target: return True
-    t_letter = re.sub(r'[^A-Z0-9가-힣]', '', target)
-    c_letter = re.sub(r'[^A-Z0-9가-힣]', '', candidate)
+    # 2. 기수 표기가 없는 경우: 회차(1회차, 1회, 1차, 1주차 등) 숫자를 제외한 본문 숫자 비교
+    t_no_session = re.sub(r'\d+\s*(?:회차|회|차|주차|주|교시|일차|일)', '', target_norm)
+    c_no_session = re.sub(r'\d+\s*(?:회차|회|차|주차|주|교시|일차|일)', '', cand_norm)
+    t_digits = re.findall(r'\d+', t_no_session)
+    c_digits = re.findall(r'\d+', c_no_session)
+    if t_digits and c_digits:
+        if set(t_digits) != set(c_digits):
+            return False
+            
+    # 3. 포함 관계 확인 (유연한 매칭)
+    if target_norm in cand_norm or cand_norm in target_norm:
+        return True
+        
+    # 4. 공백 및 특수기호 제거 후 포함 관계 확인
+    t_letter = re.sub(r'[^A-Z0-9가-힣]', '', target_norm)
+    c_letter = re.sub(r'[^A-Z0-9가-힣]', '', cand_norm)
     if t_letter and c_letter and (t_letter in c_letter or c_letter in t_letter):
         return True
+        
     return False
 
 def get_students_df():
@@ -544,8 +559,9 @@ def get_child_attendance_data_all_groups(student_name):
             group_attendance = pd.DataFrame()
         else:
             # ID 기반 매칭 + 이름/세션 기반 Fallback 매칭 (관리자/학생 앱 로직과 동일)
-            match_id = (df_attendance_all['student_id'] == db_student_id) & \
-                        (df_attendance_all['schedule_id'].isin(target_schedule_ids))
+            target_sch_ids_str = [str(sid) for sid in target_schedule_ids]
+            match_id = (df_attendance_all['student_id'].astype(str) == str(db_student_id)) & \
+                        (df_attendance_all['schedule_id'].astype(str).isin(target_sch_ids_str))
             
             match_name = (df_attendance_all['student_name'].apply(normalize_text).str.upper() == s_norm) & \
                          (df_attendance_all['session'].apply(lambda x: any(robust_match(normalize_text(g['group_name']), x) for g in groups_info)))
@@ -562,12 +578,13 @@ def get_child_attendance_data_all_groups(student_name):
             
             for _, sch in student_schedule.iterrows():
                 sch_id = sch['id']
+                sch_id_str = str(sch_id)
                 sch_date = pd.to_datetime(sch['date']).date()
                 
                 # 해당 일정에 맞는 출석 기록 찾기
                 date_records = group_attendance[
-                    (group_attendance['schedule_id'] == sch_id) | 
-                    (group_attendance['date'] == sch_date)
+                    (group_attendance['schedule_id'].astype(str) == sch_id_str) | 
+                    (pd.to_datetime(group_attendance['date']).dt.date == sch_date)
                 ]
                 
                 if not date_records.empty:
