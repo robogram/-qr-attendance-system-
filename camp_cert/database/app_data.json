@@ -101,11 +101,11 @@
       "student_id": "ksp1106",
       "password": "KSrobo12345!",
       "name": "박예하",
-      "is_issued": true,
-      "print_count": 2,
+      "is_issued": false,
+      "print_count": 0,
       "created_at": "2026-10-15T13:28:25.110Z",
       "institution_id": "inst-1792066615275",
-      "first_issued_at": "2026-10-15T13:37:45.234Z"
+      "photo_url": ""
     },
     {
       "id": "stu-1792070905110-4965",
