@@ -111,13 +111,11 @@ const CertificateEngine = {
                     ${todayStr}
                 </div>
 
-                <!-- 하단 발급기관 및 직인 (글자 오른쪽 날인으로 글자와 겹치지 않음) -->
-                <div class="cert-footer">
-                    <div class="cert-issuer-wrap">
+                <!-- 하단 발급기관 및 직인 ((주)로보그램은 중앙 정렬, 직인은 '램' 오른쪽에 날인) -->
+                <div class="cert-footer" style="display:flex;align-items:center;justify-content:center;margin-bottom:30px;position:relative;">
+                    <div class="cert-issuer-wrap" style="display:inline-block;position:relative;text-align:center;">
                         <span class="cert-issuer-text">${issuerName}</span>
-                        <div class="cert-seal-box">
-                            <img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'">
-                        </div>
+                        <img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'" style="position:absolute !important;left:100% !important;top:50% !important;transform:translateY(-50%) !important;margin-left:14px !important;width:125px !important;height:125px !important;object-fit:contain !important;mix-blend-mode:multiply !important;display:block !important;z-index:10 !important;pointer-events:none !important;">
                     </div>
                 </div>
             </div>
@@ -274,31 +272,29 @@ const CertificateEngine = {
         ctx.font = `500 ${24 * scale}px "Noto Sans KR", sans-serif`;
         ctx.fillText(CertificateEngine.formatKoreanDate(), width / 2, 775 * scale);
 
-        // 8. 발급처 "(주)로보그램" & 9. 직인 도장 합성 (글자 오른쪽에 나란히 배치하여 겹치지 않음)
+        // 8. 발급처 "(주)로보그램"은 정중앙 출력 & 9. 직인은 '램' 오른쪽에 날인
         const issuerName = institution.issuer_name || '(주)로보그램';
         ctx.fillStyle = '#000000';
         ctx.font = `900 ${52 * scale}px "Noto Sans KR", sans-serif`;
+        ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+
+        const textY = 890 * scale;
+        ctx.fillText(issuerName, width / 2, textY);
 
         const sealSrc = CertificateEngine.getSealSrc();
         await new Promise((resolve) => {
             const sealImg = new Image();
             sealImg.onload = () => {
-                const sealSize = 125 * scale; // 직인 크기 (125)
-                const gap = 16 * scale; // 글자와 직인 사이 간격
+                const sealSize = 125 * scale; // 직인 크기
+                const gap = 14 * scale; // 글자와 직인 사이 간격
                 const textWidth = ctx.measureText(issuerName).width;
-                const totalWidth = textWidth + gap + sealSize;
 
-                // 텍스트와 직인 묶음 전체를 중앙 정렬
-                const startX = (width - totalWidth) / 2;
-                const textY = 890 * scale;
+                // (주)로보그램 텍스트 오른쪽 끝 = (width / 2) + (textWidth / 2)
+                const textRightEdge = (width / 2) + (textWidth / 2);
 
-                // 발급처 텍스트 출력
-                ctx.textAlign = 'left';
-                ctx.fillText(issuerName, startX, textY);
-
-                // 직인 도장 출력 (글자 오른쪽)
-                const sealX = startX + textWidth + gap;
+                // 직인 시작 X는 오른쪽 끝 + gap
+                const sealX = textRightEdge + gap;
                 const sealY = textY - (sealSize / 2);
 
                 ctx.save();
@@ -307,12 +303,7 @@ const CertificateEngine = {
                 ctx.restore();
                 resolve();
             };
-            sealImg.onerror = () => {
-                // 직인 로드 실패 시에도 텍스트는 중앙에 표시
-                ctx.textAlign = 'center';
-                ctx.fillText(issuerName, width / 2, 890 * scale);
-                resolve();
-            };
+            sealImg.onerror = () => resolve();
             sealImg.src = sealSrc;
         });
 
