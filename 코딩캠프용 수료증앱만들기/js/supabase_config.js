@@ -26,55 +26,40 @@ const DB = {
     async init() {
         if (this._isInitialized) return;
 
+        let serverData = null;
+
+        // 1. /api/data 호출 시도 (파이썬 서버 또는 Cloudflare Functions 환경)
         try {
             const res = await fetch('/api/data?t=' + Date.now());
             if (res.ok) {
-                const serverData = await res.json();
-                
-                const localInsts = JSON.parse(localStorage.getItem('camp_institutions') || '[]');
-                const localStudents = JSON.parse(localStorage.getItem('camp_students') || '[]');
-                const localCustomSeal = localStorage.getItem('custom_seal_img');
-
-                // A. PC에 이미 업로드된 커스텀 직인이 있고, 서버에 아직 커스텀 직인이 없다면 서버로 자동 업로드
-                if (localCustomSeal && localCustomSeal.startsWith('data:image') && !serverData.has_custom_seal) {
-                    try {
-                        const sealRes = await fetch('/api/seal', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                            body: JSON.stringify({ image: localCustomSeal })
-                        });
-                        if (sealRes.ok) {
-                            const sealJson = await sealRes.json();
-                            if (sealJson.seal_updated_at) {
-                                localStorage.setItem('seal_updated_at', sealJson.seal_updated_at);
-                            }
-                        }
-                    } catch (e) {
-                        console.warn("직인 자동 마이그레이션 실패:", e);
-                    }
-                }
-
-                // B. PC에 더 많은 학생 명단(40명)이 캐시되어 있는데 서버에 적게 있는 경우 -> 서버로 자동 복원
-                const serverStudentCount = (serverData.students || []).length;
-                if (localStudents.length > serverStudentCount && localStudents.length >= 10) {
-                    console.log(`[데이터 복원] PC 로컬의 학생 명단(${localStudents.length}명)을 서버로 안전 복원합니다.`);
-                    await this._pushToServer(serverData.institutions, localStudents);
-                    serverData.students = localStudents;
-                }
-
-                // C. 항상 서버 데이터를 단일 진실 공급원(SSOT)으로 로컬에 동기화
-                if (serverData.institutions && serverData.institutions.length > 0) {
-                    localStorage.setItem('camp_institutions', JSON.stringify(serverData.institutions));
-                    if (serverData.students) {
-                        localStorage.setItem('camp_students', JSON.stringify(serverData.students));
-                    }
-                    if (serverData.seal_updated_at) {
-                        localStorage.setItem('seal_updated_at', serverData.seal_updated_at);
-                    }
+                const contentType = res.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    serverData = await res.json();
                 }
             }
-        } catch (err) {
-            console.warn("서버 데이터 동기화 대기 중 (오프라인/로컬 캐시 사용):", err);
+        } catch (err) {}
+
+        // 2. /api/data 실패 시 정적 JSON 파일 (Cloudflare Pages 정적 호스팅 환경) 직접 fetch
+        if (!serverData || !serverData.institutions || serverData.institutions.length === 0) {
+            try {
+                const staticRes = await fetch('database/app_data.json?t=' + Date.now());
+                if (staticRes.ok) {
+                    serverData = await staticRes.json();
+                    console.log("[정적 호스팅 동기화] database/app_data.json 로드 성공");
+                }
+            } catch (err) {
+                console.warn("[정적 호스팅 동기화 실패]:", err);
+            }
+        }
+
+        if (serverData && serverData.institutions && serverData.institutions.length > 0) {
+            localStorage.setItem('camp_institutions', JSON.stringify(serverData.institutions));
+            if (serverData.students && serverData.students.length > 0) {
+                localStorage.setItem('camp_students', JSON.stringify(serverData.students));
+            }
+            if (serverData.seal_updated_at) {
+                localStorage.setItem('seal_updated_at', serverData.seal_updated_at);
+            }
         }
 
         this._initLocalData();
@@ -107,14 +92,14 @@ const DB = {
         if (!localStorage.getItem('camp_institutions')) {
             const initialInstitutions = [
                 {
-                    id: "inst-01",
-                    name: "감정초등학교",
-                    course_name: "잼S & 로블록스 4기 기초 과정",
-                    start_date: "2026-04-04",
-                    end_date: "2026-04-24",
-                    total_hours: 8,
-                    issue_start_at: "2026-04-01T00:00:00+09:00",
-                    issue_end_at: "2026-12-31T23:59:59+09:00",
+                    id: "inst-1792066615275",
+                    name: "한국 반도체 마이스터 고등학교",
+                    course_name: "머신러닝 기초 입문",
+                    start_date: "2026-10-12",
+                    end_date: "2026-10-14",
+                    total_hours: 21,
+                    issue_start_at: "2026-10-15T03:14:00.000Z",
+                    issue_end_at: "2026-10-19T15:00:00.000Z",
                     issuer_name: "(주)로보그램"
                 },
                 {
@@ -131,54 +116,32 @@ const DB = {
             ];
             localStorage.setItem('camp_institutions', JSON.stringify(initialInstitutions));
         }
-
-        if (!localStorage.getItem('camp_students')) {
-            const initialStudents = [
-                {
-                    id: "stu-01",
-                    institution_id: "inst-01",
-                    school_name: "감정초등학교",
-                    student_id: "student01",
-                    password: "1234",
-                    name: "홍인희",
-                    photo_url: "",
-                    is_issued: false,
-                    print_count: 0
-                },
-                {
-                    id: "stu-02",
-                    institution_id: "inst-01",
-                    school_name: "감정초등학교",
-                    student_id: "student02",
-                    password: "1234",
-                    name: "김민준",
-                    photo_url: "",
-                    is_issued: false,
-                    print_count: 0
-                },
-                {
-                    id: "stu-03",
-                    institution_id: "inst-02",
-                    school_name: "인천외국어고등학교",
-                    student_id: "icfl01",
-                    password: "1234",
-                    name: "최유진",
-                    photo_url: "",
-                    is_issued: false,
-                    print_count: 0
-                }
-            ];
-            localStorage.setItem('camp_students', JSON.stringify(initialStudents));
-        }
     },
 
     // ---------------- 교육기관 관련 ----------------
     async getInstitutions() {
-        // 서버에서 최신 정보 조회 시도
+        // 1. 서버 API 조회
         try {
             const res = await fetch('/api/data?t=' + Date.now());
             if (res.ok) {
-                const data = await res.json();
+                const contentType = res.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    const data = await res.json();
+                    if (data.institutions && data.institutions.length > 0) {
+                        localStorage.setItem('camp_institutions', JSON.stringify(data.institutions));
+                        if (data.students) localStorage.setItem('camp_students', JSON.stringify(data.students));
+                        if (data.seal_updated_at) localStorage.setItem('seal_updated_at', data.seal_updated_at);
+                        return data.institutions;
+                    }
+                }
+            }
+        } catch (e) {}
+
+        // 2. 정적 JSON 직접 조회 (Cloudflare Pages 배포 환경)
+        try {
+            const staticRes = await fetch('database/app_data.json?t=' + Date.now());
+            if (staticRes.ok) {
+                const data = await staticRes.json();
                 if (data.institutions && data.institutions.length > 0) {
                     localStorage.setItem('camp_institutions', JSON.stringify(data.institutions));
                     if (data.students) localStorage.setItem('camp_students', JSON.stringify(data.students));
@@ -257,16 +220,32 @@ const DB = {
 
     // ---------------- 학생 관련 ----------------
     async getStudents(schoolName = null) {
-        // 서버에서 최신 목록 fetch
+        // 1. 서버 API 조회
         try {
             const res = await fetch('/api/data?t=' + Date.now());
             if (res.ok) {
-                const data = await res.json();
-                if (data.students) {
-                    localStorage.setItem('camp_students', JSON.stringify(data.students));
+                const contentType = res.headers.get('content-type') || '';
+                if (contentType.includes('application/json')) {
+                    const data = await res.json();
+                    if (data.students && data.students.length > 0) {
+                        localStorage.setItem('camp_students', JSON.stringify(data.students));
+                    }
                 }
             }
         } catch (e) {}
+
+        // 2. 정적 JSON 직접 조회 (Cloudflare Pages 배포 환경)
+        if (!localStorage.getItem('camp_students') || JSON.parse(localStorage.getItem('camp_students') || '[]').length <= 3) {
+            try {
+                const staticRes = await fetch('database/app_data.json?t=' + Date.now());
+                if (staticRes.ok) {
+                    const data = await staticRes.json();
+                    if (data.students && data.students.length > 0) {
+                        localStorage.setItem('camp_students', JSON.stringify(data.students));
+                    }
+                }
+            } catch (e) {}
+        }
 
         this._initLocalData();
         let students = JSON.parse(localStorage.getItem('camp_students') || '[]');

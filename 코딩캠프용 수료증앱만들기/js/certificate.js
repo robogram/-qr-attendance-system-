@@ -19,14 +19,14 @@ const CertificateEngine = {
     },
 
     getSealSrc: () => {
-        // 로컬에 등록된 커스텀 직인이 있으면 우선 사용(즉각 렌더링)
+        // 1. 로컬에 등록된 커스텀 직인이 있으면 우선 사용(즉각 렌더링)
         const localSeal = localStorage.getItem('custom_seal_img');
         if (localSeal && localSeal.startsWith('data:image')) {
             return localSeal;
         }
-        // 스마트폰 및 타 기기: 서버의 실시간 직인 API 호출 (타임스탬프로 브라우저 캐시 무효화)
-        const sealTime = localStorage.getItem('seal_updated_at') || Date.now();
-        return '/api/seal?t=' + sealTime;
+        // 2. 최신 커스텀 직인 이미지 파일 우선 사용 (Cloudflare Pages 및 로컬 공통)
+        const sealTime = localStorage.getItem('seal_updated_at') || '2';
+        return 'assets/seal_custom.png?v=' + sealTime;
     },
 
     // ---------------- 모바일 화면 맞춤 자동 스케일러 (가로 스크롤 방지 & 100% 한눈에 보기) ----------------
@@ -120,7 +120,7 @@ const CertificateEngine = {
                 <!-- 하단 발급기관 및 직인 (끝글자 정중앙 날인) -->
                 <div class="cert-footer">
                     <div class="cert-issuer-wrap">
-                        <span class="cert-issuer-text">${issuerBefore}<span class="cert-last-char">${issuerLast}<img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal.png'"></span></span>
+                        <span class="cert-issuer-text">${issuerBefore}<span class="cert-last-char">${issuerLast}<img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'"></span></span>
                     </div>
                 </div>
             </div>

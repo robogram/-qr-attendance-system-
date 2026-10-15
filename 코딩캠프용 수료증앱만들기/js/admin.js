@@ -371,8 +371,7 @@ const AdminModule = {
         const modal = document.getElementById('sealModal');
         const preview = document.getElementById('currentSealPreview');
         if (preview) {
-            const sealTime = localStorage.getItem('seal_updated_at') || Date.now();
-            preview.src = '/api/seal?t=' + sealTime;
+            preview.src = (window.CertificateEngine ? window.CertificateEngine.getSealSrc() : 'assets/seal_custom.png') + '?t=' + Date.now();
         }
         if (modal) modal.style.display = 'flex';
     },
