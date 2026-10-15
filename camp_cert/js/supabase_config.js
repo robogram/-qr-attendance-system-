@@ -244,22 +244,20 @@ const DB = {
             }
         } catch (e) {}
 
-        // 2. 정적 JSON 직접 조회 (Cloudflare Pages 배포 환경)
-        if (!localStorage.getItem('camp_students') || JSON.parse(localStorage.getItem('camp_students') || '[]').length <= 3) {
-            try {
-                const staticRes = await fetch('database/app_data.json?t=' + Date.now());
-                if (staticRes.ok) {
-                    const data = await staticRes.json();
-                    if (data.students && data.students.length > 0) {
-                        const validStudents = data.students.filter(s => 
-                            !deletedIds.includes(String(s.student_id || '').trim()) && 
-                            !deletedIds.includes(String(s.id || '').trim())
-                        );
-                        localStorage.setItem('camp_students', JSON.stringify(validStudents));
-                    }
+        // 2. 정적 JSON 직접 조회 (Cloudflare Pages 배포 환경 fallback)
+        try {
+            const staticRes = await fetch('database/app_data.json?t=' + Date.now());
+            if (staticRes.ok) {
+                const data = await staticRes.json();
+                if (data.students && data.students.length > 0) {
+                    const validStudents = data.students.filter(s => 
+                        !deletedIds.includes(String(s.student_id || '').trim()) && 
+                        !deletedIds.includes(String(s.id || '').trim())
+                    );
+                    localStorage.setItem('camp_students', JSON.stringify(validStudents));
                 }
-            } catch (e) {}
-        }
+            }
+        } catch (e) {}
 
         this._initLocalData();
         let students = JSON.parse(localStorage.getItem('camp_students') || '[]');

@@ -55,7 +55,11 @@ const DB = {
         if (serverData && serverData.institutions && serverData.institutions.length > 0) {
             localStorage.setItem('camp_institutions', JSON.stringify(serverData.institutions));
             if (serverData.students && serverData.students.length > 0) {
-                localStorage.setItem('camp_students', JSON.stringify(serverData.students));
+                const deletedIds = JSON.parse(localStorage.getItem('camp_deleted_student_ids') || '[]');
+                const filtered = serverData.students.filter(s => 
+                    !deletedIds.includes(String(s.student_id || '').trim()) && !deletedIds.includes(String(s.id || '').trim())
+                );
+                localStorage.setItem('camp_students', JSON.stringify(filtered));
             }
             if (serverData.seal_updated_at) {
                 localStorage.setItem('seal_updated_at', serverData.seal_updated_at);
@@ -220,6 +224,8 @@ const DB = {
 
     // ---------------- 학생 관련 ----------------
     async getStudents(schoolName = null) {
+        const deletedIds = JSON.parse(localStorage.getItem('camp_deleted_student_ids') || '[]');
+
         // 1. 서버 API 조회
         try {
             const res = await fetch('/api/data?t=' + Date.now());
@@ -228,27 +234,43 @@ const DB = {
                 if (contentType.includes('application/json')) {
                     const data = await res.json();
                     if (data.students && data.students.length > 0) {
-                        localStorage.setItem('camp_students', JSON.stringify(data.students));
+                        const validStudents = data.students.filter(s => 
+                            !deletedIds.includes(String(s.student_id || '').trim()) && 
+                            !deletedIds.includes(String(s.id || '').trim())
+                        );
+                        localStorage.setItem('camp_students', JSON.stringify(validStudents));
                     }
                 }
             }
         } catch (e) {}
 
-        // 2. 정적 JSON 직접 조회 (Cloudflare Pages 배포 환경)
-        if (!localStorage.getItem('camp_students') || JSON.parse(localStorage.getItem('camp_students') || '[]').length <= 3) {
-            try {
-                const staticRes = await fetch('database/app_data.json?t=' + Date.now());
-                if (staticRes.ok) {
-                    const data = await staticRes.json();
-                    if (data.students && data.students.length > 0) {
-                        localStorage.setItem('camp_students', JSON.stringify(data.students));
-                    }
+        // 2. 정적 JSON 직접 조회 (Cloudflare Pages 배포 환경 fallback)
+        try {
+            const staticRes = await fetch('database/app_data.json?t=' + Date.now());
+            if (staticRes.ok) {
+                const data = await staticRes.json();
+                if (data.students && data.students.length > 0) {
+                    const validStudents = data.students.filter(s => 
+                        !deletedIds.includes(String(s.student_id || '').trim()) && 
+                        !deletedIds.includes(String(s.id || '').trim())
+                    );
+                    localStorage.setItem('camp_students', JSON.stringify(validStudents));
                 }
-            } catch (e) {}
-        }
+            }
+        } catch (e) {}
 
         this._initLocalData();
         let students = JSON.parse(localStorage.getItem('camp_students') || '[]');
+
+        // 삭제된 학생은 한 번 더 최종 필터링
+        if (deletedIds.length > 0) {
+            students = students.filter(s => 
+                !deletedIds.includes(String(s.student_id || '').trim()) && 
+                !deletedIds.includes(String(s.id || '').trim())
+            );
+            localStorage.setItem('camp_students', JSON.stringify(students));
+        }
+
         if (schoolName) {
             const cleanTarget = (schoolName || '').replace(/\s+/g, '').toLowerCase();
             students = students.filter(s => {
@@ -336,12 +358,33 @@ const DB = {
         }
     },
 
-    async deleteStudent(schoolName, studentId) {
-        const list = JSON.parse(localStorage.getItem('camp_students') || '[]').filter(
-            s => !(s.school_name === schoolName && s.student_id === studentId)
-        );
+    async deleteStudent(studentId, schoolName = null) {
+        this._initLocalData();
+        const cleanId = String(studentId || '').trim();
+        const cleanSchool = schoolName ? String(schoolName).replace(/\s+/g, '').toLowerCase() : null;
+
+        let list = JSON.parse(localStorage.getItem('camp_students') || '[]');
+        const beforeCount = list.length;
+
+        list = list.filter(s => {
+            const sid = String(s.student_id || '').trim();
+            const id = String(s.id || '').trim();
+            return sid !== cleanId && id !== cleanId;
+        });
+
         localStorage.setItem('camp_students', JSON.stringify(list));
+
+        // 삭제된 학생 ID 영구 블랙리스트 저장 (Cloudflare Pages 정적 JSON이 다시 복원하지 못하도록 차단)
+        const deletedIds = JSON.parse(localStorage.getItem('camp_deleted_student_ids') || '[]');
+        if (!deletedIds.includes(cleanId)) {
+            deletedIds.push(cleanId);
+            localStorage.setItem('camp_deleted_student_ids', JSON.stringify(deletedIds));
+        }
+
+        console.log(`[학생 삭제 완료] ID: ${cleanId}, 이전: ${beforeCount}명 -> 현재: ${list.length}명`);
+
         await this._pushToServer(null, list);
+        return true;
     }
 };
 
