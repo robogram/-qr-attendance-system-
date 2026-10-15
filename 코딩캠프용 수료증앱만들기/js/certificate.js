@@ -278,6 +278,9 @@ const CertificateEngine = {
         ctx.font = `900 ${52 * scale}px "Noto Sans KR", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        if ('letterSpacing' in ctx) {
+            ctx.letterSpacing = `${52 * 0.22 * scale}px`;
+        }
 
         const textY = 890 * scale;
         ctx.fillText(issuerName, width / 2, textY);

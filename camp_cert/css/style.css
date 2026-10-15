@@ -897,7 +897,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     font-size: 52px;
     font-weight: 900;
     color: #000000;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.22em;
+    margin-left: 0.22em; /* 자간 우측 쏠림 보정하여 정중앙 유지 */
     position: relative;
     z-index: 5;
     line-height: 1;
@@ -1221,6 +1222,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
         font-size: 18mm !important;
         line-height: 1 !important;
         color: #000000 !important;
+        letter-spacing: 0.22em !important;
+        margin-left: 0.22em !important;
     }
 
     .cert-seal-img {
