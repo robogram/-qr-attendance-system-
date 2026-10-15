@@ -108,21 +108,21 @@ const App = {
             return {
                 canIssue: false,
                 type: 'waiting',
-                message: `📢 현재 수료증 발급 준비 기간입니다.\n발급 시작일시: ${sStr}`
+                message: `📢 현재 수료증 발급 준비 기간입니다.<br><span style="display:inline-block;margin-top:0.35rem;font-size:0.86rem;font-weight:600;">(발급 시작일시: ${sStr})</span>`
             };
         }
         if (eDate && now > eDate) {
             return {
                 canIssue: false,
                 type: 'expired',
-                message: `⚠️ 수료증 출력 가능 기간이 마감되었습니다.\n발급 종료일시: ${eStr}`
+                message: `⚠️ 수료증 출력 가능 기간이 마감되었습니다.<br><span style="display:inline-block;margin-top:0.35rem;font-size:0.86rem;font-weight:600;">(발급 종료일시: ${eStr})</span>`
             };
         }
 
         return {
             canIssue: true,
             type: 'active',
-            message: `✅ 수료증 발급 가능 기간입니다 (~ ${eStr}까지)`
+            message: `✅ 수료증 발급 가능 기간입니다.<br><span style="display:inline-block;margin-top:0.35rem;font-size:0.88rem;color:#047857;font-weight:600;">(~ ${eStr}까지)</span>`
         };
     },
 
@@ -177,12 +177,17 @@ const App = {
     updatePhotoThumbnail: () => {
         const thumb = document.getElementById('photoPreviewThumb');
         const emptySvg = document.getElementById('photoEmptySvg');
-        if (App.currentStudent.photo_url) {
-            thumb.src = App.currentStudent.photo_url;
-            thumb.style.display = 'block';
+        const spinner = document.getElementById('photoUploadingSpinner');
+        if (spinner) spinner.style.display = 'none';
+
+        if (App.currentStudent && App.currentStudent.photo_url) {
+            if (thumb) {
+                thumb.src = App.currentStudent.photo_url;
+                thumb.style.display = 'block';
+            }
             if (emptySvg) emptySvg.style.display = 'none';
         } else {
-            thumb.style.display = 'none';
+            if (thumb) thumb.style.display = 'none';
             if (emptySvg) emptySvg.style.display = 'block';
         }
     },
@@ -191,16 +196,25 @@ const App = {
     handlePhotoUpload: async (file) => {
         if (!file) return;
 
-        // 용량 체크 (최대 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            alert("사진 용량은 최대 10MB 이하만 지원됩니다.");
+        // 대용량 스마트폰 폰카 사진(최대 50MB) 완벽 지원
+        if (file.size > 50 * 1024 * 1024) {
+            alert("사진 용량은 최대 50MB 이하만 지원됩니다.");
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const img = new Image();
-            img.onload = async () => {
+        const thumb = document.getElementById('photoPreviewThumb');
+        const emptySvg = document.getElementById('photoEmptySvg');
+        const spinner = document.getElementById('photoUploadingSpinner');
+
+        if (thumb) thumb.style.display = 'none';
+        if (emptySvg) emptySvg.style.display = 'none';
+        if (spinner) spinner.style.display = 'block';
+
+        const objectUrl = URL.createObjectURL(file);
+        const img = new Image();
+
+        img.onload = async () => {
+            try {
                 // 3:4 여권/증명사진 비율로 리사이즈 및 캔버스 압축 (가로 300 x 세로 400)
                 const targetW = 300;
                 const targetH = 400;
@@ -210,26 +224,28 @@ const App = {
                 const ctx = canvas.getContext('2d');
 
                 // 중앙 크롭 비율 계산
-                const imgRatio = img.width / img.height;
+                const naturalW = img.naturalWidth || img.width;
+                const naturalH = img.naturalHeight || img.height;
+                const imgRatio = naturalW / naturalH;
                 const targetRatio = targetW / targetH;
                 let sx, sy, sw, sh;
 
                 if (imgRatio > targetRatio) {
-                    sh = img.height;
-                    sw = img.height * targetRatio;
-                    sx = (img.width - sw) / 2;
+                    sh = naturalH;
+                    sw = naturalH * targetRatio;
+                    sx = (naturalW - sw) / 2;
                     sy = 0;
                 } else {
-                    sw = img.width;
-                    sh = img.width / targetRatio;
+                    sw = naturalW;
+                    sh = naturalW / targetRatio;
                     sx = 0;
-                    sy = (img.height - sh) / 2;
+                    sy = (naturalH - sh) / 2;
                 }
 
                 ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
-                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.88);
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.9);
 
-                // DB 업데이트
+                // DB 및 세션 업데이트
                 App.currentStudent.photo_url = compressedBase64;
                 sessionStorage.setItem('current_student', JSON.stringify(App.currentStudent));
                 await window.DB.updateStudentPhoto(
@@ -238,14 +254,25 @@ const App = {
                     compressedBase64
                 );
 
-                // UI 갱신
+                // UI 갱신 및 수료증 즉시 합성
                 App.updatePhotoThumbnail();
                 window.CertificateEngine.renderCertificate(App.currentStudent, App.currentInstitution);
-                alert("사진이 성공적으로 등록되었습니다!");
-            };
-            img.src = e.target.result;
+            } catch (err) {
+                console.error("사진 처리 중 오류:", err);
+                alert("사진 등록 중 문제가 발생했습니다. 다시 시도해주세요.");
+                App.updatePhotoThumbnail();
+            } finally {
+                URL.revokeObjectURL(objectUrl);
+            }
         };
-        reader.readAsDataURL(file);
+
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            alert("사진 파일을 읽을 수 없습니다. 다시 촬영해주세요.");
+            App.updatePhotoThumbnail();
+        };
+
+        img.src = objectUrl;
     },
 
     // ---------------- 시크릿 관리자 모드 (3초 롱프레스) ----------------
@@ -384,15 +411,18 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.addEventListener('submit', App.loginStudent);
     }
 
-    // 학생 사진 파일 선택
-    const photoInput = document.getElementById('photoInput');
-    if (photoInput) {
-        photoInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                App.handlePhotoUpload(e.target.files[0]);
-            }
-        });
-    }
+    // 학생 사진 파일 선택 및 카메라 촬영 이벤트 바인딩
+    ['cameraInput', 'galleryInput', 'photoInput'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    App.handlePhotoUpload(e.target.files[0]);
+                }
+                e.target.value = ''; // 재촬영 및 재선택 가능하도록 리셋
+            });
+        }
+    });
 
     // A4 인쇄 버튼 클릭 (노트북/PC)
     const btnPrintA4 = document.getElementById('btnPrintA4');
