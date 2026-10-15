@@ -213,7 +213,7 @@ const AdminModule = {
                             <td>${photoBadge}</td>
                             <td>${issuedBadge}</td>
                             <td>
-                                <button class="btn-nav btn-nav-logout" style="padding:0.25rem 0.5rem;font-size:0.75rem;" onclick="AdminModule.deleteStudent('${stu.school_name}', '${stu.student_id}')">삭제</button>
+                                <button class="btn-nav btn-nav-logout" style="padding:0.25rem 0.5rem;font-size:0.75rem;" onclick="AdminModule.deleteStudent('${stu.student_id}', '${stu.name || ''}', '${stu.school_name || ''}')">삭제</button>
                             </td>
                         </tr>
                     `;
@@ -222,9 +222,10 @@ const AdminModule = {
         }
     },
 
-    deleteStudent: async (school, studentId) => {
-        if (confirm(`학생 ID '${studentId}'을(를) 삭제하시겠습니까?`)) {
-            await window.DB.deleteStudent(school, studentId);
+    deleteStudent: async (studentId, studentName = '', schoolName = '') => {
+        const displayName = studentName ? `'${studentName} (${studentId})'` : `'${studentId}'`;
+        if (confirm(`학생 ${displayName}의 정보를 정말 삭제하시겠습니까?\n삭제된 정보는 즉시 명단에서 제외됩니다.`)) {
+            await window.DB.deleteStudent(studentId, schoolName);
             await AdminModule.loadStudents();
         }
     },

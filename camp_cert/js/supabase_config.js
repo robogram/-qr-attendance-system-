@@ -55,7 +55,11 @@ const DB = {
         if (serverData && serverData.institutions && serverData.institutions.length > 0) {
             localStorage.setItem('camp_institutions', JSON.stringify(serverData.institutions));
             if (serverData.students && serverData.students.length > 0) {
-                localStorage.setItem('camp_students', JSON.stringify(serverData.students));
+                const deletedIds = JSON.parse(localStorage.getItem('camp_deleted_student_ids') || '[]');
+                const filtered = serverData.students.filter(s => 
+                    !deletedIds.includes(String(s.student_id || '').trim()) && !deletedIds.includes(String(s.id || '').trim())
+                );
+                localStorage.setItem('camp_students', JSON.stringify(filtered));
             }
             if (serverData.seal_updated_at) {
                 localStorage.setItem('seal_updated_at', serverData.seal_updated_at);
@@ -336,12 +340,38 @@ const DB = {
         }
     },
 
-    async deleteStudent(schoolName, studentId) {
-        const list = JSON.parse(localStorage.getItem('camp_students') || '[]').filter(
-            s => !(s.school_name === schoolName && s.student_id === studentId)
-        );
+    async deleteStudent(studentId, schoolName = null) {
+        this._initLocalData();
+        const cleanId = String(studentId || '').trim();
+        const cleanSchool = schoolName ? String(schoolName).replace(/\s+/g, '').toLowerCase() : null;
+
+        let list = JSON.parse(localStorage.getItem('camp_students') || '[]');
+        const beforeCount = list.length;
+
+        list = list.filter(s => {
+            const matchId = (s.id && String(s.id).trim() === cleanId) || 
+                            (s.student_id && String(s.student_id).trim() === cleanId);
+            if (!matchId) return true;
+            if (cleanSchool) {
+                const sSchool = (s.school_name || '').replace(/\s+/g, '').toLowerCase();
+                return sSchool !== cleanSchool;
+            }
+            return false;
+        });
+
         localStorage.setItem('camp_students', JSON.stringify(list));
+
+        // 삭제된 학생 ID 영구 블랙리스트 저장 (Cloudflare Pages 정적 JSON이 다시 복원하지 못하도록 차단)
+        const deletedIds = JSON.parse(localStorage.getItem('camp_deleted_student_ids') || '[]');
+        if (!deletedIds.includes(cleanId)) {
+            deletedIds.push(cleanId);
+            localStorage.setItem('camp_deleted_student_ids', JSON.stringify(deletedIds));
+        }
+
+        console.log(`[학생 삭제 완료] ID: ${cleanId}, 이전: ${beforeCount}명 -> 현재: ${list.length}명`);
+
         await this._pushToServer(null, list);
+        return true;
     }
 };
 
