@@ -63,12 +63,6 @@ const CertificateEngine = {
         const periodStr = CertificateEngine.formatPeriodDate(institution.start_date, institution.end_date);
         const totalHours = institution.total_hours || 8;
         const issuerName = institution.issuer_name || '(주)로보그램';
-        let issuerBefore = '';
-        let issuerLast = issuerName;
-        if (issuerName.length > 1) {
-            issuerBefore = issuerName.slice(0, -1);
-            issuerLast = issuerName.slice(-1);
-        }
 
         container.innerHTML = `
             <div class="cert-background-watermark"></div>
@@ -117,10 +111,13 @@ const CertificateEngine = {
                     ${todayStr}
                 </div>
 
-                <!-- 하단 발급기관 및 직인 (끝글자 정중앙 날인) -->
+                <!-- 하단 발급기관 및 직인 (글자 오른쪽 날인으로 글자와 겹치지 않음) -->
                 <div class="cert-footer">
                     <div class="cert-issuer-wrap">
-                        <span class="cert-issuer-text">${issuerBefore}<span class="cert-last-char">${issuerLast}<img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'"></span></span>
+                        <span class="cert-issuer-text">${issuerName}</span>
+                        <div class="cert-seal-box">
+                            <img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -277,41 +274,45 @@ const CertificateEngine = {
         ctx.font = `500 ${24 * scale}px "Noto Sans KR", sans-serif`;
         ctx.fillText(CertificateEngine.formatKoreanDate(), width / 2, 775 * scale);
 
-        // 8. 발급처 "(주)로보그램"
+        // 8. 발급처 "(주)로보그램" & 9. 직인 도장 합성 (글자 오른쪽에 나란히 배치하여 겹치지 않음)
         const issuerName = institution.issuer_name || '(주)로보그램';
         ctx.fillStyle = '#000000';
         ctx.font = `900 ${52 * scale}px "Noto Sans KR", sans-serif`;
-        ctx.fillText(issuerName, width / 2, 890 * scale);
+        ctx.textBaseline = 'middle';
 
-        // 9. 직인 도장 합성 (끝글자 정중앙에 위치 & 크기 확대)
         const sealSrc = CertificateEngine.getSealSrc();
         await new Promise((resolve) => {
             const sealImg = new Image();
             sealImg.onload = () => {
-                // 발급처 전체 텍스트 폭 및 시작 위치 계산
-                const totalTextWidth = ctx.measureText(issuerName).width;
-                const textStartX = (width / 2) - (totalTextWidth / 2);
+                const sealSize = 125 * scale; // 직인 크기 (125)
+                const gap = 16 * scale; // 글자와 직인 사이 간격
+                const textWidth = ctx.measureText(issuerName).width;
+                const totalWidth = textWidth + gap + sealSize;
 
-                const beforeText = issuerName.slice(0, -1);
-                const beforeWidth = ctx.measureText(beforeText).width;
-                const lastChar = issuerName.slice(-1);
-                const lastCharWidth = ctx.measureText(lastChar).width;
+                // 텍스트와 직인 묶음 전체를 중앙 정렬
+                const startX = (width - totalWidth) / 2;
+                const textY = 890 * scale;
 
-                // 마지막 글자의 정중앙 좌표
-                const lastCharCenterX = textStartX + beforeWidth + (lastCharWidth / 2);
-                const lastCharCenterY = (890 * scale) + (14 * scale);
+                // 발급처 텍스트 출력
+                ctx.textAlign = 'left';
+                ctx.fillText(issuerName, startX, textY);
 
-                const sealSize = 160 * scale; // 직인 크기 확대 (130 -> 160)
-                const sealX = lastCharCenterX - (sealSize / 2);
-                const sealY = lastCharCenterY - (sealSize / 2);
-                
+                // 직인 도장 출력 (글자 오른쪽)
+                const sealX = startX + textWidth + gap;
+                const sealY = textY - (sealSize / 2);
+
                 ctx.save();
                 ctx.globalAlpha = 0.95;
                 ctx.drawImage(sealImg, sealX, sealY, sealSize, sealSize);
                 ctx.restore();
                 resolve();
             };
-            sealImg.onerror = () => resolve();
+            sealImg.onerror = () => {
+                // 직인 로드 실패 시에도 텍스트는 중앙에 표시
+                ctx.textAlign = 'center';
+                ctx.fillText(issuerName, width / 2, 890 * scale);
+                resolve();
+            };
             sealImg.src = sealSrc;
         });
 

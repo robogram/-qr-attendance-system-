@@ -887,7 +887,9 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
 }
 
 .cert-issuer-wrap {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
 }
 
@@ -901,25 +903,23 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     line-height: 1;
 }
 
-.cert-last-char {
-    display: inline-block;
-    position: relative;
-    letter-spacing: 0 !important;
-    margin-right: 0.12em;
+.cert-seal-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 16px;
+    flex-shrink: 0;
 }
 
 .cert-seal-img {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 165px;
-    height: 165px;
+    width: 125px;
+    height: 125px;
     object-fit: contain;
     z-index: 10;
     opacity: 0.95;
     mix-blend-mode: multiply;
     pointer-events: none;
+    display: block;
 }
 
 /* ---------------- 관리자 대시보드 ---------------- */
@@ -1206,12 +1206,10 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
         margin-bottom: 14mm !important;
     }
 
-    .cert-footer {
-        margin-bottom: 8mm !important;
-    }
-
     .cert-issuer-wrap {
-        display: inline-block !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         position: relative !important;
     }
 
@@ -1221,19 +1219,22 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
         color: #000000 !important;
     }
 
-    .cert-last-char {
-        display: inline-block !important;
-        position: relative !important;
+    .cert-seal-box {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-left: 5mm !important;
+        flex-shrink: 0 !important;
     }
 
     .cert-seal-img {
-        width: 48mm !important;
-        height: 48mm !important;
-        left: 50% !important;
-        top: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        right: auto !important;
+        width: 36mm !important;
+        height: 36mm !important;
+        object-fit: contain !important;
         mix-blend-mode: multiply !important;
+        position: static !important;
+        transform: none !important;
+        display: block !important;
     }
 }
 
