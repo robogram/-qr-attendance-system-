@@ -757,14 +757,14 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 35px 45px 30px 45px;
+    padding: 48px 45px 36px 45px;
 }
 
 /* 상단 제목 */
 .cert-header {
     text-align: center;
-    margin-top: 15px;
-    margin-bottom: 25px;
+    margin-top: 25px;
+    margin-bottom: 45px;
 }
 
 .cert-title {
@@ -788,15 +788,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
 /* 중간 영역: 정보 목록 & 사진 */
 .cert-middle {
     position: relative;
-    margin-top: 20px;
-    margin-bottom: 30px;
+    margin-top: 10px;
+    margin-bottom: 48px;
     min-height: 250px;
 }
 
 .cert-info-list {
     list-style: none;
-    font-size: 21.5px;
-    line-height: 2.15;
+    font-size: 22px;
+    line-height: 2.28;
     color: #000000;
     font-weight: 500;
     padding-left: 10px;
@@ -828,8 +828,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
 /* 학생 사진 프레임 (3:4 규격 컴팩트 배치) */
 .cert-photo-container {
     position: absolute;
-    top: 15px;
-    right: 30px;
+    top: 6px;
+    right: 28px;
     width: 140px;
     height: 185px;
     background: #f8fafc;
@@ -861,11 +861,11 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
 /* 수료 증명 문구 */
 .cert-statement {
     text-align: center;
-    font-size: 25px;
-    line-height: 1.7;
+    font-size: 25.5px;
+    line-height: 1.8;
     font-weight: 600;
     color: #000000;
-    margin: 30px 0 35px 0;
+    margin: 48px 0 42px 0;
     letter-spacing: -0.01em;
 }
 
@@ -875,7 +875,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     font-size: 24px;
     font-weight: 500;
     color: #000000;
-    margin-bottom: 40px;
+    margin-bottom: 52px;
 }
 
 /* 하단 발급기관 & 직인 */
@@ -883,7 +883,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .cert-issuer-wrap {
@@ -894,7 +894,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
 .cert-issuer-text {
     font-size: 52px;
     font-weight: 900;
-    color: #4f46e5;
+    color: #000000;
     letter-spacing: 0.12em;
     position: relative;
     z-index: 5;
@@ -1144,7 +1144,12 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     }
 
     .cert-content {
-        padding: 12mm 15mm 10mm 15mm !important;
+        padding: 20mm 15mm 16mm 15mm !important;
+    }
+
+    .cert-header {
+        margin-top: 4mm !important;
+        margin-bottom: 10mm !important;
     }
 
     .cert-title {
@@ -1153,17 +1158,18 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
 
     .cert-subtitle {
         font-size: 9mm !important;
+        margin-top: 3mm !important;
     }
 
     .cert-middle {
-        min-height: 52mm !important;
-        margin-top: 5mm !important;
-        margin-bottom: 7mm !important;
+        min-height: 56mm !important;
+        margin-top: 2mm !important;
+        margin-bottom: 12mm !important;
     }
 
     .cert-info-list {
         font-size: 5.6mm !important;
-        line-height: 2.15 !important;
+        line-height: 2.28 !important;
         padding-left: 2mm !important;
         max-width: 138mm !important;
     }
@@ -1185,16 +1191,23 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
         width: 33mm !important;
         height: 44mm !important;
         right: 6mm !important;
-        top: 2mm !important;
+        top: 1mm !important;
         border-radius: 1.5mm !important;
     }
 
     .cert-statement {
-        font-size: 8mm !important;
+        font-size: 8.2mm !important;
+        line-height: 1.8 !important;
+        margin: 12mm 0 10mm 0 !important;
     }
 
     .cert-date {
         font-size: 7.5mm !important;
+        margin-bottom: 14mm !important;
+    }
+
+    .cert-footer {
+        margin-bottom: 8mm !important;
     }
 
     .cert-issuer-wrap {
@@ -1205,6 +1218,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     .cert-issuer-text {
         font-size: 18mm !important;
         line-height: 1 !important;
+        color: #000000 !important;
     }
 
     .cert-last-char {

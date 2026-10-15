@@ -194,20 +194,20 @@ const CertificateEngine = {
         
         // 자간 효과 시뮬레이션
         const titleText = "수  료  증";
-        ctx.fillText(titleText, width / 2, 125 * scale);
+        ctx.fillText(titleText, width / 2, 145 * scale);
 
         // 3. 부제 "Certificate of Completion"
         ctx.fillStyle = '#6b7280';
         ctx.font = `600 ${26 * scale}px "Playfair Display", Georgia, serif`;
-        ctx.fillText("Certificate of Completion", width / 2, 185 * scale);
+        ctx.fillText("Certificate of Completion", width / 2, 205 * scale);
 
         // 4. 정보 리스트
         // 4. 정보 리스트 (긴 학교명 및 기간 배치 최적화)
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         const startX = 65 * scale;
-        let startY = 275 * scale;
-        const lineGap = 43 * scale;
+        let startY = 300 * scale;
+        const lineGap = 45 * scale;
 
         const infoList = [
             { label: "• 성      명 :", val: student.name },
@@ -231,7 +231,7 @@ const CertificateEngine = {
         const photoWidth = 140 * scale;
         const photoHeight = 185 * scale;
         const photoX = width - (60 * scale) - photoWidth;
-        const photoY = 270 * scale;
+        const photoY = 295 * scale;
 
         if (student.photo_url) {
             try {
@@ -270,18 +270,18 @@ const CertificateEngine = {
         ctx.textAlign = 'center';
         ctx.fillStyle = '#000000';
         ctx.font = `600 ${25 * scale}px "Noto Sans KR", sans-serif`;
-        ctx.fillText("귀하는 (주)로보그램에서 주관하는 소정의", width / 2, 590 * scale);
-        ctx.fillText("과정을 수료하였음을 증명합니다.", width / 2, 635 * scale);
+        ctx.fillText("귀하는 (주)로보그램에서 주관하는 소정의", width / 2, 630 * scale);
+        ctx.fillText("과정을 수료하였음을 증명합니다.", width / 2, 675 * scale);
 
         // 7. 발급일
         ctx.font = `500 ${24 * scale}px "Noto Sans KR", sans-serif`;
-        ctx.fillText(CertificateEngine.formatKoreanDate(), width / 2, 735 * scale);
+        ctx.fillText(CertificateEngine.formatKoreanDate(), width / 2, 775 * scale);
 
         // 8. 발급처 "(주)로보그램"
         const issuerName = institution.issuer_name || '(주)로보그램';
-        ctx.fillStyle = '#4f46e5';
+        ctx.fillStyle = '#000000';
         ctx.font = `900 ${52 * scale}px "Noto Sans KR", sans-serif`;
-        ctx.fillText(issuerName, width / 2, 850 * scale);
+        ctx.fillText(issuerName, width / 2, 890 * scale);
 
         // 9. 직인 도장 합성 (끝글자 정중앙에 위치 & 크기 확대)
         const sealSrc = CertificateEngine.getSealSrc();
@@ -299,7 +299,7 @@ const CertificateEngine = {
 
                 // 마지막 글자의 정중앙 좌표
                 const lastCharCenterX = textStartX + beforeWidth + (lastCharWidth / 2);
-                const lastCharCenterY = (850 * scale) + (14 * scale);
+                const lastCharCenterY = (890 * scale) + (14 * scale);
 
                 const sealSize = 160 * scale; // 직인 크기 확대 (130 -> 160)
                 const sealX = lastCharCenterX - (sealSize / 2);
