@@ -1,0 +1,1334 @@
+/* ==============================================================
+   로보그램 코딩캠프 수료증 발급 웹앱 - 스타일시트
+   (반응형 모바일/노트북 UI & A4 정밀 인쇄 최적화)
+   ============================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
+:root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #e0e7ff;
+    --gold: #DAA520;
+    --gold-dark: #b8860b;
+    --gold-light: #fef9c3;
+    --dark: #1e293b;
+    --gray-bg: #f8fafc;
+    --border-color: #e2e8f0;
+    --cert-width: 800px;
+    --cert-height: 1060px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--gray-bg);
+    color: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+/* PC와 모바일 모두에서 한글 단어 및 의미 단위 줄바꿈(글자 쪼개짐 방지) 보장 */
+h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, textarea,
+.cert-content, .hero-title, .hero-desc, .login-panel-desc, .cert-statement, .cert-info-list, .form-help, .modal-card {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+/* ---------------- 네비게이션 헤더 ---------------- */
+.app-header {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.logo-text h1 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1e1b4b;
+    line-height: 1.2;
+}
+
+.logo-text p {
+    font-size: 0.75rem;
+    color: #6366f1;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.btn-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-nav-admin {
+    background-color: #f1f5f9;
+    color: #475569;
+    border-color: #cbd5e1;
+}
+
+.btn-nav-admin:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.btn-nav-logout {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.btn-nav-logout:hover {
+    background-color: #fecaca;
+}
+
+/* 상단 헤더 우측 상태 뱃지 */
+.system-status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.42rem 0.95rem;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #166534;
+    box-shadow: 0 1px 3px rgba(22, 101, 52, 0.05);
+}
+
+.status-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulseGreen {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+}
+
+@media (max-width: 640px) {
+    .system-status-tag {
+        display: none;
+    }
+}
+
+/* ---------------- 메인 컨테이너 ---------------- */
+.main-wrapper {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem 1rem;
+}
+
+/* ---------------- 탭 & 카드 ---------------- */
+.card-box {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* ---------------- 웅장하고 고급스러운 시작 화면 (Hero + Login) ---------------- */
+.hero-login-section {
+    max-width: 1080px;
+    margin: 2rem auto;
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.09), 0 0 1px 1px rgba(0, 0, 0, 0.02);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    position: relative;
+}
+
+@media (max-width: 950px) {
+    .hero-login-section {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+        margin: 1.25rem auto;
+    }
+}
+
+/* 좌측 히어로 비주얼 패널 */
+.hero-visual-panel {
+    background: linear-gradient(145deg, #1e1b4b 0%, #2e287a 45%, #4338ca 100%);
+    color: #ffffff;
+    padding: 3.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-visual-panel::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(218, 165, 32, 0.3) 0%, rgba(218, 165, 32, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #fef08a; /* 은은한 골드 */
+    width: fit-content;
+    margin-bottom: 1.25rem;
+}
+
+.hero-title {
+    font-size: 2.15rem;
+    font-weight: 900;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.85rem;
+}
+
+.hero-title .highlight {
+    background: linear-gradient(90deg, #facc15 0%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+    font-size: 0.95rem;
+    color: #e0e7ff;
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+    opacity: 0.92;
+}
+
+/* 마스코트 캐릭터 쇼케이스 */
+.hero-mascot-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 1.5rem 0 1.25rem 0;
+    min-height: 220px;
+}
+
+.hero-mascot-glow {
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.45) 0%, rgba(99, 102, 241, 0.2) 50%, transparent 75%);
+    filter: blur(14px);
+    pointer-events: none;
+    z-index: 1;
+    animation: glowPulse 4s ease-in-out infinite alternate;
+}
+
+.hero-mascot-img {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 20px 28px rgba(0, 0, 0, 0.45));
+    animation: floatingMascot 4s ease-in-out infinite alternate;
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes glowPulse {
+    0% { transform: scale(0.92); opacity: 0.65; }
+    100% { transform: scale(1.15); opacity: 0.95; }
+}
+
+@keyframes floatingMascot {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-12px); }
+}
+
+/* 특장점 리스트 */
+.hero-feature-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.hero-feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.88rem;
+    color: #f1f5f9;
+}
+
+.hero-feature-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* 우측 로그인 폼 패널 */
+.login-form-panel {
+    padding: 3.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #ffffff;
+}
+
+@media (max-width: 600px) {
+    .main-wrapper {
+        padding: 0.75rem 0.5rem 2rem 0.5rem;
+    }
+    .hero-login-section {
+        margin: 0.5rem auto;
+        border-radius: 18px;
+    }
+    .hero-visual-panel {
+        padding: 2rem 1.25rem 1.5rem 1.25rem;
+    }
+    .hero-title {
+        font-size: 1.55rem;
+        line-height: 1.35;
+    }
+    .hero-desc {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+    .hero-mascot-wrap {
+        margin: 0.75rem 0;
+    }
+    .hero-mascot-img {
+        max-width: 170px;
+    }
+    .hero-feature-tags {
+        gap: 0.5rem;
+        padding-top: 1rem;
+    }
+    .hero-feature-item {
+        font-size: 0.8rem;
+    }
+    .login-form-panel {
+        padding: 2rem 1.25rem;
+    }
+    .login-panel-title {
+        font-size: 1.35rem;
+    }
+    .student-panel {
+        padding: 1.25rem;
+        border-radius: 14px;
+    }
+    .certificate-preview-container {
+        padding: 1rem 0;
+        border-radius: 12px;
+        overflow-x: hidden;
+    }
+}
+
+.login-panel-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 0.4rem;
+}
+
+.login-panel-desc {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin-bottom: 1.75rem;
+    line-height: 1.5;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.4rem;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 0.85rem 1.05rem;
+    border-radius: 12px;
+    border: 1.5px solid #cbd5e1;
+    font-size: 0.95rem;
+    color: #1e293b;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #ffffff;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.16);
+    background-color: #ffffff;
+}
+
+.form-help {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 0.35rem;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 0.95rem 1.25rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.32);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.45);
+    background: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 10px rgba(79, 70, 229, 0.28);
+}
+
+/* 하단 robogram.net 안내 카드 */
+.login-notice-card {
+    margin-top: 1.5rem;
+    padding: 0.95rem 1.15rem;
+    background: linear-gradient(135deg, #f8faff 0%, #eff6ff 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.04);
+}
+
+.login-notice-card .notice-icon {
+    font-size: 1.15rem;
+    line-height: 1.3;
+    flex-shrink: 0;
+}
+
+.login-notice-card .notice-text {
+    font-size: 0.82rem;
+    color: #1e3a8a;
+    line-height: 1.5;
+}
+
+.login-notice-card .notice-text strong {
+    color: #2563eb;
+    font-weight: 800;
+}
+
+.login-notice-card .notice-text p {
+    margin-top: 2px;
+    font-size: 0.77rem;
+    color: #64748b;
+}
+
+/* ---------------- 알림 메시지 ---------------- */
+.alert-banner {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.alert-warning {
+    background-color: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+/* ---------------- 학생 수료증 대시보드 ---------------- */
+.student-view-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .student-view-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.student-panel {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.75rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.student-info-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.student-name-tag {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.student-school-tag {
+    font-size: 0.85rem;
+    color: #6366f1;
+    font-weight: 600;
+    margin-top: 0.2rem;
+}
+
+/* 사진 업로드 컨트롤 */
+.photo-uploader-box {
+    background-color: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 1.5rem;
+}
+
+.photo-uploader-box:hover {
+    border-color: var(--primary);
+    background-color: #f1f5f9;
+}
+
+.photo-preview-thumb {
+    width: 90px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin: 0 auto 0.75rem auto;
+    border: 2px solid #e2e8f0;
+    display: block;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 액션 버튼 그룹 (인쇄 & 다운로드) */
+.action-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-print {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-print:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.btn-download-img {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.btn-download-img:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.btn-download-pdf {
+    background: #ffffff;
+    color: #334155;
+    border: 1.5px solid #cbd5e1;
+}
+
+.btn-download-pdf:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+/* ---------------- 수료증 본체 스타일 (실물 및 인쇄) ---------------- */
+.certificate-preview-container {
+    background: #e2e8f0;
+    border-radius: 16px;
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.certificate-sheet {
+    width: var(--cert-width);
+    height: var(--cert-height);
+    background-color: #ffffff;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: #000000;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+/* 은은하지만 확실하게 돋보이는 로보그램 코딩캠프 워터마크 배경 */
+.cert-background-watermark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('../assets/cert_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.75;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* 골드 더블 프레임 */
+.cert-border-outer {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    border: 10px solid var(--gold);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.cert-border-inner {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    right: 32px;
+    bottom: 32px;
+    border: 3px solid var(--gold);
+    pointer-events: none;
+}
+
+.cert-content {
+    position: relative;
+    z-index: 10;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 35px 45px 30px 45px;
+}
+
+/* 상단 제목 */
+.cert-header {
+    text-align: center;
+    margin-top: 15px;
+    margin-bottom: 25px;
+}
+
+.cert-title {
+    font-size: 56px;
+    font-weight: 900;
+    letter-spacing: 0.35em;
+    color: #000000;
+    line-height: 1.1;
+    margin-left: 0.35em; /* 자간 중앙 정렬 보정 */
+}
+
+.cert-subtitle {
+    font-size: 26px;
+    color: #6b7280;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    margin-top: 14px;
+    letter-spacing: 0.05em;
+}
+
+/* 중간 영역: 정보 목록 & 사진 */
+.cert-middle {
+    position: relative;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    min-height: 250px;
+}
+
+.cert-info-list {
+    list-style: none;
+    font-size: 21.5px;
+    line-height: 2.15;
+    color: #000000;
+    font-weight: 500;
+    padding-left: 10px;
+    max-width: 530px;
+}
+
+.cert-info-list li {
+    display: flex;
+    align-items: baseline;
+}
+
+.cert-info-list .info-label {
+    width: 125px;
+    flex-shrink: 0;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+}
+
+.cert-info-list .info-val {
+    font-weight: 700;
+    color: #000000;
+    word-break: keep-all;
+}
+
+.cert-info-list .info-date {
+    white-space: nowrap !important;
+}
+
+/* 학생 사진 프레임 (3:4 규격 컴팩트 배치) */
+.cert-photo-container {
+    position: absolute;
+    top: 15px;
+    right: 30px;
+    width: 140px;
+    height: 185px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.cert-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cert-photo-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    background-color: #f1f5f9;
+}
+
+/* 수료 증명 문구 */
+.cert-statement {
+    text-align: center;
+    font-size: 25px;
+    line-height: 1.7;
+    font-weight: 600;
+    color: #000000;
+    margin: 30px 0 35px 0;
+    letter-spacing: -0.01em;
+}
+
+/* 발급 일자 */
+.cert-date {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 500;
+    color: #000000;
+    margin-bottom: 40px;
+}
+
+/* 하단 발급기관 & 직인 */
+.cert-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.cert-issuer-wrap {
+    display: inline-block;
+    position: relative;
+}
+
+.cert-issuer-text {
+    font-size: 52px;
+    font-weight: 900;
+    color: #4f46e5;
+    letter-spacing: 0.12em;
+    position: relative;
+    z-index: 5;
+    line-height: 1;
+}
+
+.cert-last-char {
+    display: inline-block;
+    position: relative;
+    letter-spacing: 0 !important;
+    margin-right: 0.12em;
+}
+
+.cert-seal-img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 165px;
+    height: 165px;
+    object-fit: contain;
+    z-index: 10;
+    opacity: 0.95;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+}
+
+/* ---------------- 관리자 대시보드 ---------------- */
+.admin-header-tabs {
+    display: flex;
+    gap: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.admin-tab-btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #64748b;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.admin-tab-btn.active {
+    color: var(--primary);
+    background-color: var(--primary-light);
+}
+
+.data-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: #f8fafc;
+    padding: 0.85rem 1rem;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.data-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.data-table tr:hover {
+    background-color: #f1f5f9;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-warning { background: #fef3c7; color: #b45309; }
+.badge-gray { background: #f1f5f9; color: #64748b; }
+
+/* ---------------- 모달 팝업 ---------------- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+}
+
+.modal-card {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+/* ==============================================================
+   ★ A4 인쇄 전용 CSS (노트북/PC 완벽 출력 지원) ★
+   ============================================================== */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 0;
+    }
+
+    body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* 인쇄 시 불필요한 모든 UI 요소 숨김 */
+    .app-header,
+    .student-panel,
+    .alert-banner,
+    .login-card,
+    .admin-wrapper,
+    .action-buttons-group,
+    .no-print {
+        display: none !important;
+    }
+
+    .main-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .student-view-layout {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .certificate-preview-container {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        display: block !important;
+    }
+
+    /* A4 정밀 규격: 210mm x 297mm 꽉 차게 한 페이지에 출력 */
+    .certificate-sheet {
+        width: 210mm !important;
+        height: 297mm !important;
+        max-width: 210mm !important;
+        max-height: 297mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 auto !important;
+        padding: 10mm !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        overflow: hidden !important;
+    }
+
+    .cert-background-watermark {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background-image: url('../assets/cert_bg.jpg') !important;
+        background-size: cover !important;
+        background-position: center !important;
+        opacity: 0.65 !important;
+        z-index: 1 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .cert-border-outer {
+        top: 7mm !important;
+        left: 7mm !important;
+        right: 7mm !important;
+        bottom: 7mm !important;
+        border-width: 3.5mm !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .cert-border-inner {
+        top: 11.5mm !important;
+        left: 11.5mm !important;
+        right: 11.5mm !important;
+        bottom: 11.5mm !important;
+        border-width: 1mm !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .cert-content {
+        padding: 12mm 15mm 10mm 15mm !important;
+    }
+
+    .cert-title {
+        font-size: 21mm !important;
+    }
+
+    .cert-subtitle {
+        font-size: 9mm !important;
+    }
+
+    .cert-middle {
+        min-height: 52mm !important;
+        margin-top: 5mm !important;
+        margin-bottom: 7mm !important;
+    }
+
+    .cert-info-list {
+        font-size: 5.6mm !important;
+        line-height: 2.15 !important;
+        padding-left: 2mm !important;
+        max-width: 138mm !important;
+    }
+
+    .cert-info-list .info-label {
+        width: 32mm !important;
+        flex-shrink: 0 !important;
+    }
+
+    .cert-info-list .info-val {
+        word-break: keep-all !important;
+    }
+
+    .cert-info-list .info-date {
+        white-space: nowrap !important;
+    }
+
+    .cert-photo-container {
+        width: 33mm !important;
+        height: 44mm !important;
+        right: 6mm !important;
+        top: 2mm !important;
+        border-radius: 1.5mm !important;
+    }
+
+    .cert-statement {
+        font-size: 8mm !important;
+    }
+
+    .cert-date {
+        font-size: 7.5mm !important;
+    }
+
+    .cert-issuer-wrap {
+        display: inline-block !important;
+        position: relative !important;
+    }
+
+    .cert-issuer-text {
+        font-size: 18mm !important;
+        line-height: 1 !important;
+    }
+
+    .cert-last-char {
+        display: inline-block !important;
+        position: relative !important;
+    }
+
+    .cert-seal-img {
+        width: 48mm !important;
+        height: 48mm !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        right: auto !important;
+        mix-blend-mode: multiply !important;
+    }
+}
+
+/* ---------------- 시작화면 하단 시크릿 관리자 배너 (롱프레스) ---------------- */
+.secret-admin-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5rem auto 3rem auto;
+    text-align: center;
+}
+
+.secret-admin-banner {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    border-radius: 9999px;
+    padding: 0.6rem 1.4rem;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.secret-admin-banner:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+}
+
+.secret-admin-banner.holding {
+    transform: scale(0.97);
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.secret-banner-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.82rem;
+    color: #64748b;
+    pointer-events: none;
+}
+
+.secret-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3b82f6;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+}
+
+.secret-brand-text {
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: #1e293b;
+    font-size: 0.85rem;
+}
+
+.secret-divider {
+    color: #cbd5e1;
+    font-weight: 300;
+}
+
+.secret-subtext {
+    font-size: 0.76rem;
+    color: #94a3b8;
+}
+
+/* 3초간 차오르는 프로그레스 바 */
+.secret-hold-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #3b82f6, #4f46e5);
+    border-radius: 0 2px 2px 0;
+    pointer-events: none;
+}
+
+.secret-hold-hint {
+    margin-top: 0.6rem;
+    font-size: 0.78rem;
+    color: #3b82f6;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.secret-hold-hint.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media print {
+    /* 인쇄 시 시크릿 관리자 배너 숨김 */
+    .secret-admin-footer,
+    #adminAuthModal {
+        display: none !important;
+    }
+}
+
