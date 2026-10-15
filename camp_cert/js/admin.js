@@ -225,8 +225,9 @@ const AdminModule = {
     deleteStudent: async (studentId, studentName = '', schoolName = '') => {
         const displayName = studentName ? `'${studentName} (${studentId})'` : `'${studentId}'`;
         if (confirm(`학생 ${displayName}의 정보를 정말 삭제하시겠습니까?\n삭제된 정보는 즉시 명단에서 제외됩니다.`)) {
-            await window.DB.deleteStudent(studentId, schoolName);
+            await window.DB.deleteStudent(studentId);
             await AdminModule.loadStudents();
+            alert(`학생 ${displayName}의 정보가 성공적으로 삭제되었습니다.`);
         }
     },
 

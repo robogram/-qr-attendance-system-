@@ -224,6 +224,8 @@ const DB = {
 
     // ---------------- 학생 관련 ----------------
     async getStudents(schoolName = null) {
+        const deletedIds = JSON.parse(localStorage.getItem('camp_deleted_student_ids') || '[]');
+
         // 1. 서버 API 조회
         try {
             const res = await fetch('/api/data?t=' + Date.now());
@@ -232,7 +234,11 @@ const DB = {
                 if (contentType.includes('application/json')) {
                     const data = await res.json();
                     if (data.students && data.students.length > 0) {
-                        localStorage.setItem('camp_students', JSON.stringify(data.students));
+                        const validStudents = data.students.filter(s => 
+                            !deletedIds.includes(String(s.student_id || '').trim()) && 
+                            !deletedIds.includes(String(s.id || '').trim())
+                        );
+                        localStorage.setItem('camp_students', JSON.stringify(validStudents));
                     }
                 }
             }
@@ -245,7 +251,11 @@ const DB = {
                 if (staticRes.ok) {
                     const data = await staticRes.json();
                     if (data.students && data.students.length > 0) {
-                        localStorage.setItem('camp_students', JSON.stringify(data.students));
+                        const validStudents = data.students.filter(s => 
+                            !deletedIds.includes(String(s.student_id || '').trim()) && 
+                            !deletedIds.includes(String(s.id || '').trim())
+                        );
+                        localStorage.setItem('camp_students', JSON.stringify(validStudents));
                     }
                 }
             } catch (e) {}
@@ -253,6 +263,16 @@ const DB = {
 
         this._initLocalData();
         let students = JSON.parse(localStorage.getItem('camp_students') || '[]');
+
+        // 삭제된 학생은 한 번 더 최종 필터링
+        if (deletedIds.length > 0) {
+            students = students.filter(s => 
+                !deletedIds.includes(String(s.student_id || '').trim()) && 
+                !deletedIds.includes(String(s.id || '').trim())
+            );
+            localStorage.setItem('camp_students', JSON.stringify(students));
+        }
+
         if (schoolName) {
             const cleanTarget = (schoolName || '').replace(/\s+/g, '').toLowerCase();
             students = students.filter(s => {
@@ -349,14 +369,9 @@ const DB = {
         const beforeCount = list.length;
 
         list = list.filter(s => {
-            const matchId = (s.id && String(s.id).trim() === cleanId) || 
-                            (s.student_id && String(s.student_id).trim() === cleanId);
-            if (!matchId) return true;
-            if (cleanSchool) {
-                const sSchool = (s.school_name || '').replace(/\s+/g, '').toLowerCase();
-                return sSchool !== cleanSchool;
-            }
-            return false;
+            const sid = String(s.student_id || '').trim();
+            const id = String(s.id || '').trim();
+            return sid !== cleanId && id !== cleanId;
         });
 
         localStorage.setItem('camp_students', JSON.stringify(list));
