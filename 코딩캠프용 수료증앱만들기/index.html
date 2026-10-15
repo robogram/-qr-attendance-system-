@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>로보그램 코딩캠프 수료증 발급 시스템</title>
+    <link rel="icon" type="image/png" href="assets/robogram_logo.png">
+    <link rel="stylesheet" href="css/style.css?v=27">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- ================= 상단 헤더 ================= -->
+    <header class="app-header">
+        <div class="header-container">
+            <a href="index.html" class="logo-wrap">
+                <img src="assets/robogram_logo.png" alt="로보그램 로고" class="logo-img" onerror="this.style.display='none'">
+                <div class="logo-text">
+                    <h1>로보그램 코딩캠프</h1>
+                    <p>수료증 발급 및 출력 시스템</p>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <div class="system-status-tag">
+                    <span class="status-pulse-dot"></span>
+                    <span>공식 발급 포털 정상 운영 중</span>
+                </div>
+                <button type="button" id="navAdminBtn" class="btn-nav btn-nav-admin" style="display:none !important;">
+                    <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    관리자 모드
+                </button>
+                <button type="button" id="navAdminLogoutBtn" class="btn-nav btn-nav-logout" style="display:none;">
+                    관리자 로그아웃
+                </button>
+                <button type="button" id="navStudentLogoutBtn" class="btn-nav btn-nav-logout" style="display:none;">
+                    로그아웃
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= 메인 컨텐츠 영역 ================= -->
+    <main class="main-wrapper">
+
+        <!-- 1. 웅장하고 고급스러운 2열 와이드 시작 화면 -->
+        <section id="studentLoginCard" class="hero-login-section">
+            
+            <!-- 좌측 히어로 비주얼 패널 -->
+            <div class="hero-visual-panel">
+                <div>
+                    <div class="hero-badge">
+                        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                        </svg>
+                        공식 인증 코딩캠프 수료증 포털
+                    </div>
+                    <h2 class="hero-title">
+                        미래를 코딩한 빛나는 열정,<br>
+                        <span class="highlight">수료의 영광을 함께합니다</span>
+                    </h2>
+                    <p class="hero-desc">
+                        학교 및 전문 교육기관의 코딩캠프 과정을 성실히 이수한 교육생 여러분을 위한 맞춤형 공식 수료증 발급 시스템입니다.
+                    </p>
+                </div>
+
+                <!-- 스마트 코딩 마스코트 캐릭터 쇼케이스 -->
+                <div class="hero-mascot-wrap">
+                    <div class="hero-mascot-glow"></div>
+                    <img src="assets/mascot_smart.png?v=2" alt="로보그램 스마트 마스코트" class="hero-mascot-img">
+                </div>
+
+                <!-- 3대 핵심 특징 배지 -->
+                <div class="hero-feature-tags">
+                    <div class="hero-feature-item">
+                        <span class="hero-feature-icon">🎓</span>
+                        <span><strong>공식 인증 수료증</strong> (정식 기관 직인 및 고유 발급 내역)</span>
+                    </div>
+                    <div class="hero-feature-item">
+                        <span class="hero-feature-icon">📷</span>
+                        <span><strong>학생 본인 사진 등록</strong> (스마트폰 카메라/파일 즉시 반영)</span>
+                    </div>
+                    <div class="hero-feature-item">
+                        <span class="hero-feature-icon">🖨️</span>
+                        <span><strong>A4 정밀 인쇄 & 고화질 다운로드</strong> (노트북/모바일 완벽 호환)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 우측 로그인 폼 패널 -->
+            <div class="login-form-panel">
+                <span class="login-badge" style="width:fit-content;">🎓 교육생 본인 확인</span>
+                <h3 class="login-panel-title">수료생 간편 조회</h3>
+                <p class="login-panel-desc">
+                    소속 <strong>학교명</strong>을 선택하고, 학생 <strong>아이디와 비밀번호</strong>를 입력하여 수료증을 확인하고 출력하세요.
+                </p>
+
+                <form id="studentLoginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="studentSchoolSelect">
+                            🏫 소속 학교 / 교육기관 선택
+                        </label>
+                        <select id="studentSchoolSelect" class="form-select" required style="font-size:1rem;padding:0.85rem 1rem;">
+                            <option value="">-- 학교 또는 교육기관을 선택하세요 --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="studentIdInput">
+                            👤 학생 아이디
+                        </label>
+                        <input type="text" id="studentIdInput" class="form-input" placeholder="아이디 입력" required autocomplete="username" style="font-size:1rem;padding:0.85rem 1rem;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="studentPwInput">
+                            🔒 비밀번호
+                        </label>
+                        <input type="password" id="studentPwInput" class="form-input" placeholder="비밀번호 입력" required autocomplete="current-password" style="font-size:1rem;padding:0.85rem 1rem;">
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="margin-top:1.5rem;padding:1rem;font-size:1.05rem;">
+                        <svg style="width:22px;height:22px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        수료증 조회 및 발급하기
+                    </button>
+                </form>
+
+                <div class="login-notice-card">
+                    <span class="notice-icon">💡</span>
+                    <div class="notice-text">
+                        <span>본 수료증은 <strong>robogram.net</strong> 학생 계정으로 발급됩니다.</span>
+                        <p>계정 정보 분실 시 robogram.net 사이트 또는 캠프 담당 선생님께 문의하세요.</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 1-1. 시작 화면 하단 시크릿 관리자 배너 (3초 롱프레스 히든 트리거) -->
+        <footer id="secretAdminFooter" class="secret-admin-footer">
+            <div id="secretAdminBanner" class="secret-admin-banner" title="ROBOGRAM">
+                <div class="secret-banner-inner">
+                    <span class="secret-badge-dot"></span>
+                    <span class="secret-brand-text">ROBOGRAM 2018</span>
+                    <span class="secret-divider">·</span>
+                    <span class="secret-subtext">Official Camp Verification System</span>
+                </div>
+                <!-- 3초간 꾹 누르면 서서히 차오르는 프로그레스 바 -->
+                <div id="secretHoldProgress" class="secret-hold-progress"></div>
+            </div>
+            <div id="secretHoldHint" class="secret-hold-hint">
+                🔒 3초간 꾹 누르고 있으면 관리자 모드가 실행됩니다...
+            </div>
+        </footer>
+
+        <!-- 2. 학생 수료증 대시보드 (로그인 후 표시) -->
+        <section id="studentDashboard" style="display:none;">
+            <div class="student-view-layout">
+                
+                <!-- 좌측 컨트롤 패널 (모바일에서는 상단) -->
+                <aside class="student-panel no-print">
+                    <div class="student-info-header">
+                        <div class="student-name-tag">
+                            <span id="dashStudentName">-</span> <span>학생</span>
+                        </div>
+                        <div class="student-school-tag" id="dashSchoolName">-</div>
+                        <div style="font-size:0.82rem;color:#64748b;margin-top:0.25rem;" id="dashCourseName">-</div>
+                    </div>
+
+                    <!-- 발급 가능 기간 안내 배너 -->
+                    <div id="issuePeriodAlert" class="alert-banner alert-info" style="display:none;"></div>
+
+                    <!-- 사진 업로드 상자 -->
+                    <div style="margin-bottom:1.5rem;">
+                        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>📷 학생 사진 등록</span>
+                            <span style="font-size:0.75rem;color:#6366f1;font-weight:400;">(수료증에 반영)</span>
+                        </label>
+                        <div class="photo-uploader-box" onclick="document.getElementById('photoInput').click()">
+                            <img id="photoPreviewThumb" src="" alt="사진 미리보기" class="photo-preview-thumb" style="display:none;">
+                            <div id="photoEmptySvg" style="padding:0.5rem 0;">
+                                <svg style="width:36px;height:36px;color:#94a3b8;margin:0 auto 0.5rem auto;display:block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span style="font-size:0.85rem;color:#64748b;font-weight:600;">사진 선택 또는 촬영</span>
+                                <p style="font-size:0.75rem;color:#94a3b8;margin-top:2px;">스마트폰 카메라 / 파일 업로드</p>
+                            </div>
+                            <input type="file" id="photoInput" accept="image/*" style="display:none;">
+                        </div>
+                    </div>
+
+                    <!-- 출력 및 다운로드 액션 버튼 -->
+                    <div class="action-buttons-group">
+                        <button type="button" id="btnPrintA4" class="btn-action btn-print" style="padding:0.75rem 1rem;">
+                            <svg style="width:22px;height:22px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            <span style="display:flex;flex-direction:column;align-items:center;line-height:1.35;">
+                                <span style="font-size:0.98rem;font-weight:700;">A4 수료증 바로 인쇄</span>
+                                <span style="font-size:0.82rem;font-weight:600;opacity:0.92;">(PDF 저장)</span>
+                            </span>
+                        </button>
+                        <p style="font-size:0.75rem;color:#64748b;margin-top:-0.3rem;padding-left:4px;">
+                            💡 노트북/PC 추천: 인쇄 대화상자에서 'PDF로 저장' 가능
+                        </p>
+
+                        <button type="button" id="btnDownloadPNG" class="btn-action btn-download-img">
+                            <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            📥 고화질 수료증 다운로드 (PNG)
+                        </button>
+                        <p style="font-size:0.75rem;color:#64748b;margin-top:-0.3rem;padding-left:4px;">
+                            💡 스마트폰 추천: 갤러리/사진첩에 고해상도로 즉시 저장
+                        </p>
+                    </div>
+                </aside>
+
+                <!-- 우측 수료증 미리보기 캔버스 -->
+                <div class="certificate-preview-container">
+                    <div id="certificateSheet" class="certificate-sheet">
+                        <!-- js/certificate.js에서 동적으로 렌더링 -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. 관리자 대시보드 (관리자 모드 활성화 시 표시) -->
+        <section id="adminSection" class="admin-wrapper" style="display:none;">
+            <div class="card-box">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+                    <div>
+                        <span class="login-badge" style="background:#e0e7ff;color:#3730a3;">🔒 관리자 콘솔</span>
+                        <h2 style="font-size:1.4rem;font-weight:800;color:#0f172a;margin-top:0.25rem;">코딩교육기관 및 수료생 관리</h2>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        <button type="button" class="btn-nav btn-nav-admin" onclick="AdminModule.openSealModal()">
+                            🔴 직인 이미지 변경
+                        </button>
+                        <button type="button" class="btn-nav btn-primary" onclick="AdminModule.openInstitutionModal()">
+                            ➕ 새 교육기관 등록
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 탭 네비게이션 -->
+                <div class="admin-header-tabs">
+                    <button type="button" class="admin-tab-btn active" data-tab="institutions">🏫 교육기관 및 캠프 설정</button>
+                    <button type="button" class="admin-tab-btn" data-tab="students">👨‍🎓 수료 학생 명단 관리</button>
+                </div>
+
+                <!-- 탭 1: 교육기관 설정 -->
+                <div id="adminTabInstitutions">
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>학교/교육기관명</th>
+                                    <th>수업과목 이름</th>
+                                    <th>교육 기간 및 시간</th>
+                                    <th>수료증 출력 가능 기간</th>
+                                    <th>출력 상태</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="institutionsTableBody">
+                                <!-- AdminModule.loadInstitutions() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 탭 2: 학생 명단 관리 -->
+                <div id="adminTabStudents" style="display:none;">
+                    
+                    <!-- CSV 일괄 업로드 컨트롤 박스 -->
+                    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;">
+                        <h4 style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-bottom:0.5rem;">📁 학생 명단 엑셀(CSV) 일괄 업로드</h4>
+                        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem;line-height:1.4;">
+                            학교별 수료 학생 명단(학교명, 아이디, 비밀번호, 학생이름)을 엑셀로 한 번에 등록합니다.
+                        </p>
+                        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+                            <label class="btn-nav btn-primary" style="margin:0;cursor:pointer;">
+                                <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+                                📤 CSV 엑셀 파일 선택 및 업로드
+                            </label>
+                            <button type="button" id="btnDownloadTemplate" class="btn-nav btn-nav-admin">
+                                📥 업로드 양식(샘플 CSV) 다운로드
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 검색 및 필터 바 -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
+                        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                            <select id="adminStudentSchoolFilter" class="form-select" style="width:220px;padding:0.5rem 0.75rem;font-size:0.85rem;">
+                                <option value="">전체 학교/기관 보기</option>
+                            </select>
+                            <input type="text" id="adminStudentSearch" class="form-input" placeholder="학생 이름 또는 아이디 검색" style="width:200px;padding:0.5rem 0.75rem;font-size:0.85rem;">
+                        </div>
+                        <div style="font-size:0.85rem;color:#64748b;">
+                            총 <strong id="studentTotalCount" style="color:var(--primary);">0</strong>명 수료생
+                        </div>
+                    </div>
+
+                    <!-- 학생 목록 테이블 -->
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>소속 학교</th>
+                                    <th>학생 이름</th>
+                                    <th>아이디</th>
+                                    <th>비밀번호</th>
+                                    <th>사진 등록</th>
+                                    <th>발급 현황</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <!-- AdminModule.loadStudents() -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= 교육기관 등록/수정 모달 ================= -->
+    <div id="institutionModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title" id="instModalTitle">교육기관 및 수료 정보 설정</h3>
+                <button type="button" class="btn-close" onclick="document.getElementById('institutionModal').style.display='none'">&times;</button>
+            </div>
+            
+            <form id="institutionForm" onsubmit="event.preventDefault(); AdminModule.saveInstitutionFromModal();">
+                <div class="form-group">
+                    <label class="form-label" for="instName">학교 또는 코딩교육기관명</label>
+                    <input type="text" id="instName" class="form-input" placeholder="예: 감정초등학교" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="instCourse">수업과목 이름 (수료증 과정명)</label>
+                    <input type="text" id="instCourse" class="form-input" placeholder="예: 잼S & 로블록스 4기 기초 과정" required>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="instStartDate">교육 시작일</label>
+                        <input type="date" id="instStartDate" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="instEndDate">교육 종료일</label>
+                        <input type="date" id="instEndDate" class="form-input" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="instHours">총 교육시간 (시간 단위)</label>
+                    <input type="number" id="instHours" class="form-input" value="8" min="1" max="500" required>
+                </div>
+
+                <!-- 수료증 출력 가능 기간 설정 (핵심 요구사항) -->
+                <div style="background:#f1f5f9;border-radius:10px;padding:1rem;margin-bottom:1.5rem;border:1px solid #cbd5e1;">
+                    <label class="form-label" style="color:#1e293b;margin-bottom:0.5rem;font-weight:700;">
+                        ⏱️ 수료증 출력 가능 기간 설정
+                    </label>
+                    <p style="font-size:0.75rem;color:#64748b;margin-bottom:0.75rem;">
+                        지정한 기간 내에만 학생이 로그인하여 수료증을 인쇄/다운로드할 수 있습니다.
+                    </p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                        <div>
+                            <span style="font-size:0.75rem;color:#475569;font-weight:600;">출력 시작 일시</span>
+                            <input type="datetime-local" id="instIssueStart" class="form-input" required>
+                        </div>
+                        <div>
+                            <span style="font-size:0.75rem;color:#475569;font-weight:600;">출력 마감 일시</span>
+                            <input type="datetime-local" id="instIssueEnd" class="form-input" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
+                    <button type="button" class="btn-nav btn-nav-admin" onclick="document.getElementById('institutionModal').style.display='none'">취소</button>
+                    <button type="submit" class="btn-nav btn-primary">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= 직인 이미지 변경 모달 ================= -->
+    <div id="sealModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card" style="max-width:480px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🔴 로보그램 공식 직인 도장 관리</h3>
+                <button type="button" class="btn-close" onclick="document.getElementById('sealModal').style.display='none'">&times;</button>
+            </div>
+            
+            <div style="text-align:center;margin-bottom:1.5rem;">
+                <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">
+                    수료증 하단 '(주)로보그램' 옆에 찍히는 공식 직인 이미지입니다.<br>
+                    실제 회사 직인 이미지(배경 투명 PNG 권장)를 등록할 수 있습니다.
+                </p>
+                <div style="display:inline-block;padding:1rem;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;margin-bottom:1rem;">
+                    <img id="currentSealPreview" src="assets/seal.png" alt="직인 미리보기" style="width:140px;height:140px;object-fit:contain;display:block;margin:0 auto;">
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+                <label class="btn-primary" style="margin:0;cursor:pointer;">
+                    <input type="file" id="sealFileInput" accept="image/*" style="display:none;" onchange="AdminModule.handleSealUpload(this.files[0])">
+                    📁 새 직인 이미지 파일 업로드
+                </label>
+                <button type="button" class="btn-nav btn-nav-admin" style="justify-content:center;" onclick="AdminModule.resetSealToDefault()">
+                    🔄 기본 원형 법인 직인으로 복원
+                </button>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;margin-top:1.5rem;">
+                <button type="button" class="btn-nav btn-nav-admin" onclick="document.getElementById('sealModal').style.display='none'">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 관리자 비밀번호 인증 모달 ================= -->
+    <div id="adminAuthModal" class="modal-overlay" style="display:none;">
+        <div class="modal-card" style="max-width:380px;text-align:center;">
+            <div class="modal-header" style="justify-content:center;position:relative;border:none;padding-bottom:0;">
+                <div style="width:52px;height:52px;border-radius:50%;background:#eff6ff;color:#2563eb;display:flex;align-items:center;justify-content:center;margin:0 auto 0.5rem auto;box-shadow:0 4px 12px rgba(37,99,235,0.15);">
+                    <svg style="width:26px;height:26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+                <button type="button" class="btn-close" style="position:absolute;right:0;top:0;" onclick="App.closeAdminAuthModal()">&times;</button>
+            </div>
+            
+            <h3 style="font-size:1.2rem;font-weight:800;color:#1e293b;margin-bottom:0.35rem;">관리자 모드 접속</h3>
+            <p style="font-size:0.82rem;color:#64748b;margin-bottom:1.25rem;">
+                인증을 위해 관리자 전용 비밀번호를 입력하세요.
+            </p>
+            
+            <form id="adminAuthForm" onsubmit="event.preventDefault(); App.submitAdminAuth();">
+                <div class="form-group" style="text-align:left;margin-bottom:1.25rem;">
+                    <input type="password" id="adminSecretPwInput" class="form-input" placeholder="비밀번호 입력" required autocomplete="current-password" style="text-align:center;font-size:1.15rem;letter-spacing:0.15em;padding:0.75rem 1rem;">
+                    <p id="adminAuthError" style="font-size:0.78rem;color:#ef4444;margin-top:0.4rem;display:none;text-align:center;font-weight:600;">⚠️ 비밀번호가 일치하지 않습니다.</p>
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+                    <button type="button" class="btn-nav btn-nav-admin" style="justify-content:center;padding:0.75rem;" onclick="App.closeAdminAuthModal()">취소</button>
+                    <button type="submit" class="btn-primary" style="margin:0;justify-content:center;padding:0.75rem;">로그인</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 스크립트 모듈 로드 -->
+    <script src="js/supabase_config.js?v=29"></script>
+    <script src="js/certificate.js?v=29"></script>
+    <script src="js/admin.js?v=29"></script>
+    <script src="js/app.js?v=29"></script>
+</body>
+</html>
