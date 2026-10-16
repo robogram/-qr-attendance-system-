@@ -909,8 +909,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
     left: 100%;
     top: 50%;
     transform: translateY(-50%);
-    margin-left: 6px; /* 램 글자 옆에 밀착 */
-    width: 140px; /* 크기 약간 확대 */
+    margin-left: -18px; /* 램 글자 오른쪽 끝과 살짝 맞닿아 자연스러운 날인 */
+    width: 140px;
     height: 140px;
     object-fit: contain;
     z-index: 10;
@@ -1236,7 +1236,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, label, li, button, input, select, texta
         left: 100% !important;
         top: 50% !important;
         transform: translateY(-50%) !important;
-        margin-left: 1.5mm !important;
+        margin-left: -4.5mm !important;
         display: block !important;
     }
 }

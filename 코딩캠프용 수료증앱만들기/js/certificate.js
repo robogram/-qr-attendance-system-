@@ -115,7 +115,7 @@ const CertificateEngine = {
                 <div class="cert-footer" style="display:flex;align-items:center;justify-content:center;margin-bottom:30px;position:relative;">
                     <div class="cert-issuer-wrap" style="display:inline-block;position:relative;text-align:center;">
                         <span class="cert-issuer-text" style="font-size:50px !important;font-weight:700 !important;color:#222222 !important;letter-spacing:0.22em !important;margin-left:0.22em !important;">${issuerName}</span>
-                        <img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'" style="position:absolute !important;left:100% !important;top:50% !important;transform:translateY(-50%) !important;margin-left:6px !important;width:140px !important;height:140px !important;object-fit:contain !important;mix-blend-mode:multiply !important;display:block !important;z-index:10 !important;pointer-events:none !important;">
+                        <img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'" style="position:absolute !important;left:100% !important;top:50% !important;transform:translateY(-50%) !important;margin-left:-18px !important;width:140px !important;height:140px !important;object-fit:contain !important;mix-blend-mode:multiply !important;display:block !important;z-index:10 !important;pointer-events:none !important;">
                     </div>
                 </div>
             </div>
@@ -289,8 +289,8 @@ const CertificateEngine = {
         await new Promise((resolve) => {
             const sealImg = new Image();
             sealImg.onload = () => {
-                const sealSize = 140 * scale; // 직인 크기 확대 (125 -> 140)
-                const gap = 6 * scale; // '램' 글자 바로 옆에 밀착 (14 -> 6)
+                const sealSize = 140 * scale; // 직인 크기 (140)
+                const gap = -18 * scale; // '램' 글자 오른쪽 끝과 살짝 맞닿도록 밀착 (-18)
                 const textWidth = ctx.measureText(issuerName).width;
 
                 // (주)로보그램 텍스트 오른쪽 끝 = (width / 2) + (textWidth / 2)
