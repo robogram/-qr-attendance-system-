@@ -111,11 +111,11 @@ const CertificateEngine = {
                     ${todayStr}
                 </div>
 
-                <!-- 하단 발급기관 및 직인 ((주)로보그램은 중앙 정렬, 직인은 '램' 오른쪽에 날인) -->
+                <!-- 하단 발급기관 및 직인 ((주)로보그램은 중앙 정렬, 직인은 '램' 오른쪽에 밀착 날인) -->
                 <div class="cert-footer" style="display:flex;align-items:center;justify-content:center;margin-bottom:30px;position:relative;">
                     <div class="cert-issuer-wrap" style="display:inline-block;position:relative;text-align:center;">
-                        <span class="cert-issuer-text">${issuerName}</span>
-                        <img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'" style="position:absolute !important;left:100% !important;top:50% !important;transform:translateY(-50%) !important;margin-left:14px !important;width:125px !important;height:125px !important;object-fit:contain !important;mix-blend-mode:multiply !important;display:block !important;z-index:10 !important;pointer-events:none !important;">
+                        <span class="cert-issuer-text" style="font-size:50px !important;font-weight:700 !important;color:#222222 !important;letter-spacing:0.22em !important;margin-left:0.22em !important;">${issuerName}</span>
+                        <img src="${sealSrc}" alt="직인" class="cert-seal-img" onerror="this.src='assets/seal_custom.png'" style="position:absolute !important;left:100% !important;top:50% !important;transform:translateY(-50%) !important;margin-left:6px !important;width:140px !important;height:140px !important;object-fit:contain !important;mix-blend-mode:multiply !important;display:block !important;z-index:10 !important;pointer-events:none !important;">
                     </div>
                 </div>
             </div>
@@ -272,14 +272,14 @@ const CertificateEngine = {
         ctx.font = `500 ${24 * scale}px "Noto Sans KR", sans-serif`;
         ctx.fillText(CertificateEngine.formatKoreanDate(), width / 2, 775 * scale);
 
-        // 8. 발급처 "(주)로보그램"은 정중앙 출력 & 9. 직인은 '램' 오른쪽에 날인
+        // 8. 발급처 "(주)로보그램"은 정중앙 출력 & 9. 직인은 '램' 오른쪽에 밀착 날인
         const issuerName = institution.issuer_name || '(주)로보그램';
-        ctx.fillStyle = '#000000';
-        ctx.font = `900 ${52 * scale}px "Noto Sans KR", sans-serif`;
+        ctx.fillStyle = '#222222';
+        ctx.font = `700 ${50 * scale}px "Noto Sans KR", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         if ('letterSpacing' in ctx) {
-            ctx.letterSpacing = `${52 * 0.22 * scale}px`;
+            ctx.letterSpacing = `${50 * 0.22 * scale}px`;
         }
 
         const textY = 890 * scale;
@@ -289,8 +289,8 @@ const CertificateEngine = {
         await new Promise((resolve) => {
             const sealImg = new Image();
             sealImg.onload = () => {
-                const sealSize = 125 * scale; // 직인 크기
-                const gap = 14 * scale; // 글자와 직인 사이 간격
+                const sealSize = 140 * scale; // 직인 크기 확대 (125 -> 140)
+                const gap = 6 * scale; // '램' 글자 바로 옆에 밀착 (14 -> 6)
                 const textWidth = ctx.measureText(issuerName).width;
 
                 // (주)로보그램 텍스트 오른쪽 끝 = (width / 2) + (textWidth / 2)
