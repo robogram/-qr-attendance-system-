@@ -86,18 +86,11 @@ const CertificateEngine = {
                         <li><span class="info-label">• 교육시간 :</span> <span class="info-val">${totalHours}시간</span></li>
                     </ul>
 
-                    <!-- 학생 사진 박스 -->
+                    <!-- 학생 사진 박스 (사진 등록된 경우에만 표시) -->
+                    ${photoSrc ? `
                     <div class="cert-photo-container">
-                        ${photoSrc 
-                            ? `<img src="${photoSrc}" alt="${student.name} 사진" class="cert-photo-img" id="certStudentPhoto">` 
-                            : `<div class="cert-photo-empty">
-                                 <svg style="width:36px;height:36px;margin-bottom:6px;opacity:0.6" fill="currentColor" viewBox="0 0 20 20">
-                                   <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                                 </svg>
-                                 <span>사진 등록 권장</span>
-                               </div>`
-                        }
-                    </div>
+                        <img src="${photoSrc}" alt="${student.name} 사진" class="cert-photo-img" id="certStudentPhoto">
+                    </div>` : ''}
                 </div>
 
                 <!-- 수료 증명 문구 -->
@@ -228,6 +221,7 @@ const CertificateEngine = {
         const photoX = width - (60 * scale) - photoWidth;
         const photoY = 295 * scale;
 
+        // 5. 학생 사진 합성 (우측 상단 - 3:4 규격 - 사진 등록된 경우에만 합성)
         if (student.photo_url) {
             try {
                 await new Promise((resolve) => {
@@ -249,16 +243,13 @@ const CertificateEngine = {
                         resolve();
                     };
                     pImg.onerror = () => {
-                        drawEmptyPhoto(ctx, photoX, photoY, photoWidth, photoHeight, scale);
-                        resolve();
+                        resolve(); // 로드 실패 시에도 빈 박스 없이 통과
                     };
                     pImg.src = student.photo_url;
                 });
             } catch (err) {
-                drawEmptyPhoto(ctx, photoX, photoY, photoWidth, photoHeight, scale);
+                // 에러 발생 시에도 빈 박스 없이 통과
             }
-        } else {
-            drawEmptyPhoto(ctx, photoX, photoY, photoWidth, photoHeight, scale);
         }
 
         // 6. 증명 문구
@@ -329,16 +320,7 @@ const CertificateEngine = {
 };
 
 function drawEmptyPhoto(ctx, x, y, w, h, scale) {
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 1.5 * scale;
-    ctx.strokeRect(x, y, w, h);
-
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = `400 ${16 * scale}px "Noto Sans KR", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.fillText("사진 미등록", x + w / 2, y + h / 2);
+    // 사진 미등록 시 네모박스 표시하지 않음
 }
 
 window.CertificateEngine = CertificateEngine;
